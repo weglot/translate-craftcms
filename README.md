@@ -30,3 +30,15 @@ composer require weglot/craft-weglot
 # tell Craft to install the plugin
 ./craft plugin/install weglot
 ```
+
+#### With DDEV
+
+If you are managing your project with DDEV, you can use its built-in commands to achieve the same result. Run these commands from the root of your project on your local machine:
+
+```bash
+# tell Composer to load the plugin via DDEV
+ddev composer require weglot/craft-weglot
+
+# tell Craft to install the plugin via DDEV
+ddev craft plugin/install weglot
+```
