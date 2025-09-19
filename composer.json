@@ -1,0 +1,51 @@
+{
+  "name": "weglot/craft-weglot",
+  "description": "Translate your Craft website in 110+ languages within minutes with Weglot Translate, without any coding.",
+  "type": "craft-plugin",
+  "license": "mit",
+  "support": {
+    "email": "support@weglot.com"
+  },
+  "require": {
+    "php": ">=8.2",
+    "craftcms/cms": "^5.8.0",
+    "jordanbeattie/craftcms-faker": "^1.1",
+    "weglot/weglot-php": "^1.7.3"
+  },
+  "require-dev": {
+    "craftcms/ecs": "dev-main",
+    "craftcms/phpstan": "dev-main",
+    "craftcms/rector": "dev-main",
+    "symplify/easy-coding-standard": "^10.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "weglot\\craftweglot\\": "src/"
+    }
+  },
+  "extra": {
+    "handle": "weglot",
+    "class": "weglot\\craftweglot\\Plugin",
+    "name": "weglot",
+    "developer": "Weglot",
+    "documentationUrl": "",
+    "craft-plugin": {
+      "icon": "src/resources/icon.svg"
+    }
+  },
+  "scripts": {
+    "check-cs": "ecs check --ansi",
+    "fix-cs": "ecs check --ansi --fix",
+    "phpstan": "phpstan --memory-limit=1G"
+  },
+  "config": {
+    "sort-packages": true,
+    "platform": {
+      "php": "8.2"
+    },
+    "allow-plugins": {
+      "yiisoft/yii2-composer": true,
+      "craftcms/plugin-installer": true
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "weglot",
+  "version": "1.0.0",
+  "description": "Translate your Craft website in 110+ languages within minutes with Weglot Translate, without any coding.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "select2": "^4.1.0-rc.0",
+    "selectize": "^0.12.6"
+  }
+}

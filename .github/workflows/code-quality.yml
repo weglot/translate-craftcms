@@ -1,0 +1,56 @@
+name: PHP Code Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  code-analysis:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: none
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Validate Composer configuration
+        run: composer validate --strict
+
+      - name: Check for security vulnerabilities
+        run: composer audit
+
+      - name: Check coding style (ECS)
+        run: vendor/bin/ecs check --no-progress-bar --no-interaction
+
+      - name: Check for refactoring (Rector)
+        run: vendor/bin/rector process --dry-run --no-progress-bar --no-interaction
+
+      - name: Run static analysis (PHPStan)
+        run: vendor/bin/phpstan analyse --no-progress --no-interaction
+
+      - name: Run unit tests
+        run: vendor/bin/phpunit

@@ -1,0 +1,68 @@
+{# @var settings \weglot\craftweglot\models\Settings #}
+
+{% do craft.app.plugins.getPlugin('weglot').language.injectLanguagesJsonScript() %}
+{% do craft.app.view.registerAssetBundle('weglot\\craftweglot\\resources\\AdminAsset') %}
+
+{% import '_includes/forms.twig' as forms %}
+{% set weglotPlugin = craft.app.plugins.getPlugin('weglot') %}
+
+{% if not weglotPlugin %}
+    <div class="warning">
+        {{ "Le plugin Weglot n’est pas disponible."|t('weglot') }}
+    </div>
+{% endif %}
+
+{{ forms.textField({
+    label: 'API Key'|t('weglot'),
+    instructions: 'Saisissez votre clé d\'API Weglot.'|t('weglot'),
+    id: 'apiKey',
+    name: 'apiKey',
+    value: settings.apiKey,
+    errors: settings.getErrors('apiKey'),
+    inputAttributes: {
+        'data-weglot-api-key': true,
+        'autocomplete': 'off'
+    }
+}) }}
+
+<div data-weglot-api-status style="margin-top: 10px;"></div>
+
+{% set allLangEntries = weglotPlugin ? weglotPlugin.language.getAllLanguages() : [] %}
+{% set languageOptions = [] %}
+{% for lang in allLangEntries %}
+    {% set code  = lang.getInternalCode() %}
+    {% set label = lang.getEnglishName() ~ ' (' ~ lang.getLocalName() ~ ')' %}
+    {% set languageOptions = languageOptions|merge([{ label: label, value: code }]) %}
+{% endfor %}
+
+{% set optionServiceLanguageFrom = weglotPlugin ? (weglotPlugin.option.getOption('language_from') ?? 'en') : 'en' %}
+{% set languageFromValue = settings.languageFrom ?? optionServiceLanguageFrom %}
+
+{% set osLangs = weglotPlugin ? (weglotPlugin.option.getOption('languages') ?? []) : [] %}
+{% set defaultDestCodes = [] %}
+{% for d in osLangs %}
+    {% if d.language_to is defined and d.language_to %}
+        {% set defaultDestCodes = defaultDestCodes|merge([d.language_to]) %}
+    {% endif %}
+{% endfor %}
+{% set destValues = settings.languages is defined and settings.languages is not empty
+    ? settings.languages
+    : defaultDestCodes %}
+
+{{ forms.selectField({
+    label: 'Langue d’origine'|t('weglot'),
+    instructions: 'Choisissez la langue d’origine du site.'|t('weglot'),
+    id: 'languageFrom',
+    name: 'languageFrom',
+    options: languageOptions,
+    value: languageFromValue
+}) }}
+
+{{ forms.textField({
+    label: 'Langues de destination'|t('weglot'),
+    id: 'languages',
+    name: 'languages',
+    value: (destValues ?? [])|join('|'),
+    placeholder: 'fr|en|es',
+    inputAttributes: { class: 'weglot-select-destination' }
+}) }}
