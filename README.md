@@ -1,3 +1,5 @@
+![Banner](./src/resources/banner.png)
+
 # weglot
 
 Translate your Craft website in 110+ languages within minutes with Weglot Translate, without any coding.
