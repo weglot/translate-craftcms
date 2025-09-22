@@ -37,7 +37,7 @@ jobs:
       - name: Set up Composer authentication
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GH_TOKEN }}"}}'
-        run: echo "Composer authentication configured.
+        run: echo "Composer authentication configured."
 
       - name: Set up SSH
         run: |
