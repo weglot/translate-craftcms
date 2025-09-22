@@ -37,7 +37,22 @@ jobs:
       - name: Set up Composer authentication
         env:
           COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GH_TOKEN }}"}}'
-        run: echo "Composer authentication configured."
+        run: echo "Composer authentication configured.
+
+      - name: Set up SSH
+        run: |
+          eval "$(ssh-agent -s)"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-add ~/.ssh/id_rsa
+          echo "${{ secrets.SIMPLE_HTML_DOM_PRIVATE_KEY }}" > ~/.ssh/simple_html_dom
+          chmod 600 ~/.ssh/simple_html_dom
+          ssh-add ~/.ssh/simple_html_dom
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Clear Composer cache
+        run: composer clear-cache
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
