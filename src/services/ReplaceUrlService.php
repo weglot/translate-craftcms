@@ -8,7 +8,6 @@ use weglot\craftweglot\Plugin;
 
 class ReplaceUrlService extends Component
 {
-    
     public function replaceLinkInDom(string $dom): string
     {
         $data = HelperReplaceUrl::getReplaceModifyLink();
