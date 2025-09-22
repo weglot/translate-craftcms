@@ -19,7 +19,7 @@ jobs:
         with:
           php-version: '8.2'
           extensions: iconv, json
-          coverage: none
+          coverage: xdebug
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -33,6 +33,11 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
+
+      - name: Set up Composer authentication
+        env:
+          COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GH_TOKEN }}"}}'
+        run: echo "Composer authentication configured."
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
@@ -53,4 +58,4 @@ jobs:
         run: vendor/bin/phpstan analyse --no-progress --no-interaction
 
       - name: Run unit tests
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --coverage-text
