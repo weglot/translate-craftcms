@@ -47,5 +47,23 @@
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
-  }
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/weglot/translate-craftcms.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/weglot/weglot-php.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:weglot/simple_html_dom.git"
+    },
+    {
+      "type": "vcs",
+      "url": "git@github.com:glx77/morphism-php.git"
+    }
+  ]
 }

@@ -70,7 +70,7 @@ class Plugin extends BasePlugin
      */
     public function init(): void
     {
-        require_once $this->getBasePath() . '/../vendor/autoload.php';
+        //require_once $this->getBasePath() . '/../vendor/autoload.php';
         parent::init();
         Craft::setAlias('@weglot/craftweglot', $this->getBasePath());
         $this->attachEventHandlers();
