@@ -57,7 +57,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-interaction -vvv
 
       - name: Validate Composer configuration
-        run: composer validate --strict
+        run: composer validate --strict --no-plugins
 
       - name: Check for security vulnerabilities
         run: composer audit
