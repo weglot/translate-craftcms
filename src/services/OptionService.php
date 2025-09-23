@@ -486,10 +486,8 @@ class OptionService extends Component
             ];
         }
 
-
-        $options = $cdn['result'];
+        $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
         $apiKeyPrivate = (string) ($options['api_key'] ?? '');
-
         if ($apiKeyPrivate === '') {
             return [
                 'success' => false,
