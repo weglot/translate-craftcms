@@ -51,10 +51,6 @@
   "repositories": [
     {
       "type": "vcs",
-      "url": "https://github.com/weglot/translate-craftcms.git"
-    },
-    {
-      "type": "vcs",
       "url": "https://github.com/weglot/weglot-php.git"
     },
     {
