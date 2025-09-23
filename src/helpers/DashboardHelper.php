@@ -12,7 +12,7 @@ use yii\helpers\Url;
 class DashboardHelper
 {
     private const DASHBOARD_URL_PROD = 'https://dashboard.weglot.com';
-    private const DASHBOARD_URL_STAGING = 'https://dashboard.weglot.dev';
+    private const DASHBOARD_URL_STAGING = '';
 
     private ?string $projectSlug = null;
     private ?string $organizationSlug = null;
