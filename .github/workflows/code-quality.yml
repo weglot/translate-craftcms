@@ -1,15 +1,8 @@
-name: PHP Code Quality
-
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-
 jobs:
   code-analysis:
     name: Code Analysis
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,6 +16,9 @@ jobs:
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Configure Composer auth (GitHub PAT with repo access)
+        run: composer config --global --auth github-oauth.github.com ${{ secrets.GH_TOKEN }}
+
       - name: Get composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -33,11 +29,6 @@ jobs:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
-
-      - name: Set up Composer authentication
-        env:
-          COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{ secrets.GH_TOKEN }}"}}'
-        run: echo "Composer authentication configured."
 
       - name: Set up SSH
         run: |
@@ -55,7 +46,7 @@ jobs:
         run: composer clear-cache
 
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction -vvv
 
       - name: Validate Composer configuration
         run: composer validate --strict
