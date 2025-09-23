@@ -15,7 +15,7 @@ class AdminAsset extends AssetBundle
             CpAsset::class, // jQuery du CP
         ];
 
-        if (defined('YII_DEBUG') && YII_DEBUG) {
+        if (defined('YII_DEBUG')) {
             $this->publishOptions = ['forceCopy' => true];
         }
 
