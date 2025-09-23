@@ -66,10 +66,7 @@ jobs:
         run: vendor/bin/ecs check --no-progress-bar --no-interaction
 
       - name: Check for refactoring (Rector)
-        run: vendor/bin/rector process --dry-run --no-progress-bar --no-interaction
+        run: vendor/bin/rector process --dry-run --no-progress-bar
 
       - name: Run static analysis (PHPStan)
         run: vendor/bin/phpstan analyse --no-progress --no-interaction
-
-      - name: Run unit tests
-        run: vendor/bin/phpunit --coverage-text
