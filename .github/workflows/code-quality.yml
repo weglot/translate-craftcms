@@ -1,3 +1,11 @@
+name: PHP Code Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
 jobs:
   code-analysis:
     name: Code Analysis
