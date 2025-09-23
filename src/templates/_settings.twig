@@ -1,5 +1,3 @@
-{# @var settings \weglot\craftweglot\models\Settings #}
-
 {% do craft.app.plugins.getPlugin('weglot').language.injectLanguagesJsonScript() %}
 {% do craft.app.view.registerAssetBundle('weglot\\craftweglot\\resources\\AdminAsset') %}
 
@@ -8,13 +6,13 @@
 
 {% if not weglotPlugin %}
     <div class="warning">
-        {{ "Le plugin Weglot n’est pas disponible."|t('weglot') }}
+        {{ "The Weglot plugin is not available."|t('weglot') }}
     </div>
 {% endif %}
 
 {{ forms.textField({
     label: 'API Key'|t('weglot'),
-    instructions: 'Saisissez votre clé d\'API Weglot.'|t('weglot'),
+    instructions: 'Enter your Weglot API key.'|t('weglot'),
     id: 'apiKey',
     name: 'apiKey',
     value: settings.apiKey,
@@ -24,6 +22,12 @@
         'autocomplete': 'off'
     }
 }) }}
+
+{% if not settings.apiKey or settings.getErrors('apiKey') %}
+    <div class="buttons" style="margin-top: 10px;">
+        <a href="{{ craft.app.plugins.getPlugin('weglot').dashboardHelper.getRegistrationUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Register on Weglot"|t('weglot') }}</a>
+    </div>
+{% endif %}
 
 <div data-weglot-api-status style="margin-top: 10px;"></div>
 
@@ -50,8 +54,8 @@
     : defaultDestCodes %}
 
 {{ forms.selectField({
-    label: 'Langue d’origine'|t('weglot'),
-    instructions: 'Choisissez la langue d’origine du site.'|t('weglot'),
+    label: 'Original Language'|t('weglot'),
+    instructions: 'Choose the original language of the site.'|t('weglot'),
     id: 'languageFrom',
     name: 'languageFrom',
     options: languageOptions,
@@ -59,10 +63,31 @@
 }) }}
 
 {{ forms.textField({
-    label: 'Langues de destination'|t('weglot'),
+    label: 'Destination Languages'|t('weglot'),
     id: 'languages',
     name: 'languages',
     value: (destValues ?? [])|join('|'),
     placeholder: 'fr|en|es',
     inputAttributes: { class: 'weglot-select-destination' }
 }) }}
+
+{% if settings.apiKey %}
+    {% set dashboardHelper = craft.app.plugins.getPlugin('weglot').dashboardHelper %}
+    {% if dashboardHelper %}
+        {% set editUrl = dashboardHelper.getEditTranslationsUrl() %}
+
+        {# Display buttons only if URLs could be generated #}
+        {% if editUrl and editUrl != '#' %}
+            <div class="weglot-dashboard-container">
+                <h3>{{ "Quick access to Weglot dashboard"|t('weglot') }}</h3>
+                <p>{{ "Manage your project directly on Weglot.com."|t('weglot') }}</p>
+                <div class="buttons">
+                    <a href="{{ editUrl }}" class="btn submit" target="_blank" rel="noopener">{{ "Edit my translations"|t('weglot') }}</a>
+                    <a href="{{ dashboardHelper.getVisualEditorUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Visual Editor"|t('weglot') }}</a>
+                    <a href="{{ dashboardHelper.getManageUrlExclusionsUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Manage URL Exclusions"|t('weglot') }}</a>
+                    <a href="{{ dashboardHelper.getExcludeBlocksUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Exclusion Blocks"|t('weglot') }}</a>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endif %}

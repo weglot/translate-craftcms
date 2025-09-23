@@ -60,6 +60,11 @@ class HrefLangService extends Component
 
     public function injectHrefLangTags(): void
     {
+        $pluginSettings = Plugin::getInstance()->getTypedSettings();
+        if (empty($pluginSettings->apiKey)) {
+            return;
+        }
+
         $html = $this->generateHrefLangTags();
         if (trim($html) !== '') {
             Craft::$app->getView()->registerHtml($html, View::POS_HEAD);

@@ -363,6 +363,11 @@ class OptionService extends Component
 
     public function generateWeglotData(): void
     {
+        $pluginSettings = Plugin::getInstance()->getTypedSettings();
+        if (empty($pluginSettings->apiKey)) {
+            return;
+        }
+
         $cache = Craft::$app->getCache();
         $settings = $cache->get('weglot_cache_cdn');
 

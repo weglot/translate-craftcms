@@ -10,10 +10,10 @@ class HelperApi
     private const ENV_STAGING = 'staging';
 
     private const API_URL_PROD = 'https://api.weglot.com';
-    private const API_URL_STAGING = 'https://api.weglot.dev';
+    private const API_URL_STAGING = '';
 
     private const CDN_URL_PROD = 'https://cdn.weglot.com/';
-    private const CDN_URL_STAGING = 'https://cdn.weglot.dev/';
+    private const CDN_URL_STAGING = '';
 
     private const TPL_SWITCHERS_URL_PROD = self::CDN_URL_PROD . 'switchers/';
     private const TPL_SWITCHERS_URL_STAGING = self::CDN_URL_STAGING . 'switchers/';

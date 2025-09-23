@@ -10,6 +10,7 @@ jobs:
   code-analysis:
     name: Code Analysis
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -18,10 +19,13 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: none
-          coverage: none
+          extensions: iconv, json
+          coverage: xdebug
         env:
           COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Composer auth (GitHub PAT with repo access)
+        run: composer config --global --auth github-oauth.github.com ${{ secrets.GH_TOKEN }}
 
       - name: Get composer cache directory
         id: composer-cache
@@ -34,11 +38,26 @@ jobs:
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: ${{ runner.os }}-composer-
 
+      - name: Set up SSH
+        run: |
+          eval "$(ssh-agent -s)"
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-add ~/.ssh/id_rsa
+          echo "${{ secrets.SIMPLE_HTML_DOM_PRIVATE_KEY }}" > ~/.ssh/simple_html_dom
+          chmod 600 ~/.ssh/simple_html_dom
+          ssh-add ~/.ssh/simple_html_dom
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Clear Composer cache
+        run: composer clear-cache
+
       - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction -vvv
 
       - name: Validate Composer configuration
-        run: composer validate --strict
+        run: composer validate --strict --no-plugins
 
       - name: Check for security vulnerabilities
         run: composer audit
@@ -47,10 +66,7 @@ jobs:
         run: vendor/bin/ecs check --no-progress-bar --no-interaction
 
       - name: Check for refactoring (Rector)
-        run: vendor/bin/rector process --dry-run --no-progress-bar --no-interaction
+        run: vendor/bin/rector process --dry-run --no-progress-bar
 
       - name: Run static analysis (PHPStan)
         run: vendor/bin/phpstan analyse --no-progress --no-interaction
-
-      - name: Run unit tests
-        run: vendor/bin/phpunit

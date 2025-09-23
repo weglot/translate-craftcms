@@ -10,6 +10,7 @@ use craft\events\TemplateEvent;
 use craft\web\Request;
 use craft\web\UrlManager;
 use craft\web\View;
+use weglot\craftweglot\helpers\DashboardHelper;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;
 use weglot\craftweglot\services\FrontEndScriptsService;
@@ -59,6 +60,7 @@ class Plugin extends BasePlugin
                 'replaceUrlService' => ReplaceUrlService::class,
                 'replaceLinkService' => ReplaceLinkService::class,
                 'hrefLangService' => HrefLangService::class,
+                'dashboardHelper' => DashboardHelper::class,
             ],
         ];
     }
@@ -68,7 +70,6 @@ class Plugin extends BasePlugin
      */
     public function init(): void
     {
-        require_once $this->getBasePath() . '/../vendor/autoload.php';
         parent::init();
         Craft::setAlias('@weglot/craftweglot', $this->getBasePath());
         $this->attachEventHandlers();

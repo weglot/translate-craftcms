@@ -37,7 +37,7 @@ class UserApiService extends Component
             $decoded = json_decode($contents, true);
 
             if (json_last_error() !== JSON_ERROR_NONE) {
-	            return ['error' => true, 'message' => 'Invalid JSON response from API.'];
+                return ['error' => true, 'message' => 'Invalid JSON response from API.'];
             }
 
             if (isset($decoded['succeeded']) && $decoded['succeeded'] != 1) {

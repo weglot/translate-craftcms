@@ -15,13 +15,14 @@ class AdminAsset extends AssetBundle
             CpAsset::class, // jQuery du CP
         ];
 
-        if (defined('YII_DEBUG') && YII_DEBUG) {
+        if (defined('YII_DEBUG')) {
             $this->publishOptions = ['forceCopy' => true];
         }
 
         $this->css = [
             'vendor/selectize/selectize.css',
             'vendor/selectize/selectize.default.css',
+            'css/admin.css',
         ];
 
         $this->js = [
