@@ -17,7 +17,7 @@ class FrontEndScriptsService extends Component
 
     public function injectWeglotScripts(): void
     {
-        $settings = \weglot\craftweglot\Plugin::getInstance()->getSettings();
+        $settings = Plugin::getInstance()->getSettings();
 
         if (empty($settings->apiKey)) {
             return;
