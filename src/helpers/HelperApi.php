@@ -10,13 +10,10 @@ class HelperApi
     private const ENV_STAGING = 'staging';
 
     private const API_URL_PROD = 'https://api.weglot.com';
-    private const API_URL_STAGING = '';
 
     private const CDN_URL_PROD = 'https://cdn.weglot.com/';
-    private const CDN_URL_STAGING = '';
 
     private const TPL_SWITCHERS_URL_PROD = self::CDN_URL_PROD . 'switchers/';
-    private const TPL_SWITCHERS_URL_STAGING = self::CDN_URL_STAGING . 'switchers/';
 
 
     public static function getEnvironment(): string
@@ -33,24 +30,22 @@ class HelperApi
         return self::ENV_PROD;
     }
 
-    public static function getApiUrl(): string
-    {
-        return self::getEnvironment() === self::ENV_STAGING
-            ? self::API_URL_STAGING
-            : self::API_URL_PROD;
-    }
+	public static function getApiUrl(): string
+	{
+		return self::getEnvironment() === self::ENV_STAGING
+			? App::env('WEGLOT_API_URL_STAGING')
+			: self::API_URL_PROD;
+	}
 
-    public static function getCdnUrl(): string
-    {
-        return self::getEnvironment() === self::ENV_STAGING
-            ? self::CDN_URL_STAGING
-            : self::CDN_URL_PROD;
-    }
+	public static function getCdnUrl(): string
+	{
+		return self::getEnvironment() === self::ENV_STAGING
+			? App::env('WEGLOT_CDN_URL_STAGING')
+			: self::CDN_URL_PROD;
+	}
 
-    public static function getTplSwitchersUrl(): string
+	public static function getTplSwitchersUrl(): string
     {
-        return self::getEnvironment() === self::ENV_STAGING
-            ? self::TPL_SWITCHERS_URL_STAGING
-            : self::TPL_SWITCHERS_URL_PROD;
+	    return self::getCdnUrl() . 'switchers/';
     }
 }
