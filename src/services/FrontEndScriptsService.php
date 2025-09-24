@@ -18,7 +18,7 @@ class FrontEndScriptsService extends Component
     {
         $settings = Plugin::getInstance()->getTypedSettings();
 
-        if ($settings->apiKey === '' ) {
+        if ($settings->apiKey === '') {
             return;
         }
 

@@ -47,10 +47,7 @@ class ReplaceLinkService extends Component
             $rebuiltUrl .= '#' . $parsedUrl['fragment'];
         }
 
-	    $final = $rebuiltUrl !== '' ? $rebuiltUrl : (string) $replacedUrl;
-
-	    return $final;
-
+        return $rebuiltUrl !== '' ? $rebuiltUrl : (string) $replacedUrl;
     }
     
     private function simpleReplace(string $tag, string $attribute, string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string

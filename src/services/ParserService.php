@@ -60,7 +60,7 @@ class ParserService extends Component
         $customSwitchers = Plugin::getInstance()->getOption()->getOption('switchers');
 
         $config = new ServerConfigProvider();
-		$config->loadFromServer();
+        $config->loadFromServer();
 
         $client = $this->getClient();
         $safeCustomSwitchers = is_array($customSwitchers) ? $customSwitchers : [];

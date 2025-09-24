@@ -86,10 +86,9 @@ class WeglotVirtualRequest extends Request
      *
      * @return string The constructed URL.
      */
-	public function getUrl(): string
-	{
-		$qs = $this->original->getQueryString();
-		return '/' . ltrim($this->forcedPath, '/') . ($qs !== '' ? ('?' . $qs) : '');
-	}
-
+    public function getUrl(): string
+    {
+        $qs = $this->original->getQueryString();
+        return '/' . ltrim($this->forcedPath, '/') . ($qs !== '' ? ('?' . $qs) : '');
+    }
 }
