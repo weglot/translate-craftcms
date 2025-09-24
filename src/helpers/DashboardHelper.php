@@ -21,7 +21,7 @@ class DashboardHelper
     {
         $apiKey = $optionService->getOption('api_key');
 
-        if ($apiKey === '') {
+        if ($apiKey !== '') {
             $this->projectSlug = $optionService->getOption('project_slug');
             $this->organizationSlug = $optionService->getOption('organization_slug');
         }

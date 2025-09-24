@@ -281,7 +281,7 @@ class Plugin extends BasePlugin
         return Craft::$app->getView()->renderTemplate(
             'weglot/_settings',
             [
-                'settings' => $this->getSettings(),
+                'settings' => $settings,
                 'apiSettings' => $apiSettings,
                 'cdnSettings' => $cdnSettings,
             ]
