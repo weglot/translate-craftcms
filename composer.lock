@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6ee859c43255e43cd2e71e56b922cb16",
+    "content-hash": "3de20f38c6be1f5182eb821f257495be",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1654,51 +1654,6 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2023-06-05T12:46:42+00:00"
-        },
-        {
-            "name": "jordanbeattie/craftcms-faker",
-            "version": "1.1.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/jordannbeattie/craftcms-faker.git",
-                "reference": "56750c4b3963e47cbe5f4991c5192fc6179ad46a"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/jordannbeattie/craftcms-faker/zipball/56750c4b3963e47cbe5f4991c5192fc6179ad46a",
-                "reference": "56750c4b3963e47cbe5f4991c5192fc6179ad46a",
-                "shasum": ""
-            },
-            "type": "craft-plugin",
-            "extra": {
-                "name": "Faker",
-                "class": "Jordanbeattie\\CraftcmsFaker\\Faker",
-                "handle": "faker"
-            },
-            "autoload": {
-                "psr-4": {
-                    "Jordanbeattie\\CraftcmsFaker\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "authors": [
-                {
-                    "name": "Jordan Beattie",
-                    "email": "jordan@jordanbeattie.com"
-                }
-            ],
-            "description": "Fake entry fields for CraftCMS",
-            "keywords": [
-                "Craft",
-                "cms",
-                "craft-plugin",
-                "craftcms"
-            ],
-            "support": {
-                "issues": "https://github.com/jordannbeattie/craftcms-faker/issues",
-                "source": "https://github.com/jordannbeattie/craftcms-faker/tree/1.1.2"
-            },
-            "time": "2023-12-18T10:40:42+00:00"
         },
         {
             "name": "lcobucci/clock",
@@ -8373,7 +8328,9 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.2"
+        "php": ">=8.2",
+        "ext-libxml": "*",
+        "ext-simplexml": "*"
     },
     "platform-dev": [],
     "platform-overrides": {

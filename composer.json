@@ -8,9 +8,12 @@
   },
   "require": {
     "php": ">=8.2",
+    "ext-libxml": "*",
+    "ext-simplexml": "*",
     "craftcms/cms": "^5.8.0",
-    "jordanbeattie/craftcms-faker": "^1.1",
-    "weglot/weglot-php": "^1.7.3"
+    "guzzlehttp/guzzle": "^7.10",
+    "weglot/weglot-php": "^1.7.3",
+    "yiisoft/yii2": "^2.0"
   },
   "require-dev": {
     "craftcms/ecs": "dev-main",
