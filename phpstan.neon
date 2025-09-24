@@ -1,5 +1,6 @@
 includes:
     - vendor/craftcms/phpstan/phpstan.neon
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
 
 parameters:
     level: 6

@@ -16,6 +16,8 @@
     "craftcms/ecs": "dev-main",
     "craftcms/phpstan": "dev-main",
     "craftcms/rector": "dev-main",
+    "phpstan/phpstan-strict-rules": "^1.6",
+    "shipmonk/composer-dependency-analyser": "^1.8",
     "symplify/easy-coding-standard": "^10.3"
   },
   "autoload": {

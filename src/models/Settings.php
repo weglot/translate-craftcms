@@ -20,11 +20,9 @@ class Settings extends Model
      */
     public array $languages = [];
 
-
     /**
      * @return array<int, mixed>
      */
-
     public function rules(): array
     {
         return [
@@ -34,11 +32,10 @@ class Settings extends Model
             [ 'languages', 'each', 'rule' => [ 'string' ] ],
         ];
     }
-
     
     public function validateApiKey(string $attribute, mixed $params = null): void
     {
-        $apiKey = trim((string) $this->$attribute);
+        $apiKey = trim($this->apiKey);
         if ($apiKey === '') {
             return;
         }

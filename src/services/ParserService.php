@@ -60,9 +60,7 @@ class ParserService extends Component
         $customSwitchers = Plugin::getInstance()->getOption()->getOption('switchers');
 
         $config = new ServerConfigProvider();
-        if (method_exists($config, 'loadFromServer')) {
-            $config->loadFromServer();
-        }
+		$config->loadFromServer();
 
         $client = $this->getClient();
         $safeCustomSwitchers = is_array($customSwitchers) ? $customSwitchers : [];
@@ -80,11 +78,11 @@ class ParserService extends Component
         $externalEnabled = $this->optionService->getOption('external_enabled');
 
         $removeChecker = [];
-        if (!$externalEnabled) {
+        if (!(bool)$externalEnabled) {
             $removeChecker[] = ExternalLinkHref::class;
         }
 
-        if (!$mediaEnabled) {
+        if (!(bool)$mediaEnabled) {
             $removeChecker[] = ImageDataSource::class;
             $removeChecker[] = ImageSource::class;
         }

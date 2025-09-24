@@ -13,7 +13,6 @@ class DashboardHelper
 {
     private const DASHBOARD_URL_PROD = 'https://dashboard.weglot.com';
     private const DASHBOARD_URL_STAGING = '';
-
     private ?string $projectSlug = null;
     private ?string $organizationSlug = null;
     private bool $canGenerate = false;
@@ -22,7 +21,7 @@ class DashboardHelper
     {
         $apiKey = $optionService->getOption('api_key');
 
-        if (!empty($apiKey)) {
+        if ($apiKey === '') {
             $this->projectSlug = $optionService->getOption('project_slug');
             $this->organizationSlug = $optionService->getOption('organization_slug');
         }

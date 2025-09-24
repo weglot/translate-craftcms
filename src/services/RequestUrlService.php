@@ -12,7 +12,6 @@ use Weglot\Util\Url;
 class RequestUrlService extends Component
 {
     private ?Url $weglotUrl = null;
-
     
     public function getFullUrl(bool $useForwardedHost = false): string
     {
@@ -32,7 +31,6 @@ class RequestUrlService extends Component
         return $this->weglotUrl;
     }
 
-
     public function createUrlObject(string $url): Url
     {
         $originalLanguage = Plugin::getInstance()->getLanguage()->getOriginalLanguage();
@@ -50,12 +48,10 @@ class RequestUrlService extends Component
         );
     }
 
-
     public function getCurrentLanguage(): ?LanguageEntry
     {
         return $this->getWeglotUrl()->getCurrentLanguage();
     }
-
     
     public function handlePathDetectionAndRewrite(string $path): string
     {
@@ -74,12 +70,10 @@ class RequestUrlService extends Component
         return $path;
     }
 
-
     public function isAllowedPrivate(): bool
     {
         return false; // TODO
     }
-
 
     /**
      * @return array<string, mixed>

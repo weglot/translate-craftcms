@@ -30,7 +30,6 @@ class WeglotVirtualRequest extends Request
         return array_values(array_filter(explode('/', trim($this->forcedPath, '/'))));
     }
 
-
     /**
      * Retrieves the path information, either the real path info from the original source
      * or the forced path set within the instance.
@@ -82,15 +81,15 @@ class WeglotVirtualRequest extends Request
         return $segments[$i] ?? null;
     }
 
-
     /**
      * Constructs and retrieves the URL based on the forced path and query string.
      *
      * @return string The constructed URL.
      */
-    public function getUrl(): string
-    {
-        $qs = $this->original->getQueryString();
-        return '/' . ltrim($this->forcedPath, '/') . ($qs ? ('?' . $qs) : '');
-    }
+	public function getUrl(): string
+	{
+		$qs = $this->original->getQueryString();
+		return '/' . ltrim($this->forcedPath, '/') . ($qs !== '' ? ('?' . $qs) : '');
+	}
+
 }

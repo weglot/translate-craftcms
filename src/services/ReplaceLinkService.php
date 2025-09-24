@@ -17,7 +17,6 @@ class ReplaceLinkService extends Component
     ) {
         parent::__construct($config);
     }
-
     
     public function replaceUrl(string $url, LanguageEntry $language, bool $evenExcluded = true): string
     {
@@ -48,11 +47,11 @@ class ReplaceLinkService extends Component
             $rebuiltUrl .= '#' . $parsedUrl['fragment'];
         }
 
-        $final = $rebuiltUrl !== '' ? $rebuiltUrl : (string) $replacedUrl;
+	    $final = $rebuiltUrl !== '' ? $rebuiltUrl : (string) $replacedUrl;
 
-        return $final ?: $url;
+	    return $final;
+
     }
-
     
     private function simpleReplace(string $tag, string $attribute, string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
@@ -63,7 +62,6 @@ class ReplaceLinkService extends Component
 
         return preg_replace($regex, $replacement, $translatedPage);
     }
-
     
     public function replaceA(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null, ?string $sometags2 = null): string
     {
@@ -74,25 +72,21 @@ class ReplaceLinkService extends Component
 
         return preg_replace($regex, $replacement, $translatedPage);
     }
-
     
     public function replaceDatalink(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
         return $this->simpleReplace('', 'data-link', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
     }
-
     
     public function replaceDataurl(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
         return $this->simpleReplace('', 'data-url', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
     }
-
     
     public function replaceDatacart(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
         return $this->simpleReplace('', 'data-cart-url', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
     }
-
     
     public function replaceForm(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
@@ -103,13 +97,11 @@ class ReplaceLinkService extends Component
 
         return preg_replace($regex, $replacement, $translatedPage);
     }
-
     
     public function replaceCanonical(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
         return $this->simpleReplace('link rel="canonical"', 'href', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
     }
-
     
     public function replaceNext(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
@@ -124,13 +116,11 @@ class ReplaceLinkService extends Component
     {
         return $this->simpleReplace('link rel="prev"', 'href', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
     }
-
     
     public function replaceAmp(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {
         return $this->simpleReplace('link rel="amphtml"', 'href', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
     }
-
     
     public function replaceMeta(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
     {

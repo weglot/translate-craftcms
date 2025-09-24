@@ -12,7 +12,6 @@ class ReplaceUrlService extends Component
     {
         $data = HelperReplaceUrl::getReplaceModifyLink();
 
-
         foreach ($data as $key => $value) {
             $dom = $this->modifyLink($value, $dom, $key);
         }
@@ -55,12 +54,14 @@ class ReplaceUrlService extends Component
     {
         preg_match_all($pattern, $translatedPage, $out, PREG_PATTERN_ORDER);
 
-        if (empty($out[0])) {
+        if ($out[0] === []) {
             return $translatedPage;
         }
 
         $countOut0 = count($out[0]);
-        for ($i = 0; $i < $countOut0; $i++) {
+	    $replaceLinkService = Plugin::getInstance()->getReplaceLinkService();
+
+	    for ($i = 0; $i < $countOut0; $i++) {
             $sometags = $out[1][$i] ?? '';
             $quote1 = $out[2][$i] ?? '"';
             $currentUrl = $out[3][$i] ?? '';
@@ -71,11 +72,39 @@ class ReplaceUrlService extends Component
                 continue;
             }
 
-            $functionName = 'replace' . ucfirst($type);
+	        switch ($type) {
+		        case 'a':
+			        $translatedPage = $replaceLinkService->replaceA($translatedPage, $currentUrl, $quote1, $quote2, $sometags, $sometags2);
+			        break;
+		        case 'datalink':
+			        $translatedPage = $replaceLinkService->replaceDatalink($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'dataurl':
+			        $translatedPage = $replaceLinkService->replaceDataurl($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'datacart':
+			        $translatedPage = $replaceLinkService->replaceDatacart($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'form':
+			        $translatedPage = $replaceLinkService->replaceForm($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'canonical':
+			        $translatedPage = $replaceLinkService->replaceCanonical($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'amp':
+			        $translatedPage = $replaceLinkService->replaceAmp($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'meta':
+			        $translatedPage = $replaceLinkService->replaceMeta($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'next':
+			        $translatedPage = $replaceLinkService->replaceNext($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+		        case 'prev':
+			        $translatedPage = $replaceLinkService->replacePrev($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+			        break;
+	        }
 
-            if (method_exists(Plugin::getInstance()->getReplaceLinkService(), $functionName)) {
-                $translatedPage = Plugin::getInstance()->getReplaceLinkService()->{$functionName}($translatedPage, $currentUrl, $quote1, $quote2, $sometags, $sometags2);
-            }
         }
         return $translatedPage;
     }
