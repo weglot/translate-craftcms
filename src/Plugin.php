@@ -2,7 +2,6 @@
 
 namespace weglot\craftweglot;
 
-use Craft;
 use craft\base\Model;
 use craft\base\Plugin as BasePlugin;
 use craft\events\RegisterUrlRulesEvent;
@@ -10,6 +9,7 @@ use craft\events\TemplateEvent;
 use craft\web\Request;
 use craft\web\UrlManager;
 use craft\web\View;
+use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\helpers\DashboardHelper;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;
@@ -26,7 +26,8 @@ use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
 use weglot\craftweglot\web\WeglotVirtualRequest;
 use yii\base\Event;
-use yii\base\InvalidConfigException;
+use yii\web\Cookie;
+use yii\web\NotFoundHttpException;
 
 class Plugin extends BasePlugin
 {
@@ -70,7 +71,7 @@ class Plugin extends BasePlugin
     public function init(): void
     {
         parent::init();
-        Craft::setAlias('@weglot/craftweglot', $this->getBasePath());
+        \Craft::setAlias('@weglot/craftweglot', $this->getBasePath());
         $this->attachEventHandlers();
     }
 
@@ -89,38 +90,38 @@ class Plugin extends BasePlugin
             $normalized = [];
             foreach ($languages as $item) {
                 if (preg_match('/[|,\s]/', $item)) {
-                    $splitResult = preg_split('/[|,\s]+/', $item, -1, PREG_SPLIT_NO_EMPTY);
-                    $parts = $splitResult !== false ? $splitResult : [];
+                    $splitResult = preg_split('/[|,\s]+/', $item, -1, \PREG_SPLIT_NO_EMPTY);
+                    $parts = false !== $splitResult ? $splitResult : [];
                     foreach ($parts as $p) {
                         $normalized[] = strtolower(trim($p));
                     }
-                } elseif ($item !== '') {
+                } elseif ('' !== $item) {
                     $normalized[] = strtolower(trim($item));
                 }
             }
             $languages = array_values(array_unique(array_filter($normalized)));
 
-            if ($apiKey === '') {
+            if ('' === $apiKey) {
                 return;
             }
 
-            $result = Plugin::getInstance()->getOption()->saveWeglotSettings(
+            $result = self::getInstance()->getOption()->saveWeglotSettings(
                 $apiKey,
                 $languageFrom,
                 $languages
             );
 
-            $success = ($result['success'] === true);
+            $success = (true === $result['success']);
 
             if ($success) {
-                Craft::$app->getSession()->setNotice(Craft::t('weglot', 'Paramètres Weglot synchronisés avec succès.'));
+                \Craft::$app->getSession()->setNotice(\Craft::t('weglot', 'Paramètres Weglot synchronisés avec succès.'));
             } else {
                 $code = $result['code'] ?? 'unknown';
-                Craft::$app->getSession()->setError(Craft::t('weglot', 'Échec de la synchronisation Weglot ({code}).', [ 'code' => $code ]));
+                \Craft::$app->getSession()->setError(\Craft::t('weglot', 'Échec de la synchronisation Weglot ({code}).', ['code' => $code]));
             }
         } catch (\Throwable $e) {
-            Craft::error('Synchronisation Weglot après sauvegarde: ' . $e->getMessage(), __METHOD__);
-            Craft::$app->getSession()->setError(Craft::t('weglot', 'Erreur lors de la synchronisation Weglot.'));
+            \Craft::error('Synchronisation Weglot après sauvegarde: '.$e->getMessage(), __METHOD__);
+            \Craft::$app->getSession()->setError(\Craft::t('weglot', 'Erreur lors de la synchronisation Weglot.'));
         }
     }
 
@@ -129,13 +130,13 @@ class Plugin extends BasePlugin
      */
     private function attachEventHandlers(): void
     {
-        $request = Craft::$app->getRequest();
+        $request = \Craft::$app->getRequest();
 
         Event::on(
             View::class,
             View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE,
-            function(TemplateEvent $event) {
-                $app = Craft::$app;
+            function (TemplateEvent $event) {
+                $app = \Craft::$app;
                 $req = $app->getRequest();
 
                 if (!$req->getIsSiteRequest() || $req->getIsAjax()) {
@@ -149,18 +150,18 @@ class Plugin extends BasePlugin
                 $realPath = $req->getPathInfo(true);
                 $parts = array_values(array_filter(explode('/', trim($realPath, '/'))));
                 $first = $parts[0] ?? null;
-                if ($first === null) {
+                if (null === $first) {
                     return;
                 }
 
                 $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                 $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
 
-                if ($langs === [] || !in_array($first, $langs, true)) {
+                if ([] === $langs || !\in_array($first, $langs, true)) {
                     return;
                 }
 
-                $internalPath = implode('/', array_slice($parts, 1));
+                $internalPath = implode('/', \array_slice($parts, 1));
 
                 $this->weglotOriginalRequest = $req;
                 $virtual = new WeglotVirtualRequest($internalPath, $req);
@@ -171,9 +172,9 @@ class Plugin extends BasePlugin
         Event::on(
             View::class,
             View::EVENT_AFTER_RENDER_PAGE_TEMPLATE,
-            function(TemplateEvent $event) {
-                if ($this->weglotOriginalRequest instanceof \craft\web\Request) {
-                    Craft::$app->set('request', $this->weglotOriginalRequest);
+            function (TemplateEvent $event) {
+                if ($this->weglotOriginalRequest instanceof Request) {
+                    \Craft::$app->set('request', $this->weglotOriginalRequest);
                     $this->weglotOriginalRequest = null;
                 }
             }
@@ -183,15 +184,15 @@ class Plugin extends BasePlugin
             Event::on(
                 UrlManager::class,
                 UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-                function(RegisterUrlRulesEvent $e) {
+                function (RegisterUrlRulesEvent $e) {
                     $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                     $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
 
-                    if ($langs === []) {
+                    if ([] === $langs) {
                         return;
                     }
 
-                    $group = implode('|', array_map(fn($l) => preg_quote($l, '#'), $langs));
+                    $group = implode('|', array_map(fn ($l) => preg_quote($l, '#'), $langs));
                     $e->rules["<lang:($group)>/actions/<action:.+>"] = 'actions/<action>';
                     $e->rules["<lang:($group)>/index.php/actions/<action:.+>"] = 'actions/<action>';
 
@@ -201,14 +202,14 @@ class Plugin extends BasePlugin
             );
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest() || Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if (\Craft::$app->getRequest()->getIsCpRequest() || \Craft::$app->getRequest()->getIsConsoleRequest()) {
             return;
         }
 
         Event::on(
             View::class,
             View::EVENT_BEGIN_PAGE, // ou View::EVENT_HEAD si nécessaire
-            function() {
+            function () {
                 Plugin::getInstance()->getHrefLangService()->injectHrefLangTags();
                 Plugin::getInstance()->getOption()->generateWeglotData();
                 $this->getFrontEndScripts()->injectSwitcherAssets();
@@ -225,30 +226,30 @@ class Plugin extends BasePlugin
     /**
      * Initializes Weglot functionality during a template event.
      *
-     * @param TemplateEvent $event The event object containing the output to be processed.
+     * @param TemplateEvent $event the event object containing the output to be processed
      */
     public function weglotInit(TemplateEvent $event): void
     {
         $languageFrom = $this->getOption()->getOption('language_from');
-        if (!is_string($languageFrom) || $languageFrom === '' || !isset($event->output)) {
+        if (!\is_string($languageFrom) || '' === $languageFrom || !isset($event->output)) {
             return;
         }
 
-        $originalLanguage = Plugin::getInstance()->getLanguage()->getOriginalLanguage();
-        $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
+        $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
+        $currentLanguage = self::getInstance()->getRequestUrlService()->getCurrentLanguage();
 
-        if ($originalLanguage === null || $currentLanguage === null) {
+        if (null === $originalLanguage || null === $currentLanguage) {
             return;
         }
 
-        if (Plugin::getInstance()->getRequestUrlService()->isAllowedPrivate() && !isset($_COOKIE['weglot_allow_private'])) {
-            $cookie = new \yii\web\Cookie([
+        if (self::getInstance()->getRequestUrlService()->isAllowedPrivate() && !isset($_COOKIE['weglot_allow_private'])) {
+            $cookie = new Cookie([
                 'name' => 'weglot_allow_private',
                 'value' => 'true',
                 'expire' => time() + 86400 * 2,
                 'path' => '/',
             ]);
-            Craft::$app->getResponse()->getCookies()->add($cookie);
+            \Craft::$app->getResponse()->getCookies()->add($cookie);
         }
         $this->checkRedirect();
         $event->output = $this->getTranslateService()->processResponse($event->output);
@@ -261,7 +262,7 @@ class Plugin extends BasePlugin
 
     protected function createSettingsModel(): ?Model
     {
-        return Craft::createObject(Settings::class);
+        return \Craft::createObject(Settings::class);
     }
 
     /**
@@ -273,12 +274,12 @@ class Plugin extends BasePlugin
         $apiSettings = null;
         $cdnSettings = null;
 
-        if ($settings->apiKey !== '' && $settings->apiKey !== '0') {
-            $apiSettings = Plugin::getInstance()->getOption()->getOptionsFromApiWithApiKey($settings->apiKey);
-            $cdnSettings = Plugin::getInstance()->getOption()->getOptionsFromCdnWithApiKey($settings->apiKey);
+        if ('' !== $settings->apiKey && '0' !== $settings->apiKey) {
+            $apiSettings = self::getInstance()->getOption()->getOptionsFromApiWithApiKey($settings->apiKey);
+            $cdnSettings = self::getInstance()->getOption()->getOptionsFromCdnWithApiKey($settings->apiKey);
         }
 
-        return Craft::$app->getView()->renderTemplate(
+        return \Craft::$app->getView()->renderTemplate(
             'weglot/_settings',
             [
                 'settings' => $settings,
@@ -289,147 +290,105 @@ class Plugin extends BasePlugin
     }
 
     /**
-     *
-     * @return Settings The typed settings instance.
+     * @return Settings the typed settings instance
      */
     public function getTypedSettings(): Settings
     {
         $settings = $this->getSettings();
-        assert($settings instanceof Settings);
+        \assert($settings instanceof Settings);
 
         return $settings;
     }
 
     /**
+     * @param LanguageEntry $currentLanguage the language entry representing the current language being processed
      *
-     * @param \Weglot\Client\Api\LanguageEntry $currentLanguage The language entry representing the current language being processed.
-     *
-     * @throws \yii\web\NotFoundHttpException If the exclusion behavior is set to 'NOT_FOUND'.
+     * @throws NotFoundHttpException if the exclusion behavior is set to 'NOT_FOUND'
      */
-    public function handleExcludedUrlRedirects(\Weglot\Client\Api\LanguageEntry $currentLanguage): void
+    public function handleExcludedUrlRedirects(LanguageEntry $currentLanguage): void
     {
-        $originalLanguage = Plugin::getInstance()->getLanguage()->getOriginalLanguage();
+        $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
 
-        if ($originalLanguage === null || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()) {
+        if (null === $originalLanguage || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()) {
             return;
         }
 
-        $weglotUrl = Plugin::getInstance()->getRequestUrlService()->getWeglotUrl();
+        $weglotUrl = self::getInstance()->getRequestUrlService()->getWeglotUrl();
         $redirectBehavior = $weglotUrl->getExcludeOption($currentLanguage, 'exclusion_behavior');
 
-        if ($redirectBehavior === 'NOT_FOUND') {
-            throw new \yii\web\NotFoundHttpException();
+        if ('NOT_FOUND' === $redirectBehavior) {
+            throw new NotFoundHttpException();
         }
 
-        if (is_string($redirectBehavior) && $redirectBehavior !== '') {
+        if (\is_string($redirectBehavior) && '' !== $redirectBehavior) {
             $isUrlExcluded = !$weglotUrl->getForLanguage($currentLanguage, false);
             if ($isUrlExcluded) {
                 $originalLanguageUrl = $weglotUrl->getForLanguage($originalLanguage);
-                if (is_string($originalLanguageUrl) && $originalLanguageUrl !== '') {
-                    Craft::$app->getResponse()->redirect($originalLanguageUrl, 301)->send();
-                    exit();
+                if (\is_string($originalLanguageUrl) && '' !== $originalLanguageUrl) {
+                    \Craft::$app->getResponse()->redirect($originalLanguageUrl, 301)->send();
+                    exit;
                 }
             }
         }
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getLanguage(): LanguageService
     {
-        /** @var LanguageService */
         return $this->get('language');
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getRequestUrlService(): RequestUrlService
     {
-        /** @var RequestUrlService */
         return $this->get('requestUrlService');
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getTranslateService(): TranslateService
     {
-        /** @var TranslateService */
         return $this->get('translateService');
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getOption(): OptionService
     {
-        /** @var OptionService */
         return $this->get('option');
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getReplaceUrlService(): ReplaceUrlService
     {
-        /** @var ReplaceUrlService */
         return $this->get('replaceUrlService');
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getReplaceLinkService(): ReplaceLinkService
     {
-        /** @var ReplaceLinkService */
         return $this->get('replaceLinkService');
     }
 
-    /**
-     *
-     * @throws InvalidConfigException
-     */
     public function getParserService(): ParserService
     {
-        /** @var ParserService */
         return $this->get('parserService');
     }
 
     public function getDomCheckersService(): DomCheckersService
     {
-        /** @var DomCheckersService */
         return $this->get('domCheckersService');
     }
 
     public function getRegexCheckersService(): RegexCheckersService
     {
-        /** @var RegexCheckersService */
         return $this->get('regexCheckersService');
     }
 
     public function getFrontEndScripts(): FrontEndScriptsService
     {
-        /** @var FrontEndScriptsService */
         return $this->get('frontEndScripts');
     }
 
     public function getUserApi(): UserApiService
     {
-        /** @var UserApiService */
         return $this->get('userApi');
     }
 
     public function getHrefLangService(): HrefLangService
     {
-        /** @var HrefLangService */
         return $this->get('hrefLangService');
     }
 }

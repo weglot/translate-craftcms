@@ -3,7 +3,6 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Exception;
 use Weglot\Client\Client;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
@@ -22,15 +21,13 @@ class ParserService extends Component
         private readonly OptionService $optionService,
         private readonly DomCheckersService $domCheckersService,
         private readonly RegexCheckersService $regexCheckersService,
-
         array $config = [],
     ) {
         parent::__construct($config);
     }
 
     /**
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getClient(): Client
     {
@@ -51,8 +48,7 @@ class ParserService extends Component
     }
 
     /**
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getParser(): Parser
     {
@@ -63,7 +59,7 @@ class ParserService extends Component
         $config->loadFromServer();
 
         $client = $this->getClient();
-        $safeCustomSwitchers = is_array($customSwitchers) ? $customSwitchers : [];
+        $safeCustomSwitchers = \is_array($customSwitchers) ? $customSwitchers : [];
 
         $parser = new Parser($client, $config, $excludeBlocks, $safeCustomSwitchers, [], []);
 
@@ -78,16 +74,16 @@ class ParserService extends Component
         $externalEnabled = $this->optionService->getOption('external_enabled');
 
         $removeChecker = [];
-        if (!(bool)$externalEnabled) {
+        if (!(bool) $externalEnabled) {
             $removeChecker[] = ExternalLinkHref::class;
         }
 
-        if (!(bool)$mediaEnabled) {
+        if (!(bool) $mediaEnabled) {
             $removeChecker[] = ImageDataSource::class;
             $removeChecker[] = ImageSource::class;
         }
 
-        if ($removeChecker !== []) {
+        if ([] !== $removeChecker) {
             $parser->getDomCheckerProvider()->removeCheckers($removeChecker);
         }
 

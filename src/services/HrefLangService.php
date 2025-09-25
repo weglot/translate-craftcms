@@ -2,7 +2,6 @@
 
 namespace weglot\craftweglot\services;
 
-use Craft;
 use craft\base\Component;
 use craft\web\View;
 use Weglot\Client\Api\LanguageEntry;
@@ -18,7 +17,7 @@ class HrefLangService extends Component
             $requestUrlService = Plugin::getInstance()->getRequestUrlService();
 
             $eligible = $requestUrlService->isEligibleUrl($requestUrlService->getFullUrl());
-            if ($eligible === []) {
+            if ([] === $eligible) {
                 return $render;
             }
 
@@ -29,12 +28,12 @@ class HrefLangService extends Component
                     continue;
                 }
 
-                $rawHref = is_string($url['url']) ? $url['url'] : '';
-                if ($rawHref === '') {
+                $rawHref = \is_string($url['url']) ? $url['url'] : '';
+                if ('' === $rawHref) {
                     continue;
                 }
                 $href = explode('?', $rawHref, 2)[0];
-                if ($href === '') {
+                if ('' === $href) {
                     continue;
                 }
 
@@ -45,14 +44,14 @@ class HrefLangService extends Component
 
                 $hreflang = $language->getExternalCode();
 
-                $render .= '<link rel="alternate" href="' .
-                           htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
-                           '" hreflang="' .
-                           htmlspecialchars($hreflang, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
+                $render .= '<link rel="alternate" href="'.
+                           htmlspecialchars($href, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8').
+                           '" hreflang="'.
+                           htmlspecialchars($hreflang, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8').
                            "\"/>\n";
             }
         } catch (\Throwable $e) {
-            Craft::debug('HrefLangService: ' . $e->getMessage(), __METHOD__);
+            \Craft::debug('HrefLangService: '.$e->getMessage(), __METHOD__);
         }
 
         return $render;
@@ -61,13 +60,13 @@ class HrefLangService extends Component
     public function injectHrefLangTags(): void
     {
         $pluginSettings = Plugin::getInstance()->getTypedSettings();
-        if ($pluginSettings->apiKey === '') {
+        if ('' === $pluginSettings->apiKey) {
             return;
         }
 
         $html = $this->generateHrefLangTags();
-        if (trim($html) !== '') {
-            Craft::$app->getView()->registerHtml($html, View::POS_HEAD);
+        if ('' !== trim($html)) {
+            \Craft::$app->getView()->registerHtml($html, View::POS_HEAD);
         }
     }
 }

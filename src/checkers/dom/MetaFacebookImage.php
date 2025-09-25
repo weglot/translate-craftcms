@@ -19,7 +19,7 @@ class MetaFacebookImage extends AbstractDomChecker
      */
     public const PROPERTY = 'content';
     /**
-     * @var integer
+     * @var int
      */
     public const WORD_TYPE = WordType::IMG_SRC;
 }

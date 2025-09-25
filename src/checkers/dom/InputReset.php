@@ -19,7 +19,7 @@ class InputReset extends AbstractDomChecker
      */
     public const PROPERTY = 'value';
     /**
-     * @var integer
+     * @var int
      */
     public const WORD_TYPE = WordType::TEXT;
 }

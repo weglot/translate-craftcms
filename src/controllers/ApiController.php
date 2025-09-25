@@ -2,15 +2,15 @@
 
 namespace weglot\craftweglot\controllers;
 
-use Craft;
 use craft\web\Controller;
 use weglot\craftweglot\Plugin;
+use yii\base\Action;
 use yii\web\Response;
 
 class ApiController extends Controller
 {
     /**
-     * @param \yii\base\Action $action
+     * @param Action $action
      */
     public function beforeAction($action): bool
     {
@@ -27,7 +27,7 @@ class ApiController extends Controller
 
     public function actionValidateApiKey(): Response
     {
-        $apiKey = Craft::$app->getRequest()->getRequiredBodyParam('apiKey');
+        $apiKey = \Craft::$app->getRequest()->getRequiredBodyParam('apiKey');
         $response = Plugin::getInstance()->getUserApi()->getUserInfo($apiKey);
 
         return $this->asJson($response);

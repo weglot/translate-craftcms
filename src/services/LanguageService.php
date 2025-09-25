@@ -2,11 +2,9 @@
 
 namespace weglot\craftweglot\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\Json;
 use craft\web\View;
-use Exception;
 use Weglot\Client\Api\LanguageCollection;
 use Weglot\Client\Api\LanguageEntry;
 use Weglot\Client\Endpoint\LanguagesList;
@@ -20,7 +18,7 @@ use weglot\craftweglot\Plugin;
 class LanguageService extends Component
 {
     /**
-     * @var LanguageCollection|null Cache pour la collection complète de langues (API + personnalisées).
+     * @var LanguageCollection|null cache pour la collection complète de langues (API + personnalisées)
      */
     private ?LanguageCollection $allLanguages = null;
 
@@ -34,7 +32,7 @@ class LanguageService extends Component
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     private function fetchLanguagesFromApi(): LanguageCollection
     {
@@ -43,7 +41,7 @@ class LanguageService extends Component
         $languagesResult = $languagesApi->handle();
 
         $languagesArray = $languagesResult->jsonSerialize();
-        usort($languagesArray, [ $this, 'compareLanguage' ]);
+        usort($languagesArray, [$this, 'compareLanguage']);
 
         $languageCollection = new LanguageCollection();
         foreach ($languagesArray as $language) {
@@ -61,7 +59,7 @@ class LanguageService extends Component
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getAllLanguages(): LanguageCollection
     {
@@ -73,9 +71,9 @@ class LanguageService extends Component
 
         $originalLanguageCode = Plugin::getInstance()->getOption()->getOption('language_from');
         $originalLanguageNameCustom = $this->getOriginalLanguageNameCustom();
-        $originalLanguage = is_string($originalLanguageCode) ? $this->allLanguages->getCode($originalLanguageCode) : null;
+        $originalLanguage = \is_string($originalLanguageCode) ? $this->allLanguages->getCode($originalLanguageCode) : null;
 
-        if ($originalLanguage !== null && ($originalLanguageNameCustom !== null && $originalLanguageNameCustom !== '' && $originalLanguageNameCustom !== '0')) {
+        if (null !== $originalLanguage && (null !== $originalLanguageNameCustom && '' !== $originalLanguageNameCustom && '0' !== $originalLanguageNameCustom)) {
             $this->allLanguages->addOne(new LanguageEntry(
                 $originalLanguage->getInternalCode(),
                 $originalLanguage->getExternalCode(),
@@ -91,10 +89,10 @@ class LanguageService extends Component
                 continue;
             }
             $languageData = $this->allLanguages->getCode($d['language_to']);
-            $externalCode = $d['custom_code'] ?? ($languageData !== null ? $languageData->getExternalCode() : $d['language_to']);
-            $customName = $d['custom_name'] ?? ($languageData !== null ? $languageData->getEnglishName() : $d['language_to']);
+            $externalCode = $d['custom_code'] ?? (null !== $languageData ? $languageData->getExternalCode() : $d['language_to']);
+            $customName = $d['custom_name'] ?? (null !== $languageData ? $languageData->getEnglishName() : $d['language_to']);
             $customLocalName = $d['custom_local_name'] ?? $customName;
-            $isRtl = ($languageData !== null) && $languageData->isRtl();
+            $isRtl = (null !== $languageData) && $languageData->isRtl();
 
             $this->allLanguages->addOne(new LanguageEntry(
                 $d['language_to'],
@@ -109,7 +107,7 @@ class LanguageService extends Component
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getLanguageFromInternal(string $internalCode): ?LanguageEntry
     {
@@ -117,7 +115,7 @@ class LanguageService extends Component
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function getLanguageFromExternal(string $externalCode): ?LanguageEntry
     {
@@ -131,26 +129,26 @@ class LanguageService extends Component
     }
 
     /**
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getOriginalLanguage(): ?LanguageEntry
     {
         $originalLanguageCode = Plugin::getInstance()->getOption()->getOption('language_from') ?? 'en';
 
-        return is_string($originalLanguageCode) ? $this->getLanguageFromInternal($originalLanguageCode) : null;
+        return \is_string($originalLanguageCode) ? $this->getLanguageFromInternal($originalLanguageCode) : null;
     }
 
     public function getOriginalLanguageNameCustom(): ?string
     {
         $name = Plugin::getInstance()->getOption()->getOption('language_from_custom_name');
-        return is_string($name) ? $name : null;
+
+        return \is_string($name) ? $name : null;
     }
 
     /**
-     *
      * @return LanguageEntry[]
-     * @throws Exception
+     *
+     * @throws \Exception
      */
     public function getDestinationLanguages(): array
     {
@@ -158,10 +156,10 @@ class LanguageService extends Component
         $optionService = Plugin::getInstance()->getOption();
 
         $destOption = $optionService->getOption('destination_language') ?? null;
-        if (is_array($destOption) && $destOption !== []) {
+        if (\is_array($destOption) && [] !== $destOption) {
             foreach ($destOption as $langConfig) {
                 $code = (string) ($langConfig['language_to'] ?? '');
-                if ($code === '') {
+                if ('' === $code) {
                     continue;
                 }
                 $entry = $this->getLanguageFromInternal($code);
@@ -176,19 +174,19 @@ class LanguageService extends Component
         $legacy = $optionService->getOption('languages') ?? [];
         $codes = [];
 
-        if (is_string($legacy)) {
-            $parts = preg_split('/[|,\s]+/', $legacy, -1, PREG_SPLIT_NO_EMPTY);
-            $codes = is_array($parts) ? $parts : [];
-        } elseif (is_array($legacy)) {
+        if (\is_string($legacy)) {
+            $parts = preg_split('/[|,\s]+/', $legacy, -1, \PREG_SPLIT_NO_EMPTY);
+            $codes = \is_array($parts) ? $parts : [];
+        } elseif (\is_array($legacy)) {
             foreach ($legacy as $item) {
-                if (is_string($item)) {
-                    $parts = preg_split('/[|,\s]+/', $item, -1, PREG_SPLIT_NO_EMPTY);
-                    if (is_array($parts)) {
+                if (\is_string($item)) {
+                    $parts = preg_split('/[|,\s]+/', $item, -1, \PREG_SPLIT_NO_EMPTY);
+                    if (\is_array($parts)) {
                         $codes = array_merge($codes, $parts);
                     }
-                } elseif (is_array($item)) {
+                } elseif (\is_array($item)) {
                     $code = (string) ($item['language_to'] ?? $item['code'] ?? '');
-                    if ($code !== '') {
+                    if ('' !== $code) {
                         $codes[] = $code;
                     }
                 }
@@ -196,7 +194,7 @@ class LanguageService extends Component
         }
 
         $codes = array_values(array_unique(array_map(
-            static fn($c) => strtolower(str_replace('_', '-', $c)),
+            static fn ($c) => strtolower(str_replace('_', '-', $c)),
             $codes
         )));
 
@@ -221,18 +219,18 @@ class LanguageService extends Component
 
         foreach ($entries as $entry) {
             $code = $entry->getExternalCode();
-            if ($code === '') {
+            if ('' === $code) {
                 $code = $entry->getInternalCode();
             }
 
-            if ($code === '') {
+            if ('' === $code) {
                 continue;
             }
 
             $code = str_replace('_', '-', $code);
             if (preg_match('/^[a-z]{2}-[a-zA-Z]{2}$/', $code)) {
-                [ $a, $b ] = explode('-', $code, 2);
-                $code = strtolower($a) . '-' . strtoupper($b);
+                [$a, $b] = explode('-', $code, 2);
+                $code = strtolower($a).'-'.strtoupper($b);
             } else {
                 $code = strtolower($code);
             }
@@ -242,9 +240,9 @@ class LanguageService extends Component
 
         if ($excludeSource) {
             $source = Plugin::getInstance()->getOption()->getOption('language_from');
-            if (is_string($source) && $source !== '') {
+            if (\is_string($source) && '' !== $source) {
                 $source = str_replace('_', '-', strtolower($source));
-                $codes = array_filter($codes, static fn(string $l): bool => strtolower($l) !== $source);
+                $codes = array_filter($codes, static fn (string $l): bool => strtolower($l) !== $source);
             }
         }
 
@@ -271,7 +269,7 @@ class LanguageService extends Component
         $limit = 0;
         try {
             $val = Plugin::getInstance()->getOption()->getLanguagesLimit();
-            if (is_int($val) && $val > 0) {
+            if (\is_int($val) && $val > 0) {
                 $limit = $val;
             }
         } catch (\Throwable) {
@@ -283,7 +281,7 @@ class LanguageService extends Component
         ];
 
         $json = Json::htmlEncode($payload);
-        $html = '<script type="application/json" id="weglot-list-languages">' . $json . '</script>';
-        Craft::$app->getView()->registerHtml($html, View::POS_HEAD);
+        $html = '<script type="application/json" id="weglot-list-languages">'.$json.'</script>';
+        \Craft::$app->getView()->registerHtml($html, View::POS_HEAD);
     }
 }
