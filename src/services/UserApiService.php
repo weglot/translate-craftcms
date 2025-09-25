@@ -40,7 +40,7 @@ class UserApiService extends Component
                 return ['error' => true, 'message' => 'Invalid JSON response from API.'];
             }
 
-            if (isset($decoded['succeeded']) && $decoded['succeeded'] != 1) {
+            if (isset($decoded['succeeded']) && $decoded['succeeded'] !== 1) {
                 $errorMessage = $decoded['error'] ?? 'Invalid API Key.';
                 return ['error' => true, 'message' => $errorMessage];
             }

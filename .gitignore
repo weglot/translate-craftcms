@@ -1,7 +1,31 @@
+###> common ###
 *.DS_Store
 *.idea/*
 *.log
 *Thumbs.db
+###< common ###
+
 .env
-/node_modules
+
+###> composer ###
+auth.json
 /vendor
+###< composer ###
+
+###> npm ###
+/node_modules
+###< npm ###
+
+###> friendsofphp/php-cs-fixer ###
+/.php-cs-fixer.php
+/.php-cs-fixer.cache
+###< friendsofphp/php-cs-fixer ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+###< phpunit/phpunit ###

@@ -16,10 +16,12 @@
     "yiisoft/yii2": "^2.0"
   },
   "require-dev": {
-    "craftcms/ecs": "dev-main",
-    "craftcms/phpstan": "dev-main",
-    "craftcms/rector": "dev-main",
-    "phpstan/phpstan-strict-rules": "^1.6",
+    "friendsofphp/php-cs-fixer": "^3.88",
+    "phpstan/phpstan": "^2.1",
+    "phpstan/phpstan-phpunit": "^2.0",
+    "phpstan/phpstan-strict-rules": "^2.0",
+    "phpunit/phpunit": "^11.5",
+    "rector/rector": "^2.1",
     "shipmonk/composer-dependency-analyser": "^1.8",
     "symplify/easy-coding-standard": "^10.3"
   },
@@ -39,9 +41,11 @@
     }
   },
   "scripts": {
-    "check-cs": "ecs check --ansi",
-    "fix-cs": "ecs check --ansi --fix",
-    "phpstan": "phpstan --memory-limit=1G"
+    "check-cs": "php-cs-fixer fix --dry-run --diff",
+    "fix-cs": "php-cs-fixer fix",
+    "phpstan": "phpstan --memory-limit=1G",
+    "check-dependency": "composer-dependency-analyser",
+    "test": "phpunit tests"
   },
   "config": {
     "sort-packages": true,
