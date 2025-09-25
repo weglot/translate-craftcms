@@ -9,6 +9,7 @@ parameters:
         - vendor/yiisoft/yii2/Yii.php
     paths:
         - src
+        - tests
     stubFiles:
         - phpstan/stubs/yii/BaseYii.stub
         - phpstan/stubs/craft/console/Application.stub

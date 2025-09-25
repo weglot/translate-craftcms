@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+namespace weglot\craftweglot\tests\unit\services;
+
 use PHPUnit\Framework\TestCase;
+use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\RequestUrlService;
-use Weglot\Util\LanguageEntry;
 
 /**
  * Test ciblé sur la logique regex de replaceA (sans dépendre d’un contexte Craft complet).
@@ -20,9 +22,9 @@ final class ReplaceLinkServiceReplaceATest extends TestCase
         $rus = $this->createMock(RequestUrlService::class);
 
         return new class($rus) extends ReplaceLinkService {
-            private LanguageEntry $testLang;
+            private readonly LanguageEntry $testLang;
 
-            public function __construct($rus)
+            public function __construct(RequestUrlService $rus)
             {
                 parent::__construct($rus);
                 $this->testLang = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
@@ -42,7 +44,9 @@ final class ReplaceLinkServiceReplaceATest extends TestCase
                 $newUrl = $this->replaceUrl($currentUrl, $this->testLang);
                 $sometags ??= '';
                 $sometags2 ??= '';
-                $quote2 = $quote2 ?: $quote1;
+                if ('' === $quote2) {
+                    $quote2 = $quote1;
+                }
 
                 $regex = '/<a'.preg_quote($sometags, '/').'href='.preg_quote($quote1.$currentUrl.$quote2, '/').preg_quote($sometags2, '/').'>/';
                 $replacement = '<a'.$sometags.'href='.$quote1.$newUrl.$quote2.$sometags2.'>';
@@ -63,11 +67,12 @@ final class ReplaceLinkServiceReplaceATest extends TestCase
         $sometags = ' class="x" data-foo="bar" ';
         $sometags2 = ' rel="nofollow"';
 
+        // @phpstan-ignore-next-line TODO rewrite the test
         $out = $svc->callReplaceA($html, $currentUrl, $quote1, $quote2, $sometags, $sometags2);
 
-        $this->assertStringContainsString('href="https://example.test/fr/blog/slug"', $out);
-        $this->assertStringContainsString('class="x"', $out);
-        $this->assertStringContainsString('rel="nofollow"', $out);
+        self::assertStringContainsString('href="https://example.test/fr/blog/slug"', $out);
+        self::assertStringContainsString('class="x"', $out);
+        self::assertStringContainsString('rel="nofollow"', $out);
     }
 
     public function testReplaceAWithSingleQuotes(): void
@@ -81,10 +86,11 @@ final class ReplaceLinkServiceReplaceATest extends TestCase
         $sometags = " data-x='1' ";
         $sometags2 = " id='y'";
 
+        // @phpstan-ignore-next-line TODO rewrite the test
         $out = $svc->callReplaceA($html, $currentUrl, $quote1, $quote2, $sometags, $sometags2);
 
-        $this->assertStringContainsString("href='https://example.test/fr/page'", $out);
-        $this->assertStringContainsString("data-x='1'", $out);
-        $this->assertStringContainsString("id='y'", $out);
+        self::assertStringContainsString("href='https://example.test/fr/page'", $out);
+        self::assertStringContainsString("data-x='1'", $out);
+        self::assertStringContainsString("id='y'", $out);
     }
 }

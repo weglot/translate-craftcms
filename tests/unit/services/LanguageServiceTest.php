@@ -1,14 +1,15 @@
 <?php
 
-// php
 declare(strict_types=1);
+
+namespace weglot\craftweglot\tests\unit\services;
 
 use PHPUnit\Framework\TestCase;
 use Weglot\Client\Api\LanguageCollection;
 use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\services\LanguageService;
 
-final class CodesFromDestinationEntriesTest extends TestCase
+final class LanguageServiceTest extends TestCase
 {
     public function testNormalizeCodes(): void
     {
@@ -28,6 +29,6 @@ final class CodesFromDestinationEntriesTest extends TestCase
         $codes = $svc->codesFromDestinationEntries($entries, false);
         sort($codes);
         // Attendu: fr-FR et es (normalisation)
-        $this->assertSame(['es', 'fr-FR'], $codes);
+        self::assertSame(['es', 'fr-FR'], $codes);
     }
 }

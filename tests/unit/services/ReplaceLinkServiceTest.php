@@ -2,10 +2,13 @@
 
 declare(strict_types=1);
 
+namespace weglot\craftweglot\tests\unit\services;
+
 use PHPUnit\Framework\TestCase;
+use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\RequestUrlService;
-use Weglot\Util\LanguageEntry;
+use Weglot\Util\Url;
 
 final class ReplaceLinkServiceTest extends TestCase
 {
@@ -13,22 +16,16 @@ final class ReplaceLinkServiceTest extends TestCase
     {
         // Stub minimal qui renvoie un "objet URL" avec getForLanguage()
         return new class($targetUrlOrEmpty) extends RequestUrlService {
-            public function __construct(private string $target)
+            public function __construct(private readonly string $target)
             {
+                parent::__construct();
             }
 
-            public function createUrlObject(string $url)
+            public function createUrlObject(string $url): Url
             {
-                return new class($this->target) {
-                    public function __construct(private string $target)
-                    {
-                    }
+                $entry = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
 
-                    public function getForLanguage($language, bool $evenExcluded)
-                    {
-                        return $this->target; // peut être '' pour simuler “aucun remplacement”
-                    }
-                };
+                return new Url($this->target, $entry, [], null, [], []);
             }
         };
     }
@@ -46,7 +43,7 @@ final class ReplaceLinkServiceTest extends TestCase
 
         $out = $svc->replaceUrl($original, $lang, true);
 
-        $this->assertSame(
+        self::assertSame(
             'https://weglot-craft-project.ddev.site/fr/blog/article-demo-28-education-2/?x=1#y',
             $out,
             'Devrait ajouter un slash final avant la query et conserver query + fragment.'
@@ -62,6 +59,6 @@ final class ReplaceLinkServiceTest extends TestCase
         $lang = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
 
         $out = $svc->replaceUrl($original, $lang, true);
-        $this->assertSame($original, $out);
+        self::assertSame($original, $out);
     }
 }

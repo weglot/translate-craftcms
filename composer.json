@@ -22,12 +22,16 @@
     "phpstan/phpstan-strict-rules": "^2.0",
     "phpunit/phpunit": "^11.5",
     "rector/rector": "^2.1",
-    "shipmonk/composer-dependency-analyser": "^1.8",
-    "symplify/easy-coding-standard": "^10.3"
+    "shipmonk/composer-dependency-analyser": "^1.8"
   },
   "autoload": {
     "psr-4": {
       "weglot\\craftweglot\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "weglot\\craftweglot\\tests\\": "tests/"
     }
   },
   "extra": {
@@ -62,14 +66,6 @@
     {
       "type": "vcs",
       "url": "https://github.com/weglot/weglot-php.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:weglot/simple_html_dom.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:glx77/morphism-php.git"
     }
   ]
 }
