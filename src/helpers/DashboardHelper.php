@@ -2,6 +2,7 @@
 
 namespace weglot\craftweglot\helpers;
 
+use craft\helpers\App;
 use weglot\craftweglot\services\OptionService;
 use yii\helpers\Url;
 
@@ -12,7 +13,6 @@ use yii\helpers\Url;
 class DashboardHelper
 {
     private const DASHBOARD_URL_PROD = 'https://dashboard.weglot.com';
-    private const DASHBOARD_URL_STAGING = '';
     private ?string $projectSlug = null;
     private ?string $organizationSlug = null;
     private bool $canGenerate = false;
@@ -31,9 +31,12 @@ class DashboardHelper
 
     private function getBaseUrl(): string
     {
-        return HelperApi::getEnvironment() === 'staging'
-            ? self::DASHBOARD_URL_STAGING
-            : self::DASHBOARD_URL_PROD;
+        if (HelperApi::getEnvironment() === 'staging') {
+            $stagingUrl = App::env('WEGLOT_DASHBOARD_URL_STAGING');
+            return is_string($stagingUrl) ? $stagingUrl : '';
+        }
+
+        return self::DASHBOARD_URL_PROD;
     }
 
     public function getEditTranslationsUrl(): string
@@ -41,7 +44,6 @@ class DashboardHelper
         if (!$this->canGenerate) {
             return '#';
         }
-
         return sprintf(
             '%s/workspaces/%s/projects/%s/translations/languages/',
             $this->getBaseUrl(),
