@@ -34,7 +34,7 @@ class RouterController extends Controller
         }
 
         $currentLanguage = Plugin::getInstance()->getLanguage()->getLanguageFromExternal($lang);
-        if ($currentLanguage) {
+        if ($currentLanguage !== null) {
             Plugin::getInstance()->handleExcludedUrlRedirects($currentLanguage);
         }
 
@@ -68,12 +68,12 @@ class RouterController extends Controller
                 /** @var ?Element $element */
                 $element = Craft::$app->getElements()->getElementByUri($uri, $siteId, true);
 
-                if ($element) {
+                if ($element !== null) {
                     $route = $element->getRoute();
-                    if (is_array($route) && $route[0] === 'templates/render' && !empty($route[1]['template'])) {
-                        return $this->renderTemplate($route[1]['template'], [$element->refHandle() => $element]);
+                    if (is_array($route) && $route[0] === 'templates/render' && isset($route[1]['template']) && $route[1]['template'] !== '') {
+                        return $this->renderTemplate($route[1]['template'], [$element::class::refHandle() => $element]);
                     }
-                    if ($route) {
+                    if ($route !== null) {
                         return is_array($route)
                             ? Craft::$app->runAction($route[0], $route[1] ?? [])
                             : Craft::$app->runAction($route);
@@ -83,8 +83,9 @@ class RouterController extends Controller
 
             // B) Essai routes dynamiques du projet
             try {
-                [$routeId, $params] = Craft::$app->getUrlManager()->parseRequest($virtualRequest);
-                if ($routeId) {
+                $parsedRoute = Craft::$app->getUrlManager()->parseRequest($virtualRequest);
+                if ($parsedRoute !== false) {
+                    [$routeId, $params] = $parsedRoute;
                     return Craft::$app->runAction($routeId, $params ?? []);
                 }
             } catch (\Throwable) {

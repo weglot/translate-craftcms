@@ -75,7 +75,6 @@
     {% set dashboardHelper = craft.app.plugins.getPlugin('weglot').dashboardHelper %}
     {% if dashboardHelper %}
         {% set editUrl = dashboardHelper.getEditTranslationsUrl() %}
-
         {# Display buttons only if URLs could be generated #}
         {% if editUrl and editUrl != '#' %}
             <div class="weglot-dashboard-container">

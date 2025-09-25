@@ -5,6 +5,7 @@ namespace weglot\craftweglot\services;
 use Craft;
 use craft\base\Component;
 use craft\web\View;
+use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\Plugin;
 
 class HrefLangService extends Component
@@ -17,14 +18,14 @@ class HrefLangService extends Component
             $requestUrlService = Plugin::getInstance()->getRequestUrlService();
 
             $eligible = $requestUrlService->isEligibleUrl($requestUrlService->getFullUrl());
-            if (empty($eligible)) {
+            if ($eligible === []) {
                 return $render;
             }
 
             $urls = $requestUrlService->getWeglotUrl()->getAllUrls();
 
             foreach ($urls as $url) {
-                if (!empty($url['excluded'])) {
+                if (($url['excluded'] ?? false) === true) {
                     continue;
                 }
 
@@ -37,18 +38,17 @@ class HrefLangService extends Component
                     continue;
                 }
 
-
                 $language = $url['language'] ?? null;
-                if (!$language instanceof \Weglot\Client\Api\LanguageEntry) {
+                if (!$language instanceof LanguageEntry) {
                     continue;
                 }
 
-                $hreflang = $url['language']?->getExternalCode();
+                $hreflang = $language->getExternalCode();
 
                 $render .= '<link rel="alternate" href="' .
                            htmlspecialchars($href, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
                            '" hreflang="' .
-                           htmlspecialchars((string) $hreflang, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
+                           htmlspecialchars($hreflang, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') .
                            "\"/>\n";
             }
         } catch (\Throwable $e) {
@@ -61,7 +61,7 @@ class HrefLangService extends Component
     public function injectHrefLangTags(): void
     {
         $pluginSettings = Plugin::getInstance()->getTypedSettings();
-        if (empty($pluginSettings->apiKey)) {
+        if ($pluginSettings->apiKey === '') {
             return;
         }
 

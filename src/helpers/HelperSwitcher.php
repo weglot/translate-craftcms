@@ -99,7 +99,7 @@ class HelperSwitcher
                     continue;
                 }
                 $tpl = self::normalizeTemplate($sw['template']);
-                if ($tpl) {
+                if ($tpl !== null) {
                     $templates[ $tpl['name'] ] = $tpl;
                 }
             }
@@ -107,7 +107,7 @@ class HelperSwitcher
 
         if ($forceDefault || $templates === []) {
             $def = self::getTemplateHash('default');
-            if ($def !== [] && !empty($def['name'])) {
+            if ($def !== [] && (isset($def['name']) && $def['name'] !== '')) {
                 $templates[ $def['name'] ] = [
                     'name' => $def['name'],
                     'hash' => $def['hash'] ?? null,
@@ -152,7 +152,7 @@ class HelperSwitcher
             return [ 'name' => $tpl ];
         }
 
-        if (is_array($tpl) && !empty($tpl['name'])) {
+        if (is_array($tpl) && isset($tpl['name']) && (string)$tpl['name'] !== '') {
             return [
                 'name' => (string) $tpl['name'],
                 'hash' => isset($tpl['hash']) ? (string) $tpl['hash'] : null,
@@ -165,7 +165,7 @@ class HelperSwitcher
     private static function makeJsUrl(string $name, ?string $hash): string
     {
         $base = rtrim(HelperApi::getTplSwitchersUrl(), '/');
-        if ($hash) {
+        if ($hash !== null) {
             return $base . '/' . $name . '.' . $hash . '.min.js';
         }
 
@@ -188,7 +188,7 @@ class HelperSwitcher
 
             return [
                 'name' => $name !== '' ? $name : $tpl,
-                'hash' => $hash !== '',
+                'hash' => $hash,
             ];
         }
 

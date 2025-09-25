@@ -62,6 +62,9 @@ jobs:
       - name: Check for security vulnerabilities
         run: composer audit
 
+      - name: Analyse Composer dependencies
+        run: vendor/bin/composer-dependency-analyser
+
       - name: Check coding style (ECS)
         run: vendor/bin/ecs check --no-progress-bar --no-interaction
 

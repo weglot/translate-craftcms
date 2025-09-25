@@ -14,12 +14,11 @@ class FrontEndScriptsService extends Component
 {
     private bool $switcherAssetsInjected = false;
 
-
     public function injectWeglotScripts(): void
     {
-        $settings = Plugin::getInstance()->getSettings();
+        $settings = Plugin::getInstance()->getTypedSettings();
 
-        if (empty($settings->apiKey)) {
+        if ($settings->apiKey === '') {
             return;
         }
 

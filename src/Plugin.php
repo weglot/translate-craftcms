@@ -43,7 +43,6 @@ class Plugin extends BasePlugin
      *     components: array<string, class-string>
      * }
      */
-
     public static function config(): array
     {
         return [
@@ -75,7 +74,6 @@ class Plugin extends BasePlugin
         $this->attachEventHandlers();
     }
 
-
     /**
      * Synchronizes settings with Weglot after saving.
      */
@@ -90,13 +88,14 @@ class Plugin extends BasePlugin
             $languages = $settings->languages;
             $normalized = [];
             foreach ($languages as $item) {
-                if (is_string($item) && preg_match('/[|,\s]/', $item)) {
-                    $parts = preg_split('/[|,\s]+/', $item, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                if (preg_match('/[|,\s]/', $item)) {
+                    $splitResult = preg_split('/[|,\s]+/', $item, -1, PREG_SPLIT_NO_EMPTY);
+                    $parts = $splitResult !== false ? $splitResult : [];
                     foreach ($parts as $p) {
                         $normalized[] = strtolower(trim($p));
                     }
-                } else {
-                    $normalized[] = strtolower(trim((string) $item));
+                } elseif ($item !== '') {
+                    $normalized[] = strtolower(trim($item));
                 }
             }
             $languages = array_values(array_unique(array_filter($normalized)));
@@ -150,14 +149,14 @@ class Plugin extends BasePlugin
                 $realPath = $req->getPathInfo(true);
                 $parts = array_values(array_filter(explode('/', trim($realPath, '/'))));
                 $first = $parts[0] ?? null;
-                if (!$first) {
+                if ($first === null) {
                     return;
                 }
 
                 $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                 $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
 
-                if (!$langs || !in_array($first, $langs, true)) {
+                if ($langs === [] || !in_array($first, $langs, true)) {
                     return;
                 }
 
@@ -188,7 +187,7 @@ class Plugin extends BasePlugin
                     $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                     $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
 
-                    if (!$langs) {
+                    if ($langs === []) {
                         return;
                     }
 
@@ -230,7 +229,8 @@ class Plugin extends BasePlugin
      */
     public function weglotInit(TemplateEvent $event): void
     {
-        if (!$this->getOption()->getOption('language_from') || !isset($event->output)) {
+        $languageFrom = $this->getOption()->getOption('language_from');
+        if (!is_string($languageFrom) || $languageFrom === '' || !isset($event->output)) {
             return;
         }
 
@@ -259,7 +259,6 @@ class Plugin extends BasePlugin
         // TODO: Implémenter la logique de redirection automatique ici.
     }
 
-
     protected function createSettingsModel(): ?Model
     {
         return Craft::createObject(Settings::class);
@@ -282,13 +281,12 @@ class Plugin extends BasePlugin
         return Craft::$app->getView()->renderTemplate(
             'weglot/_settings',
             [
-                'settings' => $this->getSettings(),
+                'settings' => $settings,
                 'apiSettings' => $apiSettings,
                 'cdnSettings' => $cdnSettings,
             ]
         );
     }
-
 
     /**
      *
@@ -312,7 +310,7 @@ class Plugin extends BasePlugin
     {
         $originalLanguage = Plugin::getInstance()->getLanguage()->getOriginalLanguage();
 
-        if (!$originalLanguage || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()) {
+        if ($originalLanguage === null || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()) {
             return;
         }
 
@@ -323,11 +321,11 @@ class Plugin extends BasePlugin
             throw new \yii\web\NotFoundHttpException();
         }
 
-        if ($redirectBehavior) {
+        if (is_string($redirectBehavior) && $redirectBehavior !== '') {
             $isUrlExcluded = !$weglotUrl->getForLanguage($currentLanguage, false);
             if ($isUrlExcluded) {
                 $originalLanguageUrl = $weglotUrl->getForLanguage($originalLanguage);
-                if ($originalLanguageUrl) {
+                if (is_string($originalLanguageUrl) && $originalLanguageUrl !== '') {
                     Craft::$app->getResponse()->redirect($originalLanguageUrl, 301)->send();
                     exit();
                 }
@@ -405,13 +403,11 @@ class Plugin extends BasePlugin
         return $this->get('parserService');
     }
 
-
     public function getDomCheckersService(): DomCheckersService
     {
         /** @var DomCheckersService */
         return $this->get('domCheckersService');
     }
-
 
     public function getRegexCheckersService(): RegexCheckersService
     {
@@ -419,20 +415,17 @@ class Plugin extends BasePlugin
         return $this->get('regexCheckersService');
     }
 
-
     public function getFrontEndScripts(): FrontEndScriptsService
     {
         /** @var FrontEndScriptsService */
         return $this->get('frontEndScripts');
     }
 
-
     public function getUserApi(): UserApiService
     {
         /** @var UserApiService */
         return $this->get('userApi');
     }
-
 
     public function getHrefLangService(): HrefLangService
     {

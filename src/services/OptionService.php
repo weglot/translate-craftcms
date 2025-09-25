@@ -104,7 +104,7 @@ class OptionService extends Component
         if ($this->optionsCdn === self::NO_OPTIONS) {
             return [ 'success' => false ];
         }
-        if ($this->optionsCdn) {
+        if (is_array($this->optionsCdn)) {
             return [
                 'success' => true,
                 'result' => $this->optionsCdn,
@@ -112,16 +112,18 @@ class OptionService extends Component
         }
 
         $cachedOptions = Craft::$app->getCache()->get('weglot_cache_cdn');
-        if ($cachedOptions) {
-            $this->optionsCdn = $cachedOptions;
-            if ($this->optionsCdn === self::NO_OPTIONS) {
+        if ($cachedOptions !== false) {
+            if ($cachedOptions === self::NO_OPTIONS) {
+                $this->optionsCdn = self::NO_OPTIONS;
                 return [ 'success' => false ];
             }
-
-            return [
-                'success' => true,
-                'result' => $this->optionsCdn,
-            ];
+            if (is_array($cachedOptions)) {
+                $this->optionsCdn = $cachedOptions;
+                return [
+                    'success' => true,
+                    'result' => $this->optionsCdn,
+                ];
+            }
         }
 
         $key = str_replace('wg_', '', $apiKey);
@@ -139,7 +141,7 @@ class OptionService extends Component
                 return [ 'success' => false ];
             }
 
-            $body = json_decode((string) $response->getBody()->getContents(), true);
+            $body = json_decode($response->getBody()->getContents(), true);
             Craft::$app->getCache()->set('weglot_cache_cdn', $body, 300);
 
             $this->optionsCdn = $body;
@@ -165,7 +167,7 @@ class OptionService extends Component
      */
     public function getOptionsFromApiWithApiKey(string $apiKey): array
     {
-        if ($this->optionsFromApi) {
+        if ($this->optionsFromApi !== null) {
             return [
                 'success' => true,
                 'result' => $this->optionsFromApi,
@@ -177,9 +179,9 @@ class OptionService extends Component
 
         try {
             $response = $client->request('GET', $url, [ 'timeout' => 3 ]);
-            $body = json_decode((string) $response->getBody()->getContents(), true);
+            $body = json_decode($response->getBody()->getContents(), true);
 
-            if (null === $body || !is_array($body)) {
+            if (!is_array($body)) {
                 return [
                     'success' => false,
                     'result' => $this->getOptionsDefault(),
@@ -220,7 +222,7 @@ class OptionService extends Component
         $settings = Plugin::getInstance()->getTypedSettings();
         $apiKey = $settings->apiKey;
 
-        if (!$apiKey) {
+        if ($apiKey === '') {
             $this->_options = $this->getOptionsDefault();
 
             return $this->_options;
@@ -249,7 +251,6 @@ class OptionService extends Component
         return $options[ $key ] ?? null;
     }
 
-
     public function getVersion(): string
     {
         $options = $this->getOptions();
@@ -257,12 +258,10 @@ class OptionService extends Component
         return (string) ($options['versions']['translation'] ?? 1);
     }
 
-
     public function getTranslationEngine(): ?int
     {
         return (int) ($this->getOption('translation_engine') ?? 3);
     }
-
 
     private function getApiKeyPrivate(): string
     {
@@ -313,11 +312,11 @@ class OptionService extends Component
         $listExcludeUrls = $this->getOption('excluded_paths') ?? [];
         $excludeUrls = [];
 
-        if (!empty($listExcludeUrls) && is_array($listExcludeUrls)) {
+        if (is_array($listExcludeUrls) && $listExcludeUrls !== []) {
             foreach ($listExcludeUrls as $item) {
                 if (is_array($item) && isset($item['value'], $item['type'])) {
                     $excludedLanguages = null;
-                    if (!empty($item['excluded_languages']) && is_array($item['excluded_languages'])) {
+                    if (isset($item['excluded_languages']) && is_array($item['excluded_languages']) && $item['excluded_languages'] !== []) {
                         $destinationLanguages = $languageService->getDestinationLanguages();
                         foreach ($item['excluded_languages'] as $excludedLanguageCode) {
                             foreach ($destinationLanguages as $langEntry) {
@@ -343,7 +342,7 @@ class OptionService extends Component
 
         $cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
 
-        if ($cpTrigger) {
+        if ($cpTrigger !== null && $cpTrigger !== '') {
             $excludeUrls[] = [ new Regex(RegexEnum::START_WITH, '/' . $cpTrigger), null ];
         }
 
@@ -360,11 +359,10 @@ class OptionService extends Component
         return $excludeUrls;
     }
 
-
     public function generateWeglotData(): void
     {
         $pluginSettings = Plugin::getInstance()->getTypedSettings();
-        if (empty($pluginSettings->apiKey)) {
+        if ($pluginSettings->apiKey === '') {
             return;
         }
 
@@ -375,43 +373,39 @@ class OptionService extends Component
             $settings = $this->getOptions();
         }
 
-        if (!is_array($settings)) {
-            $settings = [];
-        } else {
-            $toUnset = [
-                'deleted_at',
-                'api_key',
-                'api_key_private',
-                'technology_id',
-                'category',
-                'versions',
-                'wp_user_version',
-                'page_views_enabled',
-                'external_enabled',
-                'media_enabled',
-                'translate_amp',
-                'translate_search',
-                'translate_email',
-                'button_style',
-                'translation_engine',
-                'auto_switch_fallback',
-                'auto_switch',
-                'dynamics',
-                'technology_name',
-            ];
-            foreach ($toUnset as $k) {
-                if (array_key_exists($k, $settings)) {
-                    unset($settings[ $k ]);
-                }
-                if (isset($settings['custom_settings'][ $k ])) {
-                    unset($settings['custom_settings'][ $k ]);
-                }
+        $toUnset = [
+            'deleted_at',
+            'api_key',
+            'api_key_private',
+            'technology_id',
+            'category',
+            'versions',
+            'wp_user_version',
+            'page_views_enabled',
+            'external_enabled',
+            'media_enabled',
+            'translate_amp',
+            'translate_search',
+            'translate_email',
+            'button_style',
+            'translation_engine',
+            'auto_switch_fallback',
+            'auto_switch',
+            'dynamics',
+            'technology_name',
+        ];
+        foreach ($toUnset as $k) {
+            if (array_key_exists($k, $settings)) {
+                unset($settings[$k]);
+            }
+            if (isset($settings['custom_settings'][$k])) {
+                unset($settings['custom_settings'][$k]);
             }
         }
 
         try {
             $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
-            if ($currentLanguage) {
+            if ($currentLanguage !== null) {
                 $settings['current_language'] = $currentLanguage->getInternalCode();
             }
         } catch (\Throwable) {
@@ -426,7 +420,7 @@ class OptionService extends Component
             $autoRedirect = (bool) ($this->getOption('auto_redirect') ?? $this->getOption('auto_switch') ?? false);
 
             $allLanguages = [];
-            if ($original) {
+            if ($original !== null) {
                 $allLanguages[] = $original;
             }
             foreach ($destinations as $lang) {
@@ -435,10 +429,10 @@ class OptionService extends Component
 
             foreach ($allLanguages as $lang) {
                 $link = $requestUrl->getForLanguage($lang, true);
-                if (!empty($link)) {
-                    if ($autoRedirect && $original) {
+                if ($link !== '') {
+                    if ($autoRedirect && $original !== null) {
                         $isOrig = ($lang->getInternalCode() === $original->getInternalCode()) ? 'true' : 'false';
-                        if (is_string($link) && str_contains($link, '?')) {
+                        if (str_contains($link, '?')) {
                             $link = str_replace('?', "?wg-choose-original=$isOrig&", $link);
                         } else {
                             $link .= "?wg-choose-original=$isOrig";
@@ -452,10 +446,10 @@ class OptionService extends Component
         } catch (\Throwable) {
         }
 
-        if (!isset($settings['custom_settings']) || !is_array($settings['custom_settings'])) {
+        if (!is_array($settings['custom_settings'] ?? null)) {
             $settings['custom_settings'] = [];
         }
-        if (empty($settings['custom_settings']['switchers'])) {
+        if (($settings['custom_settings']['switchers'] ?? []) === []) {
             $settings['custom_settings']['switchers'] = [
                 [
                     'name' => 'default',
@@ -478,7 +472,7 @@ class OptionService extends Component
     {
         $cdn = $this->getOptionsFromCdnWithApiKey($publicApiKey);
 
-        if (!($cdn['success'] ?? false) || empty($cdn['result']) || !is_array($cdn['result'])) {
+        if (($cdn['success'] ?? false) !== true || !isset($cdn['result']) || !is_array($cdn['result'])) {
             return [
                 'success' => false,
                 'code' => 'cdn_fetch_fail',
@@ -487,7 +481,7 @@ class OptionService extends Component
         }
 
         $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
-        $apiKeyPrivate = (string) ($options['api_key'] ?? '');
+        $apiKeyPrivate = $options['api_key'] ?? '';
         if ($apiKeyPrivate === '') {
             return [
                 'success' => false,
@@ -500,9 +494,6 @@ class OptionService extends Component
 
         $codes = [];
         foreach ($destinationLanguages as $item) {
-            if (!is_string($item)) {
-                continue;
-            }
             foreach (preg_split('/[|,]/', $item) as $part) {
                 $part = trim($part);
                 if ($part !== '') {
@@ -529,9 +520,9 @@ class OptionService extends Component
             ];
         }
 
-        $url = sprintf('%s/projects/settings?api_key=%s', \weglot\craftweglot\helpers\HelperApi::getApiUrl(), $publicApiKey);
+        $url = sprintf('%s/projects/settings?api_key=%s', HelperApi::getApiUrl(), $publicApiKey);
 
-        $client = \Craft::createGuzzleClient();
+        $client = Craft::createGuzzleClient();
 
         try {
             $response = $client->request('POST', $url, [
@@ -555,7 +546,7 @@ class OptionService extends Component
                 ];
             }
 
-            \Craft::$app->getCache()->set('weglot_cache_cdn', $options, 300);
+            Craft::$app->getCache()->set('weglot_cache_cdn', $options, 300);
 
             $this->optionsCdn = $options;
             $this->optionsFromApi = null;
@@ -566,7 +557,7 @@ class OptionService extends Component
                 'result' => is_array($decoded) ? $decoded : [ 'raw' => $body ],
             ];
         } catch (\Throwable $e) {
-            \Craft::error('Erreur lors de la sauvegarde Weglot: ' . $e->getMessage(), __METHOD__);
+            Craft::error('Erreur lors de la sauvegarde Weglot: ' . $e->getMessage(), __METHOD__);
 
             return [
                 'success' => false,
@@ -579,24 +570,22 @@ class OptionService extends Component
     public function getLanguagesLimit(?string $apiKey = null): ?int
     {
         try {
-            if ($apiKey === null || $apiKey === '') {
+            $currentApiKey = $apiKey;
+            if ($currentApiKey === null || $currentApiKey === '') {
                 $settings = Plugin::getInstance()->getTypedSettings();
-                $apiKey = (string) ($settings->apiKey ?? '');
+                $currentApiKey = $settings->apiKey ?? '';
             }
-            if ($apiKey === '') {
+            if ($currentApiKey === '') {
                 return null;
             }
 
-            $cacheKey = 'weglot_languages_limit_' . substr(sha1($apiKey), 0, 16);
+            $cacheKey = 'weglot_languages_limit_' . substr(sha1($currentApiKey), 0, 16);
             $cached = Craft::$app->getCache()->get($cacheKey);
             if (is_int($cached)) {
                 return $cached;
             }
 
-            $resp = Plugin::getInstance()->getUserApi()->getUserInfo($apiKey);
-            if (!is_array($resp)) {
-                return null;
-            }
+            $resp = Plugin::getInstance()->getUserApi()->getUserInfo($currentApiKey);
 
             if (isset($resp['succeeded']) && (int) $resp['succeeded'] !== 1) {
                 return null;

@@ -24,14 +24,13 @@ class LanguageService extends Component
      */
     private ?LanguageCollection $allLanguages = null;
 
-
     /**
      * @param array{english: string, ...} $a
      * @param array{english: string, ...} $b
      */
     private function compareLanguage(array $a, array $b): int
     {
-        return strcmp((string) $a['english'], (string) $b['english']);
+        return strcmp($a['english'], $b['english']);
     }
 
     /**
@@ -74,7 +73,7 @@ class LanguageService extends Component
 
         $originalLanguageCode = Plugin::getInstance()->getOption()->getOption('language_from');
         $originalLanguageNameCustom = $this->getOriginalLanguageNameCustom();
-        $originalLanguage = $this->allLanguages->getCode($originalLanguageCode);
+        $originalLanguage = is_string($originalLanguageCode) ? $this->allLanguages->getCode($originalLanguageCode) : null;
 
         if ($originalLanguage !== null && ($originalLanguageNameCustom !== null && $originalLanguageNameCustom !== '' && $originalLanguageNameCustom !== '0')) {
             $this->allLanguages->addOne(new LanguageEntry(
@@ -88,11 +87,14 @@ class LanguageService extends Component
 
         $destinationLanguagesRaw = Plugin::getInstance()->getOption()->getOption('destination_language') ?? [];
         foreach ($destinationLanguagesRaw as $d) {
+            if (!isset($d['language_to'])) {
+                continue;
+            }
             $languageData = $this->allLanguages->getCode($d['language_to']);
-            $externalCode = $d['custom_code'] ?? ($languageData ? $languageData->getExternalCode() : $d['language_to']);
-            $customName = $d['custom_name'] ?? ($languageData ? $languageData->getEnglishName() : $d['language_to']);
+            $externalCode = $d['custom_code'] ?? ($languageData !== null ? $languageData->getExternalCode() : $d['language_to']);
+            $customName = $d['custom_name'] ?? ($languageData !== null ? $languageData->getEnglishName() : $d['language_to']);
             $customLocalName = $d['custom_local_name'] ?? $customName;
-            $isRtl = $languageData && $languageData->isRtl();
+            $isRtl = ($languageData !== null) && $languageData->isRtl();
 
             $this->allLanguages->addOne(new LanguageEntry(
                 $d['language_to'],
@@ -136,13 +138,13 @@ class LanguageService extends Component
     {
         $originalLanguageCode = Plugin::getInstance()->getOption()->getOption('language_from') ?? 'en';
 
-        return $this->getLanguageFromInternal($originalLanguageCode);
+        return is_string($originalLanguageCode) ? $this->getLanguageFromInternal($originalLanguageCode) : null;
     }
-
 
     public function getOriginalLanguageNameCustom(): ?string
     {
-        return Plugin::getInstance()->getOption()->getOption('language_from_custom_name');
+        $name = Plugin::getInstance()->getOption()->getOption('language_from_custom_name');
+        return is_string($name) ? $name : null;
     }
 
     /**
@@ -175,12 +177,15 @@ class LanguageService extends Component
         $codes = [];
 
         if (is_string($legacy)) {
-            $codes = preg_split('/[|,\s]+/', $legacy, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            $parts = preg_split('/[|,\s]+/', $legacy, -1, PREG_SPLIT_NO_EMPTY);
+            $codes = is_array($parts) ? $parts : [];
         } elseif (is_array($legacy)) {
             foreach ($legacy as $item) {
                 if (is_string($item)) {
-                    $parts = preg_match('/[|,\s]/', $item) ? preg_split('/[|,\s]+/', $item, -1, PREG_SPLIT_NO_EMPTY) : [ $item ];
-                    $codes = array_merge($codes, $parts ?: []);
+                    $parts = preg_split('/[|,\s]+/', $item, -1, PREG_SPLIT_NO_EMPTY);
+                    if (is_array($parts)) {
+                        $codes = array_merge($codes, $parts);
+                    }
                 } elseif (is_array($item)) {
                     $code = (string) ($item['language_to'] ?? $item['code'] ?? '');
                     if ($code !== '') {
@@ -215,11 +220,12 @@ class LanguageService extends Component
         $codes = [];
 
         foreach ($entries as $entry) {
-            if (!$entry instanceof LanguageEntry) {
-                continue;
+            $code = $entry->getExternalCode();
+            if ($code === '') {
+                $code = $entry->getInternalCode();
             }
-            $code = $entry->getExternalCode() ?: $entry->getInternalCode();
-            if (!$code) {
+
+            if ($code === '') {
                 continue;
             }
 
@@ -235,10 +241,10 @@ class LanguageService extends Component
         }
 
         if ($excludeSource) {
-            $source = (string) (Plugin::getInstance()->getOption()->getOption('language_from') ?? '');
-            if ($source !== '') {
+            $source = Plugin::getInstance()->getOption()->getOption('language_from');
+            if (is_string($source) && $source !== '') {
                 $source = str_replace('_', '-', strtolower($source));
-                $codes = array_filter($codes, fn($l) => strtolower($l) !== $source);
+                $codes = array_filter($codes, static fn(string $l): bool => strtolower($l) !== $source);
             }
         }
 

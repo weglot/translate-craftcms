@@ -20,7 +20,6 @@ class TranslateService extends Component
     ) {
         parent::__construct($config);
     }
-
     
     private function isJson(string $string): bool
     {
@@ -35,7 +34,6 @@ class TranslateService extends Component
 
         return json_last_error() === JSON_ERROR_NONE;
     }
-
     
     private function isXml(string $string): bool
     {
@@ -50,7 +48,6 @@ class TranslateService extends Component
 
         return $errors === [];
     }
-
     
     private function getContentType(string $content): string
     {
@@ -64,7 +61,6 @@ class TranslateService extends Component
 
         return 'html';
     }
-
     
     public function processResponse(string $html): string
     {
