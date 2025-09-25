@@ -19,7 +19,7 @@ class MetaTwitter extends AbstractDomChecker
      */
     public const PROPERTY = 'content';
     /**
-     * @var integer
+     * @var int
      */
     public const WORD_TYPE = WordType::META_CONTENT;
 }

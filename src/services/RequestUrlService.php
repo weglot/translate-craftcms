@@ -2,9 +2,7 @@
 
 namespace weglot\craftweglot\services;
 
-use Craft;
 use craft\base\Component;
-use Exception;
 use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\Plugin;
 use Weglot\Util\Url;
@@ -12,19 +10,18 @@ use Weglot\Util\Url;
 class RequestUrlService extends Component
 {
     private ?Url $weglotUrl = null;
-    
+
     public function getFullUrl(bool $useForwardedHost = false): string
     {
-        return Craft::$app->getRequest()->getAbsoluteUrl();
+        return \Craft::$app->getRequest()->getAbsoluteUrl();
     }
 
     /**
-     *
-     * @throws Exception
+     * @throws \Exception
      */
     public function getWeglotUrl(): Url
     {
-        if (!$this->weglotUrl instanceof \Weglot\Util\Url) {
+        if (!$this->weglotUrl instanceof Url) {
             $this->weglotUrl = $this->createUrlObject($this->getFullUrl());
         }
 
@@ -52,7 +49,7 @@ class RequestUrlService extends Component
     {
         return $this->getWeglotUrl()->getCurrentLanguage();
     }
-    
+
     public function handlePathDetectionAndRewrite(string $path): string
     {
         $weglotUrl = $this->getWeglotUrl();

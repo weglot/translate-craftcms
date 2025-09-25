@@ -2,7 +2,6 @@
 
 namespace weglot\craftweglot\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\Json;
 use craft\web\View;
@@ -18,13 +17,13 @@ class FrontEndScriptsService extends Component
     {
         $settings = Plugin::getInstance()->getTypedSettings();
 
-        if ($settings->apiKey === '') {
+        if ('' === $settings->apiKey) {
             return;
         }
 
-        $view = Craft::$app->getView();
+        $view = \Craft::$app->getView();
 
-        $view->registerJsFile(HelperApi::getCdnUrl() . 'weglot.min.js', [
+        $view->registerJsFile(HelperApi::getCdnUrl().'weglot.min.js', [
             'position' => View::POS_HEAD,
         ]);
 
@@ -52,19 +51,19 @@ class FrontEndScriptsService extends Component
         $switchers = $options['custom_settings']['switchers'] ?? [];
 
         $assets = HelperSwitcher::buildSwitcherAssets(
-            is_array($switchers) ? $switchers : [],
+            \is_array($switchers) ? $switchers : [],
             $forceDefault
         );
 
-        $view = Craft::$app->getView();
+        $view = \Craft::$app->getView();
 
         foreach ($assets['css'] as $css) {
             $url = (string) ($css['url'] ?? '');
-            if ($url === '') {
+            if ('' === $url) {
                 continue;
             }
-            $version = isset($css['version']) && $css['version'] !== '' ? (string) $css['version'] : null;
-            if ($version !== null) {
+            $version = isset($css['version']) && '' !== $css['version'] ? (string) $css['version'] : null;
+            if (null !== $version) {
                 $url = $this->appendVersion($url, $version);
             }
             $view->registerCssFile($url, [
@@ -74,7 +73,7 @@ class FrontEndScriptsService extends Component
 
         foreach ($assets['js'] as $js) {
             $url = (string) ($js['url'] ?? '');
-            if ($url === '') {
+            if ('' === $url) {
                 continue;
             }
             $view->registerJsFile($url, [
@@ -87,11 +86,11 @@ class FrontEndScriptsService extends Component
 
     private function appendVersion(string $url, string $version): string
     {
-        if ($version === '') {
+        if ('' === $version) {
             return $url;
         }
         $sep = (str_contains($url, '?')) ? '&' : '?';
 
-        return $url . $sep . 'v=' . rawurlencode($version);
+        return $url.$sep.'v='.rawurlencode($version);
     }
 }

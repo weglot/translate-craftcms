@@ -16,7 +16,7 @@ class VideoSource extends AbstractDomChecker
      */
     public const PROPERTY = 'src';
     /**
-     * @var integer
+     * @var int
      */
     public const WORD_TYPE = WordType::IMG_SRC;
 }

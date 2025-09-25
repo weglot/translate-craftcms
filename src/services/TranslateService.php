@@ -3,7 +3,6 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Exception;
 use Weglot\Client\Api\Exception\ApiError;
 
 class TranslateService extends Component
@@ -20,21 +19,21 @@ class TranslateService extends Component
     ) {
         parent::__construct($config);
     }
-    
+
     private function isJson(string $string): bool
     {
         if (
-            !str_starts_with($string, '[') &&
-            !str_starts_with($string, '{')
+            !str_starts_with($string, '[')
+            && !str_starts_with($string, '{')
         ) {
             return false;
         }
 
         json_decode($string);
 
-        return json_last_error() === JSON_ERROR_NONE;
+        return \JSON_ERROR_NONE === json_last_error();
     }
-    
+
     private function isXml(string $string): bool
     {
         if (!str_contains($string, '<?xml')) {
@@ -46,9 +45,9 @@ class TranslateService extends Component
         $errors = libxml_get_errors();
         libxml_clear_errors();
 
-        return $errors === [];
+        return [] === $errors;
     }
-    
+
     private function getContentType(string $content): string
     {
         if ($this->isJson($content)) {
@@ -61,10 +60,10 @@ class TranslateService extends Component
 
         return 'html';
     }
-    
+
     public function processResponse(string $html): string
     {
-        if (in_array(trim($html), [ '', '0' ], true)) {
+        if (\in_array(trim($html), ['', '0'], true)) {
             return $html;
         }
 
@@ -72,9 +71,9 @@ class TranslateService extends Component
         $currentLanguage = $this->requestUrlService->getCurrentLanguage();
         $type = $this->getContentType($html);
 
-        if (!$this->requestUrlService->getWeglotUrl()->getForLanguage($currentLanguage, false) ||
-             $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()) {
-            if ($type === 'xml' || $type === 'json') {
+        if (!$this->requestUrlService->getWeglotUrl()->getForLanguage($currentLanguage, false)
+             || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()) {
+            if ('xml' === $type || 'json' === $type) {
                 return $html;
             }
 
@@ -101,13 +100,13 @@ class TranslateService extends Component
             }
         } catch (ApiError $e) {
             if ('json' !== $type) {
-                $html .= '<!--Weglot error API : ' . $this->removeComments($e->getMessage()) . '-->';
+                $html .= '<!--Weglot error API : '.$this->removeComments($e->getMessage()).'-->';
             }
 
             return $html;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             if ('json' !== $type) {
-                $html .= '<!--Weglot error : ' . $this->removeComments($e->getMessage()) . '-->';
+                $html .= '<!--Weglot error : '.$this->removeComments($e->getMessage()).'-->';
             }
 
             return $html;
@@ -130,25 +129,25 @@ class TranslateService extends Component
         if (!$canonicalUrl) {
             $canonicalUrl = $weglotUrl->getForLanguage($originalLanguage, true);
         }
-        if (is_string($canonicalUrl) && $canonicalUrl !== '') {
-            $canonicalTag = '<link rel="canonical" href="' . htmlspecialchars($canonicalUrl, ENT_QUOTES, 'UTF-8') . '" />';
+        if (\is_string($canonicalUrl) && '' !== $canonicalUrl) {
+            $canonicalTag = '<link rel="canonical" href="'.htmlspecialchars($canonicalUrl, \ENT_QUOTES, 'UTF-8').'" />';
 
             $replaced = 0;
-            $html = preg_replace('/<\/head>/i', $canonicalTag . "\n</head>", (string) $html, 1, $replaced);
-            if ($replaced === 0) {
-                $html = $canonicalTag . "\n" . $html;
+            $html = preg_replace('/<\/head>/i', $canonicalTag."\n</head>", (string) $html, 1, $replaced);
+            if (0 === $replaced) {
+                $html = $canonicalTag."\n".$html;
             }
         }
 
         return preg_replace_callback(
             '/<html\b([^>]*)>/i',
-            static function(array $m): string {
+            static function (array $m): string {
                 $attrs = $m[1];
                 if (preg_match('/\btranslate\s*=\s*(["\'])(?:no|yes)\1/i', $attrs)) {
-                    return '<html' . $attrs . '>';
+                    return '<html'.$attrs.'>';
                 }
 
-                return '<html' . $attrs . ' translate="no">';
+                return '<html'.$attrs.' translate="no">';
             },
             $html,
             1
@@ -156,10 +155,10 @@ class TranslateService extends Component
     }
 
     /**
-     *
      * @param string $html
      *
      * @return string
+     *
      * @since 2.3.0
      */
     private function removeComments($html)

@@ -45,7 +45,8 @@
     "fix-cs": "php-cs-fixer fix",
     "phpstan": "phpstan --memory-limit=1G",
     "check-dependency": "composer-dependency-analyser",
-    "test": "phpunit tests"
+    "test": "phpunit tests",
+    "rector": "rector"
   },
   "config": {
     "sort-packages": true,

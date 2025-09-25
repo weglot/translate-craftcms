@@ -7,8 +7,7 @@ use weglot\craftweglot\services\OptionService;
 use yii\helpers\Url;
 
 /**
- * Class DashboardHelper
- * @package weglot\craftweglot\helpers
+ * Class DashboardHelper.
  */
 class DashboardHelper
 {
@@ -21,19 +20,20 @@ class DashboardHelper
     {
         $apiKey = $optionService->getOption('api_key');
 
-        if ($apiKey !== '') {
+        if ('' !== $apiKey) {
             $this->projectSlug = $optionService->getOption('project_slug');
             $this->organizationSlug = $optionService->getOption('organization_slug');
         }
 
-        $this->canGenerate = $this->projectSlug !== null && $this->projectSlug !== '' && $this->projectSlug !== '0' && ($this->organizationSlug !== null && $this->organizationSlug !== '' && $this->organizationSlug !== '0');
+        $this->canGenerate = null !== $this->projectSlug && '' !== $this->projectSlug && '0' !== $this->projectSlug && (null !== $this->organizationSlug && '' !== $this->organizationSlug && '0' !== $this->organizationSlug);
     }
 
     private function getBaseUrl(): string
     {
-        if (HelperApi::getEnvironment() === 'staging') {
+        if ('staging' === HelperApi::getEnvironment()) {
             $stagingUrl = App::env('WEGLOT_DASHBOARD_URL_STAGING');
-            return is_string($stagingUrl) ? $stagingUrl : '';
+
+            return \is_string($stagingUrl) ? $stagingUrl : '';
         }
 
         return self::DASHBOARD_URL_PROD;
@@ -44,7 +44,8 @@ class DashboardHelper
         if (!$this->canGenerate) {
             return '#';
         }
-        return sprintf(
+
+        return \sprintf(
             '%s/workspaces/%s/projects/%s/translations/languages/',
             $this->getBaseUrl(),
             $this->organizationSlug,
@@ -60,7 +61,7 @@ class DashboardHelper
 
         $launchUrl = Url::home();
 
-        return sprintf(
+        return \sprintf(
             '%s/workspaces/%s/projects/%s/translations/visual-editor/launch?url=%s&mode=translations',
             $this->getBaseUrl(),
             $this->organizationSlug,
@@ -75,7 +76,7 @@ class DashboardHelper
             return '#';
         }
 
-        return sprintf(
+        return \sprintf(
             '%s/workspaces/%s/projects/%s/settings/exclusions#excluded-urls',
             $this->getBaseUrl(),
             $this->organizationSlug,
@@ -89,7 +90,7 @@ class DashboardHelper
             return '#';
         }
 
-        return sprintf(
+        return \sprintf(
             '%s/workspaces/%s/projects/%s/settings/exclusions#excluded-blocks',
             $this->getBaseUrl(),
             $this->organizationSlug,
@@ -98,10 +99,10 @@ class DashboardHelper
     }
 
     /**
-  * Returns the registration URL for new users.
-  */
+     * Returns the registration URL for new users.
+     */
     public function getRegistrationUrl(): string
     {
-        return $this->getBaseUrl() . '/register?project=craft';
+        return $this->getBaseUrl().'/register?project=craft';
     }
 }
