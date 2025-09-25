@@ -25,3 +25,5 @@ auth.json
 phpstan.neon
 /phpunit.xml
 ###< local ###
+
+tests/_craft

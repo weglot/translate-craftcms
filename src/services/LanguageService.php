@@ -11,8 +11,6 @@ use Weglot\Client\Endpoint\LanguagesList;
 use weglot\craftweglot\Plugin;
 
 /**
- * Language Service.
- *
  * Gère la récupération et la manipulation des langues Weglot.
  */
 class LanguageService extends Component

@@ -1,7 +1,8 @@
 <?php
 
-// php
 declare(strict_types=1);
+
+namespace weglot\craftweglot\tests\unit\services;
 
 use PHPUnit\Framework\TestCase;
 use Weglot\Client\Api\LanguageCollection;
@@ -20,8 +21,8 @@ final class LanguageServiceLegacyFallbackTest extends TestCase
         $this->plugin = Plugin::getInstance();
 
         try {
-            Craft::$app->getCache()->flush();
-        } catch (Throwable $e) {
+            \Craft::$app->getCache()->flush();
+        } catch (\Throwable) {
         }
     }
 
@@ -58,11 +59,11 @@ final class LanguageServiceLegacyFallbackTest extends TestCase
         $this->plugin->set('language', $fakeLanguage);
 
         $entries = $this->plugin->getLanguage()->getDestinationLanguages();
-        $this->assertCount(3, $entries);
+        self::assertCount(3, $entries);
 
         // Codes normalisés pour le routage (en excluant la source "en")
         $codes = $this->plugin->getLanguage()->codesFromDestinationEntries($entries, true);
         sort($codes);
-        $this->assertSame(['es', 'fr', 'it'], $codes);
+        self::assertSame(['es', 'fr', 'it'], $codes);
     }
 }
