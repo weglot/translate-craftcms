@@ -21,10 +21,10 @@ class DomCheckersService extends Component
         $checkerClasses = [];
 
         foreach ($files as $file) {
-            if (pathinfo((string) $file, PATHINFO_EXTENSION) !== 'php') {
+            if (pathinfo($file, PATHINFO_EXTENSION) !== 'php') {
                 continue;
             }
-            $className = pathinfo((string) $file, PATHINFO_FILENAME);
+            $className = pathinfo($file, PATHINFO_FILENAME);
             $checkerClasses[] = '\\weglot\\craftweglot\\checkers\\dom\\' . $className;
         }
 

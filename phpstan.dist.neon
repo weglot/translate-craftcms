@@ -1,0 +1,16 @@
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+
+parameters:
+    level: 6
+    scanFiles:
+        - vendor/craftcms/cms/src/Craft.php
+        - vendor/yiisoft/yii2/Yii.php
+    paths:
+        - src
+    stubFiles:
+        - phpstan/stubs/yii/BaseYii.stub
+        - phpstan/stubs/craft/console/Application.stub
+        - phpstan/stubs/craft/web/Application.stub
+    strictRules:
+        strictArrayFilter: false

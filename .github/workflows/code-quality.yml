@@ -66,7 +66,7 @@ jobs:
         run: vendor/bin/composer-dependency-analyser
 
       - name: Check coding style (ECS)
-        run: vendor/bin/ecs check --no-progress-bar --no-interaction
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
       - name: Check for refactoring (Rector)
         run: vendor/bin/rector process --dry-run --no-progress-bar
