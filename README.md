@@ -1,6 +1,6 @@
 ![Banner](./src/resources/banner.png)
 
-# weglot
+# Weglot
 
 Translate your Craft website in 110+ languages within minutes with Weglot Translate, without any coding.
 
@@ -14,7 +14,7 @@ You can install this plugin from the Plugin Store or with Composer.
 
 #### From the Plugin Store
 
-Go to the Plugin Store in your project’s Control Panel and search for “weglot”. Then press “Install”.
+Go to the Plugin Store in your project’s Control Panel and search for “Weglot”. Then press “Install”.
 
 #### With Composer
 

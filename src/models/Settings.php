@@ -7,7 +7,7 @@ use craft\base\Model;
 use weglot\craftweglot\Plugin;
 
 /**
- * weglot settings
+ * Weglot settings
  */
 class Settings extends Model
 {
