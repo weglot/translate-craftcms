@@ -12,8 +12,7 @@ class RegexCheckersService extends Component
      */
     public function getRegexCheckers(): array
     {
-        // TODO: Remplacer par un événement Craft pour permettre d'ajouter des mots/règles
-        // TODO: Remplacer par un événement Craft pour permettre l'extension
+        // TODO: Replace with a Craft event to allow adding words/rules
         return [];
     }
 }

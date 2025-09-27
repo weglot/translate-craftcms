@@ -12,7 +12,7 @@ class AdminAsset extends AssetBundle
         $this->sourcePath = __DIR__;
 
         $this->depends = [
-            CpAsset::class, // jQuery du CP
+            CpAsset::class,
         ];
 
         if (\defined('YII_DEBUG')) {

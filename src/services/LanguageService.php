@@ -10,16 +10,8 @@ use Weglot\Client\Api\LanguageEntry;
 use Weglot\Client\Endpoint\LanguagesList;
 use weglot\craftweglot\Plugin;
 
-/**
- * Language Service.
- *
- * Gère la récupération et la manipulation des langues Weglot.
- */
 class LanguageService extends Component
 {
-    /**
-     * @var LanguageCollection|null cache pour la collection complète de langues (API + personnalisées)
-     */
     private ?LanguageCollection $allLanguages = null;
 
     /**
