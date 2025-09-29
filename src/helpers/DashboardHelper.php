@@ -6,9 +6,6 @@ use craft\helpers\App;
 use weglot\craftweglot\services\OptionService;
 use yii\helpers\Url;
 
-/**
- * Class DashboardHelper.
- */
 class DashboardHelper
 {
     private const DASHBOARD_URL_PROD = 'https://dashboard.weglot.com';
@@ -98,9 +95,6 @@ class DashboardHelper
         );
     }
 
-    /**
-     * Returns the registration URL for new users.
-     */
     public function getRegistrationUrl(): string
     {
         return $this->getBaseUrl().'/register?project=craft';

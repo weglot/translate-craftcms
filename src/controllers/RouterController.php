@@ -60,12 +60,12 @@ class RouterController extends Controller
 
         $originalRequest = \Craft::$app->getRequest();
 
-        // Injecte le Request virtuel (segments basés sur le chemin interne sans /fr)
+        // Injects the virtual request (segments based on the internal path without /fr)
         $virtualRequest = new WeglotVirtualRequest($internalPath, $originalRequest);
         \Craft::$app->set('request', $virtualRequest);
 
         try {
-            // A) Essai "élément" (Entrée, Catégorie, etc.)
+            // Attempt "element" (Entry, Category, etc.)
             foreach ($candidates as $uri) {
                 /** @var ?Element $element */
                 $element = \Craft::$app->getElements()->getElementByUri($uri, $siteId, true);
@@ -83,7 +83,7 @@ class RouterController extends Controller
                 }
             }
 
-            // B) Essai routes dynamiques du projet
+            // Attempt dynamic project routes
             try {
                 $parsedRoute = \Craft::$app->getUrlManager()->parseRequest($virtualRequest);
                 if (false !== $parsedRoute) {
