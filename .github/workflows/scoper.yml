@@ -43,7 +43,7 @@ jobs:
 
           git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/weglot-php.git"        dependencies/weglot-php
           git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/simple_html_dom.git"   dependencies/simplehtmldom
-          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@git@github.com:weglot/weglot-translation-definitions.git"       dependencies/translation-definitions
+          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/weglot-translation-definitions.git"       dependencies/translation-definitions
 
           # (Optionnel) pinner une ref précise :
           # pushd dependencies/weglot-php && git fetch --depth 1 origin <sha-ou-tag> && git checkout <sha-ou-tag> && popd
