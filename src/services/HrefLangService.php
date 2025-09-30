@@ -4,7 +4,7 @@ namespace weglot\craftweglot\services;
 
 use craft\base\Component;
 use craft\web\View;
-use Weglot\Client\Api\LanguageEntry;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\Plugin;
 
 class HrefLangService extends Component

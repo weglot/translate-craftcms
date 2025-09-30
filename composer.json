@@ -2,7 +2,7 @@
   "name": "weglot/craft-weglot",
   "description": "Translate your Craft website in 110+ languages within minutes with Weglot Translate, without any coding.",
   "type": "craft-plugin",
-  "license": "mit",
+  "license": "MIT",
   "support": {
     "email": "support@weglot.com"
   },
@@ -10,13 +10,13 @@
     "php": ">=8.2",
     "ext-libxml": "*",
     "ext-simplexml": "*",
-    "craftcms/cms": "^5.8.0",
+    "craftcms/cms": "^5.0.0",
     "guzzlehttp/guzzle": "^7.10",
-    "weglot/weglot-php": "^1.7.3",
     "yiisoft/yii2": "^2.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.88",
+    "humbug/php-scoper": "^0.18",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/phpstan-strict-rules": "^2.0",
@@ -27,8 +27,18 @@
   },
   "autoload": {
     "psr-4": {
-      "weglot\\craftweglot\\": "src/"
-    }
+      "weglot\\craftweglot\\": "src/",
+      "Weglot\\Vendor\\Weglot\\": "dependencies_scoped/weglot-php/src/",
+      "Weglot\\Vendor\\WGSimpleHtmlDom\\": "dependencies_scoped/simplehtmldom/src/"
+    },
+    "classmap": [
+      "dependencies_scoped/weglot-php/src",
+      "dependencies_scoped/simplehtmldom/src"
+    ],
+    "files": [
+      "src/bootstrap_simplehtmldom.php",
+      "src/bootstrap_simplehtmldom_constants.php"
+    ]
   },
   "extra": {
     "handle": "weglot",
@@ -46,7 +56,12 @@
     "phpstan": "phpstan --memory-limit=1G",
     "check-dependency": "composer-dependency-analyser",
     "test": "phpunit tests",
-    "rector": "rector"
+    "rector": "rector",
+    "scoper": [
+      "bash -lc 'vendor/bin/php-scoper add-prefix --config=scoper.inc.php --output-dir=dependencies_scoped --force -q'",
+      "bash -lc 'rsync -a dependencies/weglot-php/data/ dependencies_scoped/weglot-php/data/'",
+      "bash -lc \"rsync -a --include='*/' --exclude='*' dependencies/weglot-php/ dependencies_scoped/weglot-php/\""
+    ]
   },
   "config": {
     "sort-packages": true,
@@ -58,18 +73,19 @@
       "craftcms/plugin-installer": true
     }
   },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/weglot/weglot-php.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:weglot/simple_html_dom.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:glx77/morphism-php.git"
-    }
-  ]
+  "conflict": {
+    "weglot/weglot-php": "*",
+    "weglot/simple_html_dom": "*",
+    "glx77/morphism-php": "*"
+  },
+  "archive": {
+    "exclude": [
+      "dependencies/",
+      "scoper.inc.php",
+      "bin/",
+      "tests/",
+      ".github/",
+      "phpunit.xml*"
+    ]
+  }
 }

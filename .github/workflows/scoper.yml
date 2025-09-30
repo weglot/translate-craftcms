@@ -1,0 +1,89 @@
+name: Build & Scope
+
+on:
+  pull_request:
+    branches: [ master, main ]     # build + tests sur chaque PR vers master/main
+  push:
+    branches: [ master, main ]     # build après merge; auto-commit du scope si changé
+    paths-ignore:
+      - 'dependencies_scoped/**'   # évite de reboucler quand on autocommit ce dossier
+      - '.github/**'
+  workflow_dispatch:                # bouton "Run workflow"
+  release:
+    types: [ published ]            # garde-fou: vérifie le scope dans le tag
+
+jobs:
+  scope-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+          coverage: none
+
+      - name: Install Composer deps
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      # === OPTION B2: on reconstitue dependencies/ depuis tes dépôts privés ===
+      - name: Fetch vendor sources into dependencies/
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -euo pipefail
+          rm -rf dependencies
+          mkdir -p dependencies
+
+          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/weglot-php.git"        dependencies/weglot-php
+          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/simple_html_dom.git"   dependencies/simplehtmldom
+          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@ggit@github.com:weglot/weglot-translation-definitions.git"       dependencies/translation-definitions
+
+          # (Optionnel) pinner une ref précise :
+          # pushd dependencies/weglot-php && git fetch --depth 1 origin <sha-ou-tag> && git checkout <sha-ou-tag> && popd
+
+      # Scoper + copie des assets non-PHP (utilise tes scripts composer)
+      - name: Run PHP-Scoper (prefix + copy assets)
+        run: composer run scoper
+
+      # Sanity checks: syntaxe PHP du code scoppé
+      - name: Lint scoped PHP
+        run: |
+          find dependencies_scoped -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+
+      # Smoke tests runtime: une classe scoppée + une fonction namespacée doivent exister
+      - name: Runtime smoke tests
+        run: |
+          php -r "require 'vendor/autoload.php'; echo (class_exists('Weglot\\Vendor\\Weglot\\Client\\Client') ? \"OK\n\" : \"KO\n\");"
+          php -r "require 'vendor/autoload.php'; echo (function_exists('Weglot\\Vendor\\WGSimpleHtmlDom\\str_get_html') ? \"OK\n\" : \"KO\n\");"
+
+      # Auto-commit du scope si des diffs existent (uniquement sur push, pas sur PR)
+      - name: Commit scoped output if changed
+        if: github.event_name == 'push'
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(scope): refresh dependencies_scoped [skip ci]"
+          file_pattern: dependencies_scoped/**
+          commit_user_name: weglot-bot
+          commit_user_email: bot@weglot.com
+          skip_fetch: false
+
+  release-guard:
+    needs: scope-and-validate
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Ensure scoped dir is present in the tag
+        run: |
+          if [ ! -d "dependencies_scoped" ] || [ -z "$(ls -A dependencies_scoped)" ]; then
+            echo "dependencies_scoped is missing/empty in the release tag. Abort."
+            exit 1
+          fi

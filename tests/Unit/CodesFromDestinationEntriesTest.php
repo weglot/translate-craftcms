@@ -4,8 +4,8 @@
 declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-use Weglot\Client\Api\LanguageCollection;
-use Weglot\Client\Api\LanguageEntry;
+use Weglot\Vendor\Weglot\Client\Api\LanguageCollection;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\services\LanguageService;
 
 final class CodesFromDestinationEntriesTest extends TestCase

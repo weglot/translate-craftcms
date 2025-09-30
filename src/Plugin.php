@@ -9,7 +9,7 @@ use craft\events\TemplateEvent;
 use craft\web\Request;
 use craft\web\UrlManager;
 use craft\web\View;
-use Weglot\Client\Api\LanguageEntry;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\helpers\DashboardHelper;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 use PHPUnit\Framework\TestCase;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\RequestUrlService;
-use Weglot\Util\LanguageEntry;
+use Weglot\Vendor\Weglot\Util\LanguageEntry;
 
 final class ReplaceLinkServiceTest extends TestCase
 {

@@ -25,3 +25,4 @@ auth.json
 phpstan.neon
 /phpunit.xml
 ###< local ###
+/dependencies/

@@ -3,7 +3,7 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Weglot\Client\Api\Exception\ApiError;
+use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 
 class TranslateService extends Component
 {
@@ -90,6 +90,7 @@ class TranslateService extends Component
                     return $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
                 case 'html':
                     // TODO: Gérer les filtres pour l'échappement d'attributs (HTML, Vue.js).
+
                     $translatedContent = $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
 
                     // TODO: Intégrer la proxification des URLs et autres traitements finaux.
