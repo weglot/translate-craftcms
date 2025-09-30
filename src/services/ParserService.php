@@ -66,7 +66,7 @@ class ParserService extends Component
         $parser->getDomCheckerProvider()->addCheckers($this->domCheckersService->getDomCheckers());
         $parser->getRegexCheckerProvider()->addCheckers($this->regexCheckersService->getRegexCheckers());
 
-        // TODO: Remplacer par un événement Craft pour permettre la modification des noeuds ignorés
+        // TODO: Replace with a Craft event to allow modification of ignored nodes
         $ignoredNodes = $parser->getIgnoredNodesFormatter()->getIgnoredNodes();
         $parser->getIgnoredNodesFormatter()->setIgnoredNodes($ignoredNodes);
 

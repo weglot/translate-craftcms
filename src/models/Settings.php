@@ -5,9 +5,6 @@ namespace weglot\craftweglot\models;
 use craft\base\Model;
 use weglot\craftweglot\Plugin;
 
-/**
- * Weglot settings.
- */
 class Settings extends Model
 {
     public string $apiKey = '';

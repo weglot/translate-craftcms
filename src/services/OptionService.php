@@ -2,7 +2,6 @@
 
 namespace weglot\craftweglot\services;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\Json;
 use craft\web\View;
@@ -26,7 +25,7 @@ class OptionService extends Component
     protected $optionsFromApi;
 
     /**
-     * @var array<string, mixed>|null cache pour les options récupérées
+     * @var array<string, mixed>|null
      */
     private ?array $_options = null;
 
@@ -186,7 +185,7 @@ class OptionService extends Component
             }
 
             $options = array_merge($this->optionsBddDefault, $body);
-            $options['api_key_private'] = $this->getApiKeyPrivate(); // Cette méthode doit être implémentée
+            $options['api_key_private'] = $this->getApiKeyPrivate();
 
             $this->optionsFromApi = $options;
 
@@ -197,7 +196,7 @@ class OptionService extends Component
                 'result' => $options,
             ];
         } catch (\Exception $e) {
-            \Craft::error('Erreur lors de la récupération des options Weglot depuis l\'API : '.$e->getMessage(), __METHOD__);
+            \Craft::error('Error retrieving Weglot options from API : '.$e->getMessage(), __METHOD__);
 
             return [
                 'success' => false,
@@ -259,7 +258,7 @@ class OptionService extends Component
 
     private function getApiKeyPrivate(): string
     {
-        // TODO: Implémenter la logique pour récupérer la clé API privée
+        // TODO: Implement the logic to retrieve the private API key
         return '';
     }
 
@@ -291,7 +290,7 @@ class OptionService extends Component
         $excludeBlocks[] = '.fad';
         $excludeBlocks[] = '#yii-debug-toolbar';
 
-        // TODO: Remplacer `apply_filters` par un événement Craft pour permettre l'extensibilité.
+        // TODO: Replace `apply_filters` with a Craft event to allow extensibility.
 
         return array_values(array_unique($excludeBlocks));
     }
@@ -348,7 +347,7 @@ class OptionService extends Component
         $excludeUrls[] = [new Regex(RegexEnum::IS_EXACTLY, '/sitemap.xml'), null];
         $excludeUrls[] = [new Regex(RegexEnum::IS_EXACTLY, '/sitemap.xsl'), null];
 
-        // TODO: Remplacer par un événement Craft pour permettre une extensibilité tierce.
+        // TODO: Replace with a Craft event to allow third-party extensibility.
 
         return $excludeUrls;
     }
@@ -469,7 +468,7 @@ class OptionService extends Component
             return [
                 'success' => false,
                 'code' => 'cdn_fetch_fail',
-                'message' => 'Impossible de récupérer les options depuis le CDN Weglot.',
+                'message' => 'Unable to retrieve options from Weglot CDN.',
             ];
         }
 
@@ -479,7 +478,7 @@ class OptionService extends Component
             return [
                 'success' => false,
                 'code' => 'missing_private_key',
-                'message' => 'Clé privée Weglot introuvable dans les options.',
+                'message' => 'Weglot private key not found in options.',
             ];
         }
 
@@ -508,7 +507,7 @@ class OptionService extends Component
             return [
                 'success' => false,
                 'code' => 'json_encode_fail',
-                'message' => 'Echec de l’encodage JSON des options.',
+                'message' => 'Failed to JSON encode options.',
             ];
         }
 
@@ -534,7 +533,7 @@ class OptionService extends Component
                 return [
                     'success' => false,
                     'code' => 'api_save_http_error',
-                    'message' => "Erreur HTTP $status lors de la sauvegarde Weglot.",
+                    'message' => "HTTP error $status while saving Weglot.",
                 ];
             }
 
@@ -549,12 +548,12 @@ class OptionService extends Component
                 'result' => \is_array($decoded) ? $decoded : ['raw' => $body],
             ];
         } catch (\Throwable $e) {
-            \Craft::error('Erreur lors de la sauvegarde Weglot: '.$e->getMessage(), __METHOD__);
+            \Craft::error('Error while saving Weglot: '.$e->getMessage(), __METHOD__);
 
             return [
                 'success' => false,
                 'code' => 'api_save_exception',
-                'message' => 'Exception lors de la sauvegarde des options Weglot.',
+                'message' => 'Exception while saving Weglot options.',
             ];
         }
     }
@@ -594,11 +593,11 @@ class OptionService extends Component
                 $limit = 0;
             }
 
-            \Craft::$app->getCache()->set($cacheKey, $limit, 300); // 5 minutes
+            \Craft::$app->getCache()->set($cacheKey, $limit, 300);
 
             return $limit;
         } catch (\Throwable $e) {
-            \Craft::error('Erreur lors de getLanguagesLimit: '.$e->getMessage(), __METHOD__);
+            \Craft::error('Error while gettingLanguagesLimit '.$e->getMessage(), __METHOD__);
 
             return null;
         }

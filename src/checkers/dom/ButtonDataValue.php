@@ -5,18 +5,10 @@ namespace weglot\craftweglot\checkers\dom;
 use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\AbstractDomChecker;
 
-/**
- * @since 2.0.6
- */
 class ButtonDataValue extends AbstractDomChecker
 {
-    /**
-     * {@inheritdoc}
-     */
     public const DOM = 'button';
-    /**
-     * {@inheritdoc}
-     */
+
     public const PROPERTY = 'data-value';
     /**
      * @var int

@@ -2,7 +2,6 @@
 
 namespace weglot\craftweglot\services;
 
-use Craft;
 use craft\base\Component;
 
 class DomCheckersService extends Component
@@ -28,7 +27,7 @@ class DomCheckersService extends Component
             $checkerClasses[] = '\\weglot\\craftweglot\\checkers\\dom\\'.$className;
         }
 
-        // TODO: Remplacer par un événement Craft pour permettre l'extension
+        // TODO: Replace with a Craft event to allow extension
         return $checkerClasses;
     }
 }

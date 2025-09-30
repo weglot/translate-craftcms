@@ -86,17 +86,17 @@ class TranslateService extends Component
             switch ($type) {
                 case 'json':
                 case 'xml':
-                    // TODO: Intégrer la logique de remplacement d'URL pour le XML.
+                    // TODO: Integrate URL replacement logic for XML.
                     return $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
                 case 'html':
-                    // TODO: Gérer les filtres pour l'échappement d'attributs (HTML, Vue.js).
 
+                    // TODO: Manage filters for attribute escaping (HTML, Vue.js).
                     $translatedContent = $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
 
-                    // TODO: Intégrer la proxification des URLs et autres traitements finaux.
+                    // TODO: Integrate URL proxying and other end-processing.
                     return $this->weglotRenderDom($translatedContent);
                 default:
-                    // TODO: Implémenter un événement Craft pour les types de contenu personnalisés.
+                    // TODO: Implement a Craft event for custom content types.
                     return $html;
             }
         } catch (ApiError $e) {
@@ -159,8 +159,6 @@ class TranslateService extends Component
      * @param string $html
      *
      * @return string
-     *
-     * @since 2.3.0
      */
     private function removeComments($html)
     {

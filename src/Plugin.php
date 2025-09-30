@@ -257,7 +257,7 @@ class Plugin extends BasePlugin
 
     private function checkRedirect(): void
     {
-        // TODO: Implémenter la logique de redirection automatique ici.
+        // TODO: Implement automatic redirection logic here.
     }
 
     protected function createSettingsModel(): ?Model
