@@ -15,6 +15,7 @@ interface AbstractCollectionInterface
      * @return $this
      */
     public function addOne(AbstractCollectionEntry $entry);
+
     /**
      * Add several words at once.
      *

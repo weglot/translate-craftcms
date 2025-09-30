@@ -4,6 +4,7 @@ namespace Weglot\Vendor\Weglot\Parser\Formatter;
 
 use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Parser\Parser;
+
 abstract class AbstractFormatter
 {
     /**
@@ -14,18 +15,22 @@ abstract class AbstractFormatter
      * @var TranslateEntry
      */
     protected $translated;
+
     public function __construct(Parser $parser, TranslateEntry $translated)
     {
         $this->setParser($parser)->setTranslated($translated);
     }
+
     /**
      * @return $this
      */
     public function setParser(Parser $parser)
     {
         $this->parser = $parser;
+
         return $this;
     }
+
     /**
      * @return Parser
      */
@@ -33,14 +38,17 @@ abstract class AbstractFormatter
     {
         return $this->parser;
     }
+
     /**
      * @return $this
      */
     public function setTranslated(TranslateEntry $translated)
     {
         $this->translated = $translated;
+
         return $this;
     }
+
     /**
      * @return TranslateEntry
      */
@@ -48,6 +56,7 @@ abstract class AbstractFormatter
     {
         return $this->translated;
     }
+
     /**
      * @param int $index
      *

@@ -11,6 +11,7 @@ trait AbstractCollectionSerializable
         foreach ($this->collection as $entry) {
             $words[] = $entry->jsonSerialize();
         }
+
         return $words;
     }
 }

@@ -4,6 +4,7 @@ namespace Weglot\Vendor\Weglot\Parser\ConfigProvider;
 
 use Weglot\Vendor\Weglot\Client\Api\Enum\BotType;
 use Weglot\Vendor\Weglot\Util\Server;
+
 class ServerConfigProvider extends AbstractConfigProvider
 {
     /**
@@ -13,6 +14,7 @@ class ServerConfigProvider extends AbstractConfigProvider
     {
         parent::__construct('', BotType::HUMAN, $title);
     }
+
     /**
      * Is used to load server data, you have to run it manually !
      *
@@ -24,8 +26,8 @@ class ServerConfigProvider extends AbstractConfigProvider
     {
         if (!empty($canonical)) {
             $url = $canonical;
-        } else if (200 !== http_response_code()) {
-            $url = Server::urlOrigin($_SERVER) . '/404';
+        } elseif (200 !== http_response_code()) {
+            $url = Server::urlOrigin($_SERVER).'/404';
         } else {
             $url = Server::fullUrl($_SERVER);
         }

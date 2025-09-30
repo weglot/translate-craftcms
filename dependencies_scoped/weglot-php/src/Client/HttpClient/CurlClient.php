@@ -16,11 +16,11 @@ if (!\defined('CURL_SSLVERSION_TLSv1_2')) {
 // @codingStandardsIgnoreEnd
 class CurlClient implements ClientInterface
 {
-    const DEFAULT_TIMEOUT = 80;
-    const DEFAULT_CONNECT_TIMEOUT = 30;
-    const INITIAL_NETWORK_RETRY_DELAY = 0.5;
-    const MAX_NETWORK_RETRY_DELAY = 2.0;
-    const MAX_NETWORK_RETRIES = 0;
+    public const DEFAULT_TIMEOUT = 80;
+    public const DEFAULT_CONNECT_TIMEOUT = 30;
+    public const INITIAL_NETWORK_RETRY_DELAY = 0.5;
+    public const MAX_NETWORK_RETRY_DELAY = 2.0;
+    public const MAX_NETWORK_RETRIES = 0;
     /**
      * @var int
      */
@@ -45,6 +45,7 @@ class CurlClient implements ClientInterface
      * @var array<string, string>
      */
     protected $userAgentInfo = [];
+
     /**
      * @param array<mixed>  $defaultOptions
      * @param array<string> $defaultHeaders
@@ -55,6 +56,7 @@ class CurlClient implements ClientInterface
         $this->defaultHeaders = $defaultHeaders;
         $this->initUserAgentInfo();
     }
+
     /**
      * Initializing default user-agent.
      *
@@ -63,8 +65,9 @@ class CurlClient implements ClientInterface
     public function initUserAgentInfo()
     {
         $curlVersion = curl_version();
-        $this->userAgentInfo = ['curl' => 'cURL\\' . $curlVersion['version'], 'ssl' => $curlVersion['ssl_version']];
+        $this->userAgentInfo = ['curl' => 'cURL\\'.$curlVersion['version'], 'ssl' => $curlVersion['ssl_version']];
     }
+
     /**
      * @return array<mixed>
      */
@@ -72,6 +75,7 @@ class CurlClient implements ClientInterface
     {
         return $this->defaultOptions;
     }
+
     /**
      * @param string $header
      *
@@ -81,6 +85,7 @@ class CurlClient implements ClientInterface
     {
         $this->defaultHeaders[] = $header;
     }
+
     /**
      * @return array<string>
      */
@@ -88,6 +93,7 @@ class CurlClient implements ClientInterface
     {
         return $this->defaultHeaders;
     }
+
     /**
      * @param string $service
      * @param string $value
@@ -98,6 +104,7 @@ class CurlClient implements ClientInterface
     {
         $this->userAgentInfo[$service] = $value;
     }
+
     /**
      * @return array<string, string>
      */
@@ -105,6 +112,7 @@ class CurlClient implements ClientInterface
     {
         return $this->userAgentInfo;
     }
+
     /**
      * @return int
      */
@@ -112,6 +120,7 @@ class CurlClient implements ClientInterface
     {
         return $this->timeout;
     }
+
     /**
      * @param int $seconds
      *
@@ -120,8 +129,10 @@ class CurlClient implements ClientInterface
     public function setTimeout($seconds)
     {
         $this->timeout = $seconds;
+
         return $this;
     }
+
     /**
      * @return int
      */
@@ -129,6 +140,7 @@ class CurlClient implements ClientInterface
     {
         return $this->connectTimeout;
     }
+
     /**
      * @param int $seconds
      *
@@ -137,8 +149,10 @@ class CurlClient implements ClientInterface
     public function setConnectTimeout($seconds)
     {
         $this->connectTimeout = $seconds;
+
         return $this;
     }
+
     /**
      * @return int
      */
@@ -146,6 +160,7 @@ class CurlClient implements ClientInterface
     {
         return $this->maxNetworkRetries;
     }
+
     /**
      * @param int $retries
      *
@@ -154,8 +169,10 @@ class CurlClient implements ClientInterface
     public function setMaxNetworkRetries($retries)
     {
         $this->maxNetworkRetries = $retries;
+
         return $this;
     }
+
     public function request($method, $absUrl, $params = [], $body = [])
     {
         // init
@@ -165,10 +182,10 @@ class CurlClient implements ClientInterface
         // parameters
         if (\count($params) > 0) {
             $encoded = http_build_query($params);
-            $absUrl = $absUrl . '?' . $encoded;
+            $absUrl = $absUrl.'?'.$encoded;
         }
         // generic processing
-        list($options, $headers) = $this->processMethod($method, $options, $headers, $body);
+        [$options, $headers] = $this->processMethod($method, $options, $headers, $body);
         $options = $this->processHeadersAndOptions($headers, $options, $absUrl);
         // Create a callback to capture HTTP headers for the response
         $rheaders = [];
@@ -177,14 +194,17 @@ class CurlClient implements ClientInterface
             if (!str_contains($header_line, ':')) {
                 return \strlen($header_line);
             }
-            list($key, $value) = explode(':', trim($header_line), 2);
+            [$key, $value] = explode(':', trim($header_line), 2);
             $rheaders[trim($key)] = trim($value);
+
             return \strlen($header_line);
         };
         $options[\CURLOPT_HEADERFUNCTION] = $headerCallback;
-        list($rbody, $rcode) = $this->executeRequestWithRetries($options, $absUrl);
+        [$rbody, $rcode] = $this->executeRequestWithRetries($options, $absUrl);
+
         return [$rbody, $rcode, $rheaders];
     }
+
     /**
      * Setup behavior for each methods.
      *
@@ -209,12 +229,14 @@ class CurlClient implements ClientInterface
             $options[\CURLOPT_POST] = 1;
             $options[\CURLOPT_POSTFIELDS] = $dataString;
             $headers[] = 'Content-Type: application/json';
-            $headers[] = 'Content-Length: ' . \strlen($dataString);
+            $headers[] = 'Content-Length: '.\strlen($dataString);
         } else {
-            throw new \Exception('Unrecognized method ' . strtoupper($method));
+            throw new \Exception('Unrecognized method '.strtoupper($method));
         }
+
         return [$options, $headers];
     }
+
     /**
      * @param array<string> $headers
      * @param array<mixed>  $options
@@ -238,7 +260,7 @@ class CurlClient implements ClientInterface
         // sending an empty `Expect:` header.
         $headers[] = 'Expect: ';
         // injecting user-agent in headers
-        $headers[] = 'User-Agent: ' . implode(' | ', $this->getUserAgentInfo());
+        $headers[] = 'User-Agent: '.implode(' | ', $this->getUserAgentInfo());
         // options
         $options[\CURLOPT_URL] = $absUrl;
         $options[\CURLOPT_RETURNTRANSFER] = \true;
@@ -246,10 +268,12 @@ class CurlClient implements ClientInterface
         $options[\CURLOPT_TIMEOUT] = $this->getTimeout();
         $options[\CURLOPT_HTTPHEADER] = $headers;
         $options[\CURLOPT_SSL_VERIFYPEER] = \true;
-        $options[\CURLOPT_CAPATH] = __DIR__ . '/../../../data/';
-        $options[\CURLOPT_CAINFO] = __DIR__ . '/../../../data/ca-certificates.crt';
+        $options[\CURLOPT_CAPATH] = __DIR__.'/../../../data/';
+        $options[\CURLOPT_CAINFO] = __DIR__.'/../../../data/ca-certificates.crt';
+
         return $options;
     }
+
     /**
      * @param array<string, mixed> $options cURL options
      * @param string               $absUrl  The URL being requested, including domain and protocol
@@ -281,7 +305,7 @@ class CurlClient implements ClientInterface
                 if (\defined('WP_PROXY_USERNAME')) {
                     $user = WP_PROXY_USERNAME;
                     $pass = \defined('WP_PROXY_PASSWORD') ? WP_PROXY_PASSWORD : '';
-                    curl_setopt($curl, \CURLOPT_PROXYUSERPWD, $user . ':' . $pass);
+                    curl_setopt($curl, \CURLOPT_PROXYUSERPWD, $user.':'.$pass);
                 }
             }
             curl_setopt_array($curl, $options);
@@ -304,8 +328,10 @@ class CurlClient implements ClientInterface
         if (\false === $rbody) {
             $this->handleCurlError($absUrl, $errno, $message, $numRetries);
         }
+
         return [$rbody, $rcode];
     }
+
     /**
      * @param string $url
      * @param int    $errno
@@ -322,14 +348,14 @@ class CurlClient implements ClientInterface
             case \CURLE_COULDNT_CONNECT:
             case \CURLE_COULDNT_RESOLVE_HOST:
             case \CURLE_OPERATION_TIMEOUTED:
-                $msg = "Could not connect to Weglot ({$url}).  Please check your " . 'internet connection and try again.  If this problem persists, ' . "you should check Weglot's status at " . 'https://twitter.com/weglot, or';
+                $msg = "Could not connect to Weglot ({$url}).  Please check your ".'internet connection and try again.  If this problem persists, '."you should check Weglot's status at ".'https://twitter.com/weglot, or';
                 break;
             case \CURLE_SSL_CACERT:
             case \CURLE_SSL_PEER_CERTIFICATE:
-                $msg = "Could not verify Weglot's SSL certificate.  Please make sure " . 'that your network is not intercepting certificates.  ' . "(Try going to {$url} in your browser.)  " . 'If this problem persists,';
+                $msg = "Could not verify Weglot's SSL certificate.  Please make sure ".'that your network is not intercepting certificates.  '."(Try going to {$url} in your browser.)  ".'If this problem persists,';
                 break;
             default:
-                $msg = 'Unexpected error communicating with Weglot.  ' . 'If this problem persists,';
+                $msg = 'Unexpected error communicating with Weglot.  If this problem persists,';
         }
         $msg .= " let us know at support@weglot.com.\n\n(Network error [errno {$errno}]: {$message})";
         if ($numRetries > 0) {
@@ -337,6 +363,7 @@ class CurlClient implements ClientInterface
         }
         throw new \Exception($msg);
     }
+
     /**
      * Checks if an error is a problem that we should retry on. This includes both
      * socket errors that may represent an intermittent problem and some special
@@ -365,8 +392,10 @@ class CurlClient implements ClientInterface
         if ($timeoutRelated || $refusedConnection || $conflict) {
             return \true;
         }
+
         return \false;
     }
+
     /**
      * @param int $numRetries
      *
@@ -383,6 +412,7 @@ class CurlClient implements ClientInterface
         $sleepSeconds *= 0.5 * (1 + mt_rand() / mt_getrandmax() * 1.0);
         // But never sleep less than the base sleep seconds.
         $sleepSeconds = max(self::INITIAL_NETWORK_RETRY_DELAY, $sleepSeconds);
+
         return $sleepSeconds;
     }
 }

@@ -3,6 +3,7 @@
 namespace Weglot\Vendor\Weglot\Client\Api;
 
 use Weglot\Vendor\Weglot\Client\Api\Shared\AbstractCollectionEntry;
+
 class LanguageEntry extends AbstractCollectionEntry
 {
     /**
@@ -35,6 +36,7 @@ class LanguageEntry extends AbstractCollectionEntry
      * @var bool
      */
     protected $isRtl;
+
     /**
      * @param string $internalCode Internal weglot code to identify language
      * @param string $externalCode External code that shows on website on URLs
@@ -46,6 +48,7 @@ class LanguageEntry extends AbstractCollectionEntry
     {
         $this->setInternalCode($internalCode)->setExternalCode($externalCode)->setEnglishName($englishName)->setLocalName($localName)->setRtl($isRtl);
     }
+
     /**
      * @param string $internalCode
      *
@@ -54,8 +57,10 @@ class LanguageEntry extends AbstractCollectionEntry
     public function setInternalCode($internalCode)
     {
         $this->internalCode = $internalCode;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -63,6 +68,7 @@ class LanguageEntry extends AbstractCollectionEntry
     {
         return $this->internalCode;
     }
+
     /**
      * @param string|null $externalCode
      *
@@ -70,9 +76,11 @@ class LanguageEntry extends AbstractCollectionEntry
      */
     public function setExternalCode($externalCode)
     {
-        $this->externalCode = isset($externalCode) ? $externalCode : $this->internalCode;
+        $this->externalCode = $externalCode ?? $this->internalCode;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -80,6 +88,7 @@ class LanguageEntry extends AbstractCollectionEntry
     {
         return $this->externalCode;
     }
+
     /**
      * @param string $englishName
      *
@@ -88,8 +97,10 @@ class LanguageEntry extends AbstractCollectionEntry
     public function setEnglishName($englishName)
     {
         $this->englishName = $englishName;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -97,6 +108,7 @@ class LanguageEntry extends AbstractCollectionEntry
     {
         return $this->englishName;
     }
+
     /**
      * @param string $localName
      *
@@ -105,8 +117,10 @@ class LanguageEntry extends AbstractCollectionEntry
     public function setLocalName($localName)
     {
         $this->localName = $localName;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -114,6 +128,7 @@ class LanguageEntry extends AbstractCollectionEntry
     {
         return $this->localName;
     }
+
     /**
      * @param bool $rtl
      *
@@ -122,8 +137,10 @@ class LanguageEntry extends AbstractCollectionEntry
     public function setRtl($rtl)
     {
         $this->isRtl = $rtl;
+
         return $this;
     }
+
     /**
      * @return bool
      */
@@ -131,6 +148,7 @@ class LanguageEntry extends AbstractCollectionEntry
     {
         return $this->isRtl;
     }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

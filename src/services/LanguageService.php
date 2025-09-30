@@ -5,10 +5,10 @@ namespace weglot\craftweglot\services;
 use craft\base\Component;
 use craft\helpers\Json;
 use craft\web\View;
+use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\LanguageCollection;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use Weglot\Vendor\Weglot\Client\Endpoint\LanguagesList;
-use weglot\craftweglot\Plugin;
 
 class LanguageService extends Component
 {

@@ -3,6 +3,7 @@
 namespace Weglot\Vendor\Weglot\Client\Api;
 
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingRequiredParamException;
+
 if (!\function_exists('Weglot\Vendor\array_keys_exists')) {
     /**
      * Used to check if multiple keys are defined in given array.
@@ -31,6 +32,7 @@ class TranslateEntry implements \JsonSerializable
      * @var WordCollection
      */
     protected $outputWords;
+
     /**
      * @param array<string, mixed> $params Params of the translate entry, required fields: language_from, language_to, bot, request_url & optional: title ("Empty title" by default)
      * @param WordCollection|null  $words  Collection of words
@@ -41,6 +43,7 @@ class TranslateEntry implements \JsonSerializable
     {
         $this->setParams($params)->setInputWords($words)->setOutputWords();
     }
+
     /**
      * Default params values.
      *
@@ -50,6 +53,7 @@ class TranslateEntry implements \JsonSerializable
     {
         return ['title' => 'Empty title'];
     }
+
     /**
      * Required params field names.
      *
@@ -59,6 +63,7 @@ class TranslateEntry implements \JsonSerializable
     {
         return ['language_from', 'language_to', 'bot', 'request_url'];
     }
+
     /**
      * @param string|null $key
      *
@@ -70,10 +75,13 @@ class TranslateEntry implements \JsonSerializable
             if (isset($this->params[$key])) {
                 return $this->params[$key];
             }
+
             return \false;
         }
+
         return $this->params;
     }
+
     /**
      * @param array<string, mixed> $params
      *
@@ -88,8 +96,10 @@ class TranslateEntry implements \JsonSerializable
         if (!array_keys_exists($this->requiredParams(), $this->params)) {
             throw new MissingRequiredParamException();
         }
+
         return $this;
     }
+
     /**
      * @return WordCollection
      */
@@ -97,6 +107,7 @@ class TranslateEntry implements \JsonSerializable
     {
         return $this->inputWords;
     }
+
     /**
      * Used to fill input words collection
      * If $words is null, it would put an empty word collection.
@@ -112,8 +123,10 @@ class TranslateEntry implements \JsonSerializable
         } else {
             $this->inputWords = $words;
         }
+
         return $this;
     }
+
     /**
      * @return WordCollection
      */
@@ -121,6 +134,7 @@ class TranslateEntry implements \JsonSerializable
     {
         return $this->outputWords;
     }
+
     /**
      * Used to fill output words collection
      * If $words is null, it would put an empty word collection.
@@ -136,8 +150,10 @@ class TranslateEntry implements \JsonSerializable
         } else {
             $this->outputWords = $words;
         }
+
         return $this;
     }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

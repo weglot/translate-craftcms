@@ -6,9 +6,10 @@ use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
 use Weglot\Vendor\Weglot\Parser\Check\Regex\RegexChecker;
 use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\Weglot\Util\SourceType;
+
 class RegexCheckerProvider
 {
-    const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Parser\Check\Regex\\';
+    public const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Parser\Check\Regex\\';
     /**
      * @var Parser
      */
@@ -21,19 +22,23 @@ class RegexCheckerProvider
      * @var array
      */
     protected $discoverCaching = [];
+
     public function __construct(Parser $parser)
     {
         $this->setParser($parser);
         $this->loadDefaultCheckers();
     }
+
     /**
      * @return $this
      */
     public function setParser(Parser $parser)
     {
         $this->parser = $parser;
+
         return $this;
     }
+
     /**
      * @return Parser
      */
@@ -41,6 +46,7 @@ class RegexCheckerProvider
     {
         return $this->parser;
     }
+
     /**
      * @param RegexChecker $checker
      *
@@ -49,16 +55,20 @@ class RegexCheckerProvider
     public function addChecker($checker)
     {
         $this->checkers[] = $checker;
+
         return $this;
     }
+
     /**
      * @return $this
      */
     public function addCheckers(array $checkers)
     {
         $this->checkers = array_merge($this->checkers, $checkers);
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -66,6 +76,7 @@ class RegexCheckerProvider
     {
         return $this->checkers;
     }
+
     /**
      * Load default checkers.
      *
@@ -87,6 +98,7 @@ class RegexCheckerProvider
             $this->addChecker(new RegexChecker("#<script type=('|\")text/html('|\")([^\\>]+?)?>(.+?)<\\/script>#s", SourceType::SOURCE_HTML, 4));
         }
     }
+
     /**
      * @param mixed $checker Class of the Checker to add
      *
@@ -96,10 +108,13 @@ class RegexCheckerProvider
     {
         if ($checker instanceof RegexChecker) {
             $this->addChecker($checker);
+
             return \true;
         }
+
         return \false;
     }
+
     /**
      * @param string $domString
      *
@@ -112,7 +127,7 @@ class RegexCheckerProvider
         $checkers = $this->getCheckers();
         $regexes = [];
         foreach ($checkers as $class) {
-            list($regex, $type, $varNumber, $extraKeys, $callback, $revert_callback) = $class->toArray();
+            [$regex, $type, $varNumber, $extraKeys, $callback, $revert_callback] = $class->toArray();
             // Ensure revert_callback is always initialized
             if (!isset($revert_callback)) {
                 $revert_callback = null;
@@ -144,6 +159,7 @@ class RegexCheckerProvider
                 }
             }
         }
+
         return $regexes;
     }
 }

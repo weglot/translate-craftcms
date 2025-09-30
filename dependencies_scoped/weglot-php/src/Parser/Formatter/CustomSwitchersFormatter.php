@@ -3,6 +3,7 @@
 namespace Weglot\Vendor\Weglot\Parser\Formatter;
 
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom;
+
 class CustomSwitchersFormatter
 {
     /**
@@ -13,6 +14,7 @@ class CustomSwitchersFormatter
      * @var array
      */
     protected $customSwitchers;
+
     /**
      * @param simple_html_dom $dom
      * @param array           $customSwitchers
@@ -22,14 +24,17 @@ class CustomSwitchersFormatter
         $this->setDom($dom)->setCustomSwitchers($customSwitchers);
         $this->handle($this->dom, $customSwitchers);
     }
+
     /**
      * @return $this
      */
     public function setDom(simple_html_dom $dom)
     {
         $this->dom = $dom;
+
         return $this;
     }
+
     /**
      * @return simple_html_dom
      */
@@ -37,14 +42,17 @@ class CustomSwitchersFormatter
     {
         return $this->dom;
     }
+
     /**
      * @return $this
      */
     public function setCustomSwitchers(array $customSwitchers)
     {
         $this->customSwitchers = $customSwitchers;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -52,6 +60,7 @@ class CustomSwitchersFormatter
     {
         return $this->customSwitchers;
     }
+
     /**
      * <div class="target">target</div> foreach customswitchers
      * wanna be translated.
@@ -73,24 +82,24 @@ class CustomSwitchersFormatter
                     foreach ($targets as $target) {
                         // for each target we check if we have an associate sibling or we put the switcher into him
                         if (empty($location['sibling'])) {
-                            $target->innertext .= '<div data-wg-position="' . $location['target'] . '"></div>';
+                            $target->innertext .= '<div data-wg-position="'.$location['target'].'"></div>';
                         } else {
                             // we try to find the sibling
-                            $siblings = $dom->find($location['target'] . ' ' . $location['sibling']);
+                            $siblings = $dom->find($location['target'].' '.$location['sibling']);
                             if ($siblings) {
                                 // we check if the sibling is a parent of the target location and we put the switche before
                                 foreach ($siblings as $sibling) {
                                     if (\is_object($sibling)) {
-                                        $sibling->outertext = '<div data-wg-position="' . $location['target'] . ' ' . $location['sibling'] . '"></div>' . $sibling->outertext;
+                                        $sibling->outertext = '<div data-wg-position="'.$location['target'].' '.$location['sibling'].'"></div>'.$sibling->outertext;
                                     }
                                 }
                             }
                         }
                     }
-                } else if (!empty($location['sibling'])) {
-                    $temp_switcher .= '<div data-wg-position="' . $location['target'] . $location['sibling'] . '" data-wg-ajax="true"></div>';
+                } elseif (!empty($location['sibling'])) {
+                    $temp_switcher .= '<div data-wg-position="'.$location['target'].$location['sibling'].'" data-wg-ajax="true"></div>';
                 } else {
-                    $temp_switcher .= '<div data-wg-position="' . $location['target'] . '" data-wg-ajax="true"></div>';
+                    $temp_switcher .= '<div data-wg-position="'.$location['target'].'" data-wg-ajax="true"></div>';
                 }
             }
         }
@@ -104,9 +113,10 @@ class CustomSwitchersFormatter
                 $bodyTag->innertext .= $temp_switcher;
             } else {
                 // If $bodyTag is null, use str_replace as a fallback
-                $dom = str_replace('</body>', $temp_switcher . '</body>', $dom);
+                $dom = str_replace('</body>', $temp_switcher.'</body>', $dom);
             }
         }
+
         return $dom;
     }
 }

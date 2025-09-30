@@ -4,6 +4,7 @@ namespace Weglot\Vendor\Weglot\Parser\Check;
 
 use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom;
+
 abstract class AbstractChecker
 {
     /**
@@ -14,18 +15,22 @@ abstract class AbstractChecker
      * @var simple_html_dom
      */
     protected $dom;
+
     public function __construct(Parser $parser, simple_html_dom $dom)
     {
         $this->setParser($parser)->setDom($dom);
     }
+
     /**
      * @return $this
      */
     public function setParser(Parser $parser)
     {
         $this->parser = $parser;
+
         return $this;
     }
+
     /**
      * @return Parser
      */
@@ -33,14 +38,17 @@ abstract class AbstractChecker
     {
         return $this->parser;
     }
+
     /**
      * @return $this
      */
     public function setDom(simple_html_dom $dom)
     {
         $this->dom = $dom;
+
         return $this;
     }
+
     /**
      * @return simple_html_dom
      */
@@ -48,6 +56,7 @@ abstract class AbstractChecker
     {
         return $this->dom;
     }
+
     /**
      * @return mixed
      */

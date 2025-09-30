@@ -19,14 +19,17 @@ abstract class AbstractCollection implements \Countable, \Iterator, \ArrayAccess
      * @phpstan-var array<T>
      */
     protected $collection = [];
+
     /**
      * @return $this
      */
     public function addOne(AbstractCollectionEntry $entry)
     {
         $this->collection[] = $entry;
+
         return $this;
     }
+
     /**
      * @return $this
      */
@@ -35,6 +38,7 @@ abstract class AbstractCollection implements \Countable, \Iterator, \ArrayAccess
         foreach ($entries as $entry) {
             $this->addOne($entry);
         }
+
         return $this;
     }
 }

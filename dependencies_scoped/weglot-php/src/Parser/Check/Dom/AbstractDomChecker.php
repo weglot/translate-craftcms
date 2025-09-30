@@ -6,6 +6,7 @@ use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\Weglot\Util\Text;
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom_node;
+
 abstract class AbstractDomChecker
 {
     /**
@@ -13,25 +14,25 @@ abstract class AbstractDomChecker
      *
      * @var string
      */
-    const DOM = '';
+    public const DOM = '';
     /**
      * DOM property to get.
      *
      * @var string
      */
-    const PROPERTY = '';
+    public const PROPERTY = '';
     /**
      * Type of content returned by DOM property.
      *
      * @var int
      */
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
     /**
      * Need to escape DOM attribute.
      *
      * @var bool
      */
-    const ESCAPE_SPECIAL_CHAR = \false;
+    public const ESCAPE_SPECIAL_CHAR = \false;
     /**
      * @var simple_html_dom_node
      */
@@ -40,6 +41,7 @@ abstract class AbstractDomChecker
      * @var string
      */
     protected $property;
+
     /**
      * @param string $property
      */
@@ -47,14 +49,17 @@ abstract class AbstractDomChecker
     {
         $this->setNode($node)->setProperty($property);
     }
+
     /**
      * @return $this
      */
     public function setNode(simple_html_dom_node $node)
     {
         $this->node = $node;
+
         return $this;
     }
+
     /**
      * @return simple_html_dom_node
      */
@@ -62,6 +67,7 @@ abstract class AbstractDomChecker
     {
         return $this->node;
     }
+
     /**
      * @param string $property
      *
@@ -70,8 +76,10 @@ abstract class AbstractDomChecker
     public function setProperty($property)
     {
         $this->property = $property;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -79,6 +87,7 @@ abstract class AbstractDomChecker
     {
         return $this->property;
     }
+
     /**
      * @return bool
      */
@@ -86,6 +95,7 @@ abstract class AbstractDomChecker
     {
         return $this->defaultCheck() && $this->check();
     }
+
     /**
      * @return bool
      */
@@ -99,6 +109,7 @@ abstract class AbstractDomChecker
             return '' != Text::fullTrim($this->node->{$property}) && (!$this->node->hasAncestorAttribute(Parser::ATTRIBUTE_NO_TRANSLATE) || $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS));
         }
     }
+
     /**
      * @return bool
      */
@@ -106,12 +117,14 @@ abstract class AbstractDomChecker
     {
         return \true;
     }
+
     /**
      * @return array
      */
     public static function toArray()
     {
         $class = static::class;
+
         return [$class::DOM, $class::PROPERTY, $class::WORD_TYPE];
     }
 }

@@ -5,6 +5,7 @@ namespace Weglot\Vendor\Weglot\Client\Caching;
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\InvalidArgumentException;
+
 class Cache implements CacheInterface
 {
     /**
@@ -15,6 +16,7 @@ class Cache implements CacheInterface
      * @var int
      */
     protected $expire = 604800;
+
     // 7 days (= 60 * 60 * 24 * 7)
     /**
      * @param null $itemPool
@@ -23,6 +25,7 @@ class Cache implements CacheInterface
     {
         $this->setItemPool($itemPool);
     }
+
     /**
      * @param CacheItemPoolInterface|null $itemPool
      *
@@ -31,8 +34,10 @@ class Cache implements CacheInterface
     public function setItemPool($itemPool)
     {
         $this->itemPool = $itemPool;
+
         return $this;
     }
+
     /**
      * @return CacheItemPoolInterface|null
      */
@@ -40,6 +45,7 @@ class Cache implements CacheInterface
     {
         return $this->itemPool;
     }
+
     /**
      * @param int $expire
      *
@@ -48,8 +54,10 @@ class Cache implements CacheInterface
     public function setExpire($expire)
     {
         $this->expire = $expire;
+
         return $this;
     }
+
     /**
      * @return int
      */
@@ -57,6 +65,7 @@ class Cache implements CacheInterface
     {
         return $this->expire;
     }
+
     /**
      * @return bool
      */
@@ -64,13 +73,15 @@ class Cache implements CacheInterface
     {
         return null !== $this->itemPool;
     }
+
     /**
      * @return string
      */
     public function generateKey(array $data)
     {
-        return 'wg_' . sha1(json_encode($data));
+        return 'wg_'.sha1(json_encode($data));
     }
+
     /**
      * @param string $key
      *
@@ -82,6 +93,7 @@ class Cache implements CacheInterface
     {
         return $this->getItemPool()->getItem($key);
     }
+
     /**
      * @return CacheItemInterface
      *
@@ -90,14 +102,17 @@ class Cache implements CacheInterface
     public function getWithGenerate(array $data)
     {
         $key = $this->generateKey($data);
+
         return $this->get($key);
     }
+
     /**
      * @return bool
      */
     public function save(CacheItemInterface $item)
     {
         $item->expiresAfter($this->getExpire());
+
         return $this->getItemPool()->save($item);
     }
 }

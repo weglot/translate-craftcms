@@ -10,19 +10,22 @@ use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
 use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Client\Factory\Translate as TranslateFactory;
+
 class Translate extends Endpoint
 {
-    const METHOD = 'POST';
-    const ENDPOINT = '/translate';
+    public const METHOD = 'POST';
+    public const ENDPOINT = '/translate';
     /**
      * @var TranslateEntry
      */
     protected $translateEntry;
+
     public function __construct(TranslateEntry $translateEntry, Client $client)
     {
         $this->setTranslateEntry($translateEntry);
         parent::__construct($client);
     }
+
     /**
      * @return TranslateEntry
      */
@@ -30,14 +33,17 @@ class Translate extends Endpoint
     {
         return $this->translateEntry;
     }
+
     /**
      * @return $this
      */
     public function setTranslateEntry(TranslateEntry $translateEntry)
     {
         $this->translateEntry = $translateEntry;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -55,12 +61,12 @@ class Translate extends Endpoint
             // default behavior > sending word to request
             $where = 'request';
             $element = $word;
-            $array =& $requestWords;
+            $array = &$requestWords;
             // cached behavior > word is present in cache !
             if ($cachedWord->isHit()) {
                 $where = 'cached';
                 $element = $cachedWord->get();
-                $array =& $cachedWords;
+                $array = &$cachedWords;
             }
             // get next element place
             $next = \count($array);
@@ -68,15 +74,17 @@ class Translate extends Endpoint
             $array[$next] = $element;
             $fullWords[$key] = ['where' => $where, 'place' => $next];
         }
+
         return [$requestWords, $cachedWords, $fullWords];
     }
+
     /**
      * @return array
      */
     protected function afterRequest(array $response, array $beforeRequestResult)
     {
         // init
-        list($requestWords, $cachedWords, $fullWords) = $beforeRequestResult;
+        [$requestWords, $cachedWords, $fullWords] = $beforeRequestResult;
         $fromWords = $toWords = [];
         $defaultParams = ['from' => $this->getTranslateEntry()->getParams('language_from'), 'to' => $this->getTranslateEntry()->getParams('language_to')];
         // fetch all words in one array
@@ -102,8 +110,10 @@ class Translate extends Endpoint
         }
         $response['from_words'] = $fromWords;
         $response['to_words'] = $toWords;
+
         return $response;
     }
+
     /**
      * @return TranslateEntry
      *
@@ -127,7 +137,7 @@ class Translate extends Endpoint
                 $response = $this->afterRequest($asArray, $beforeRequest);
             }
         } else {
-            list($rawBody, $httpStatusCode) = $this->request($asArray, \false);
+            [$rawBody, $httpStatusCode] = $this->request($asArray, \false);
             if (200 !== $httpStatusCode) {
                 throw new ApiError($rawBody, $asArray);
             }
@@ -137,6 +147,7 @@ class Translate extends Endpoint
             }
         }
         $factory = new TranslateFactory($response);
+
         return $factory->handle();
     }
 }

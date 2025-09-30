@@ -6,9 +6,11 @@ use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
 use Weglot\Vendor\Weglot\Client\Api\WordCollection;
 use Weglot\Vendor\Weglot\Client\Api\WordEntry;
+
 class JsonUtil
 {
-    const SEPARATOR = '##';
+    public const SEPARATOR = '##';
+
     /**
      * @param string $key
      *
@@ -19,8 +21,10 @@ class JsonUtil
         if (isset($data[$key])) {
             return $data[$key];
         }
+
         return null;
     }
+
     /**
      * @param string $value
      *
@@ -32,6 +36,7 @@ class JsonUtil
     {
         $words->addOne(new WordEntry($value, WordType::TEXT));
     }
+
     /**
      * @param array  $data
      * @param string $index
@@ -42,14 +47,16 @@ class JsonUtil
     public static function set(WordCollection $words, $data, $index, &$nextJson)
     {
         $keys = explode(self::SEPARATOR, $index);
-        $current =& $data;
+        $current = &$data;
         foreach ($keys as $key) {
-            $current =& $current[$key];
+            $current = &$current[$key];
         }
         $current = $words[$nextJson]->getWord();
         ++$nextJson;
+
         return $data;
     }
+
     /**
      * @param string $newHTML
      * @param array  $data
@@ -60,13 +67,15 @@ class JsonUtil
     public static function setHTML($newHTML, $data, $key)
     {
         $keys = explode(self::SEPARATOR, $key);
-        $current =& $data;
+        $current = &$data;
         foreach ($keys as $key) {
-            $current =& $current[$key];
+            $current = &$current[$key];
         }
         $current = $newHTML;
+
         return $data;
     }
+
     /**
      * @param string $jsonString
      * @param array  $data
@@ -77,11 +86,12 @@ class JsonUtil
     public static function setJSONString($jsonString, $data, $key)
     {
         $keys = explode(self::SEPARATOR, $key);
-        $current =& $data;
+        $current = &$data;
         foreach ($keys as $key) {
-            $current =& $current[$key];
+            $current = &$current[$key];
         }
         $current = $jsonString;
+
         return $data;
     }
 }

@@ -8,21 +8,21 @@ namespace Weglot\Vendor\Weglot\Client\Api\Enum;
  */
 abstract class WordType
 {
-    const OTHER = 0;
-    const TEXT = 1;
-    const VALUE = 2;
-    const PLACEHOLDER = 3;
-    const META_CONTENT = 4;
-    const IFRAME_SRC = 5;
-    const IMG_SRC = 6;
-    const IMG_ALT = 7;
-    const PDF_HREF = 8;
-    const TITLE = 9;
-    const EXTERNAL_LINK = 10;
+    public const OTHER = 0;
+    public const TEXT = 1;
+    public const VALUE = 2;
+    public const PLACEHOLDER = 3;
+    public const META_CONTENT = 4;
+    public const IFRAME_SRC = 5;
+    public const IMG_SRC = 6;
+    public const IMG_ALT = 7;
+    public const PDF_HREF = 8;
+    public const TITLE = 9;
+    public const EXTERNAL_LINK = 10;
     /**
      * Only for internal use, if you have to add a value in this enum,
      * please increments the __MAX value.
      */
-    const __MIN = 0;
-    const __MAX = 10;
+    public const __MIN = 0;
+    public const __MAX = 10;
 }

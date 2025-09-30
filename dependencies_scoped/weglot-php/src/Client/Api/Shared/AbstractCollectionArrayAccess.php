@@ -9,11 +9,13 @@ trait AbstractCollectionArrayAccess
     {
         return isset($this->collection[$offset]);
     }
+
     #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        return isset($this->collection[$offset]) ? $this->collection[$offset] : null;
+        return $this->collection[$offset] ?? null;
     }
+
     #[\ReturnTypeWillChange]
     public function offsetSet($offset, $value)
     {
@@ -21,6 +23,7 @@ trait AbstractCollectionArrayAccess
             $this->collection[$offset] = $value;
         }
     }
+
     #[\ReturnTypeWillChange]
     public function offsetUnset($offset)
     {

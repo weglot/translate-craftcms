@@ -17,6 +17,7 @@ class Site
         curl_setopt($ch, \CURLOPT_USERAGENT, $userAgent);
         $content = curl_exec($ch);
         curl_close($ch);
+
         return $content;
     }
 }

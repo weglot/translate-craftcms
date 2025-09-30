@@ -4,7 +4,7 @@ namespace Weglot\Vendor\Weglot\Client\Api\Exception;
 
 abstract class WeglotCode
 {
-    const GENERIC = 0;
-    const AUTH = 1;
-    const PARAMETERS = 2;
+    public const GENERIC = 0;
+    public const AUTH = 1;
+    public const PARAMETERS = 2;
 }

@@ -10,13 +10,14 @@ use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\Weglot\Util\Text;
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom;
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom_node;
+
 class DomCheckerProvider
 {
     /**
      * @var array
      */
     protected $inlineNodes = ['a', 'span', 'strong', 'b', 'em', 'i', 'small', 'big', 'sub', 'sup', 'abbr', 'acronym', 'bdo', 'cite', 'kbd', 'q', 'u', 'mark'];
-    const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Vendor\Weglot\Parser\Check\Dom\\';
+    public const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Vendor\Weglot\Parser\Check\Dom\\';
     /**
      * @var Parser
      */
@@ -33,6 +34,7 @@ class DomCheckerProvider
      * @var int
      */
     protected $translationEngine;
+
     /**
      * @param int $translationEngine
      */
@@ -42,14 +44,17 @@ class DomCheckerProvider
         $this->setTranslationEngine($translationEngine);
         $this->loadDefaultCheckers();
     }
+
     /**
      * @return $this
      */
     public function setParser(Parser $parser)
     {
         $this->parser = $parser;
+
         return $this;
     }
+
     /**
      * @return Parser
      */
@@ -57,6 +62,7 @@ class DomCheckerProvider
     {
         return $this->parser;
     }
+
     /**
      * @param array $inlineNodes
      *
@@ -65,8 +71,10 @@ class DomCheckerProvider
     public function setInlineNodes($inlineNodes)
     {
         $this->inlineNodes = $inlineNodes;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -74,6 +82,7 @@ class DomCheckerProvider
     {
         return $this->inlineNodes;
     }
+
     /**
      * @param string $node
      *
@@ -82,8 +91,10 @@ class DomCheckerProvider
     public function addInlineNode($node)
     {
         $this->inlineNodes[] = $node;
+
         return $this;
     }
+
     /**
      * @param int $translationEngine
      *
@@ -92,8 +103,10 @@ class DomCheckerProvider
     public function setTranslationEngine($translationEngine)
     {
         $this->translationEngine = $translationEngine;
+
         return $this;
     }
+
     /**
      * @return int
      */
@@ -101,6 +114,7 @@ class DomCheckerProvider
     {
         return $this->translationEngine;
     }
+
     /**
      * @param AbstractDomChecker $checker
      *
@@ -109,40 +123,50 @@ class DomCheckerProvider
     public function addChecker($checker)
     {
         $this->checkers[] = $checker;
+
         return $this;
     }
+
     /**
      * @return $this
      */
     public function addCheckers(array $checkers)
     {
         $this->checkers = array_merge($this->checkers, $checkers);
+
         return $this;
     }
+
     /**
      * @return $this
      */
     public function removeCheckers(array $removeCheckers)
     {
         $this->checkers = array_diff($this->checkers, $removeCheckers);
+
         return $this;
     }
+
     /**
      * @return array
      */
     public function getCheckers()
     {
         $this->resetDiscoverCaching();
+
         return $this->checkers;
     }
+
     /**
      * @return $this
      */
     public function resetDiscoverCaching()
     {
         $this->discoverCaching = [];
+
         return $this;
     }
+
     /**
      * @param string $domToSearch
      *
@@ -153,8 +177,10 @@ class DomCheckerProvider
         if (!isset($this->discoverCaching[$domToSearch])) {
             $this->discoverCaching[$domToSearch] = $dom->find($domToSearch);
         }
+
         return $this->discoverCaching[$domToSearch];
     }
+
     /**
      * Load default checkers.
      *
@@ -162,12 +188,13 @@ class DomCheckerProvider
      */
     protected function loadDefaultCheckers()
     {
-        $files = array_diff(scandir(__DIR__ . '/Dom'), ['AbstractDomChecker.php', '..', '.']);
+        $files = array_diff(scandir(__DIR__.'/Dom'), ['AbstractDomChecker.php', '..', '.']);
         $checkers = array_map(function ($filename) {
-            return self::DEFAULT_CHECKERS_NAMESPACE . Text::removeFileExtension($filename);
+            return self::DEFAULT_CHECKERS_NAMESPACE.Text::removeFileExtension($filename);
         }, $files);
         $this->addCheckers($checkers);
     }
+
     /**
      * @param mixed $checker Class of the Checker to add
      *
@@ -177,10 +204,13 @@ class DomCheckerProvider
     {
         if ($checker instanceof AbstractDomChecker) {
             $this->addChecker($checker);
+
             return \true;
         }
+
         return \false;
     }
+
     /**
      * @param string $class
      *
@@ -188,9 +218,11 @@ class DomCheckerProvider
      */
     protected function getClassDetails($class)
     {
-        $class = self::DEFAULT_CHECKERS_NAMESPACE . $class;
+        $class = self::DEFAULT_CHECKERS_NAMESPACE.$class;
+
         return [$class, $class::DOM, $class::PROPERTY, $class::WORD_TYPE];
     }
+
     /**
      * @return array
      *
@@ -201,7 +233,7 @@ class DomCheckerProvider
         $nodes = [];
         $checkers = $this->getCheckers();
         foreach ($checkers as $class) {
-            list($selector, $property, $defaultWordType) = $class::toArray();
+            [$selector, $property, $defaultWordType] = $class::toArray();
             $discoveringNodes = $this->discoverCachingGet($selector, $dom);
             if ($this->getTranslationEngine() <= 2) {
                 // Old model
@@ -241,8 +273,10 @@ class DomCheckerProvider
                 }
             }
         }
+
         return $nodes;
     }
+
     /**
      * @param array        $discoveringNodes
      * @param array        $nodes
@@ -261,11 +295,12 @@ class DomCheckerProvider
             if ($instance->handle()) {
                 $this->getParser()->getWords()->addOne(new WordEntry($node->{$property}, $wordType));
                 $nodes[] = ['node' => $node, 'class' => $class, 'property' => $property];
-            } else if (str_contains($node->{$property}, '&gt;') || str_contains($node->{$property}, '&lt;')) {
+            } elseif (str_contains($node->{$property}, '&gt;') || str_contains($node->{$property}, '&lt;')) {
                 $node->{$property} = str_replace(['&lt;', '&gt;'], ['<', '>'], $node->{$property});
             }
         }
     }
+
     /**
      * This function is important : It return the number of text node inside a given node, but it count only text node that are inside or after a given child (if no child is given it count everything)
      * If at some point it find a block or a excluded block, it returns false.
@@ -310,8 +345,10 @@ class DomCheckerProvider
             }
             $node->nodes = array_values($node->nodes);
         }
+
         return $count;
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -335,8 +372,10 @@ class DomCheckerProvider
         if (1 == \count($notEmptyChild)) {
             return $this->getMinimalNode($notEmptyChild[0]);
         }
+
         return $node;
     }
+
     /**
      * @param simple_html_dom_node $node
      * @param array                $attributes
@@ -350,13 +389,15 @@ class DomCheckerProvider
                 continue;
             }
             $k = \count($attributes) + 1;
-            $attributes['wg-' . $k] = $child->getAllAttributes();
+            $attributes['wg-'.$k] = $child->getAllAttributes();
             $child->attr = [];
-            $child->setAttribute('wg-' . $k, '');
+            $child->setAttribute('wg-'.$k, '');
             $this->removeAttributesFromChild($child, $attributes);
         }
+
         return $node;
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -376,8 +417,10 @@ class DomCheckerProvider
                 return \false;
             }
         }
+
         return \true;
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -387,6 +430,7 @@ class DomCheckerProvider
     {
         return \in_array($node->tag, $this->getInlineNodes());
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -396,6 +440,7 @@ class DomCheckerProvider
     {
         return 'text' === $node->tag;
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -405,6 +450,7 @@ class DomCheckerProvider
     {
         return !$this->isInline($node) && !$this->isText($node) && !('br' === $node->tag);
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -420,9 +466,11 @@ class DomCheckerProvider
                     return \true;
                 }
             }
+
             return \false;
         }
     }
+
     /**
      * @param simple_html_dom_node $node
      *
@@ -432,6 +480,7 @@ class DomCheckerProvider
     {
         return $this->isInline($node) || $this->isText($node);
     }
+
     /**
      * @param mixed $value
      * @param bool  $strict
@@ -443,6 +492,7 @@ class DomCheckerProvider
         if (($key = array_search($value, $array, $strict)) !== \false) {
             unset($array[$key]);
         }
+
         return $array;
     }
 }

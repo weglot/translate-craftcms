@@ -5,13 +5,15 @@ namespace Weglot\Vendor\Weglot\Client\Endpoint;
 use Weglot\Vendor\Weglot\Client\Api\LanguageCollection;
 use Weglot\Vendor\Weglot\Client\Factory\Languages as LanguagesFactory;
 use Weglot\Vendor\WeglotLanguages\Languages;
+
 /**
  * @phpstan-import-type Language from Languages
  */
 class LanguagesList extends Endpoint
 {
-    const METHOD = 'GET';
-    const ENDPOINT = '/languages';
+    public const METHOD = 'GET';
+    public const ENDPOINT = '/languages';
+
     /**
      * @return array<string, Language>
      */
@@ -19,6 +21,7 @@ class LanguagesList extends Endpoint
     {
         return Languages::getData();
     }
+
     /**
      * @return LanguageCollection
      */
@@ -37,6 +40,7 @@ class LanguagesList extends Endpoint
             if ('sa' == $external_code) {
                 $external_code = 'sr-lt';
             }
+
             return ['internal_code' => $data['code'], 'english' => $data['english'], 'local' => $data['local'], 'rtl' => $data['rtl'], 'external_code' => $external_code];
         }, $data);
         foreach ($data as $language) {
@@ -45,6 +49,7 @@ class LanguagesList extends Endpoint
                 $languageCollection->addOne($factory->handle());
             }
         }
+
         return $languageCollection;
     }
 }

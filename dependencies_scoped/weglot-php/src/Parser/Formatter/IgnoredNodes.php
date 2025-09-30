@@ -14,6 +14,7 @@ class IgnoredNodes
      * @var array
      */
     protected $ignoredNodes = ['strong', 'b', 'em', 'i', 'small', 'big', 'sub', 'sup', 'abbr', 'acronym', 'bdo', 'cite', 'kbd', 'q'];
+
     /**
      * @param string $source
      */
@@ -21,6 +22,7 @@ class IgnoredNodes
     {
         $this->setSource($source);
     }
+
     /**
      * @param array $ignoredNodes
      *
@@ -29,8 +31,10 @@ class IgnoredNodes
     public function setIgnoredNodes($ignoredNodes)
     {
         $this->ignoredNodes = $ignoredNodes;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -38,6 +42,7 @@ class IgnoredNodes
     {
         return $this->ignoredNodes;
     }
+
     /**
      * @param string $source
      *
@@ -46,8 +51,10 @@ class IgnoredNodes
     public function setSource($source)
     {
         $this->source = $source;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -55,6 +62,7 @@ class IgnoredNodes
     {
         return $this->source;
     }
+
     /**
      * @param array $matches
      *
@@ -62,8 +70,9 @@ class IgnoredNodes
      */
     protected function replaceContent($matches)
     {
-        $this->setSource(str_replace($matches[0], '&lt;' . $matches['tag'] . str_replace('>', '&gt;', str_replace('<', '&lt;', $matches['more'])) . '&gt;' . $matches['content'] . '&lt;/' . $matches['tag'] . '&gt;', $this->getSource()));
+        $this->setSource(str_replace($matches[0], '&lt;'.$matches['tag'].str_replace('>', '&gt;', str_replace('<', '&lt;', $matches['more'])).'&gt;'.$matches['content'].'&lt;/'.$matches['tag'].'&gt;', $this->getSource()));
     }
+
     /**
      * Convert < & > for some dom tags to let them able
      * to go through API calls.
@@ -73,7 +82,7 @@ class IgnoredNodes
     public function handle()
     {
         // time for the BIG regex ...
-        $pattern = '#<(?<tag>' . implode('|', $this->ignoredNodes) . ')(?<more>\s.*?)?\>(?<content>[^>]*?)\<\/(?<tagclosed>' . implode('|', $this->ignoredNodes) . ')>#i';
+        $pattern = '#<(?<tag>'.implode('|', $this->ignoredNodes).')(?<more>\s.*?)?\>(?<content>[^>]*?)\<\/(?<tagclosed>'.implode('|', $this->ignoredNodes).')>#i';
         $matches = [];
         // Using while instead of preg_match_all is the key to handle nested ignored nodes.
         while (preg_match($pattern, $this->getSource(), $matches)) {

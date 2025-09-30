@@ -10,15 +10,17 @@ use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
 use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Client\Factory\Translate as TranslateFactory;
+
 class CdnTranslate extends Endpoint
 {
-    const METHOD = 'POST';
-    const ENDPOINT = '/translate';
-    const WORDS_LIMIT = 600;
+    public const METHOD = 'POST';
+    public const ENDPOINT = '/translate';
+    public const WORDS_LIMIT = 600;
     /**
      * @var TranslateEntry
      */
     protected $translateEntry;
+
     public function __construct(TranslateEntry $translateEntry, Client $client)
     {
         $this->setTranslateEntry($translateEntry);
@@ -29,6 +31,7 @@ class CdnTranslate extends Endpoint
         }
         parent::__construct($client);
     }
+
     /**
      * @return TranslateEntry
      */
@@ -36,14 +39,17 @@ class CdnTranslate extends Endpoint
     {
         return $this->translateEntry;
     }
+
     /**
      * @return $this
      */
     public function setTranslateEntry(TranslateEntry $translateEntry)
     {
         $this->translateEntry = $translateEntry;
+
         return $this;
     }
+
     /**
      * @return TranslateEntry
      *
@@ -64,11 +70,11 @@ class CdnTranslate extends Endpoint
         foreach ($wordChunks as $chunk) {
             $payload = $asArray;
             $payload['words'] = $chunk;
-            list($rawBody, $httpStatusCode) = $this->request($payload, \false);
+            [$rawBody, $httpStatusCode] = $this->request($payload, \false);
             if (200 === $httpStatusCode) {
                 $chunkResponse = json_decode($rawBody, \true);
                 foreach (['from_words', 'to_words', 'ids'] as $key) {
-                    $response[$key] = array_merge(isset($response[$key]) ? $response[$key] : [], isset($chunkResponse[$key]) ? $chunkResponse[$key] : []);
+                    $response[$key] = array_merge($response[$key] ?? [], $chunkResponse[$key] ?? []);
                 }
             } else {
                 $originalWords = array_column($chunk, 'w');
@@ -81,6 +87,7 @@ class CdnTranslate extends Endpoint
             throw new ApiError('All API calls failed', $asArray);
         }
         $factory = new TranslateFactory($response);
+
         return $factory->handle();
     }
 }

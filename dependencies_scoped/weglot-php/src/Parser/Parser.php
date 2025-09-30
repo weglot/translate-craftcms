@@ -26,6 +26,7 @@ use Weglot\Vendor\Weglot\Parser\Formatter\JsonFormatter;
 use Weglot\Vendor\Weglot\Util\SourceType;
 use Weglot\Vendor\Weglot\Util\Text;
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom;
+
 /**
  * @phpstan-type HtmlTree = array{
  *     type: SourceType::SOURCE_HTML,
@@ -51,9 +52,9 @@ class Parser
     /**
      * Attribute to match in DOM when we don't want to translate innertext & childs.
      */
-    const ATTRIBUTE_NO_TRANSLATE = 'data-wg-notranslate';
-    const ATTRIBUTE_TRANSLATE = 'data-wg-translate';
-    const ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS = 'data-wg-translate-inside-blocks';
+    public const ATTRIBUTE_NO_TRANSLATE = 'data-wg-notranslate';
+    public const ATTRIBUTE_TRANSLATE = 'data-wg-translate';
+    public const ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS = 'data-wg-translate-inside-blocks';
     /**
      * @var Client
      */
@@ -102,18 +103,22 @@ class Parser
      * @var IgnoredNodes
      */
     protected $ignoredNodesFormatter;
+
     public function __construct(Client $client, ConfigProviderInterface $config, array $excludeBlocks = [], array $customSwitchers = [], array $whiteList = [], array $translateInsideExclusionsBlocks = [])
     {
         $this->setClient($client)->setConfigProvider($config)->setExcludeBlocks($excludeBlocks)->setWhiteList($whiteList)->setTranslateInsideExclusionsBlocks($translateInsideExclusionsBlocks)->setCustomSwitchers($customSwitchers)->setWords(new WordCollection())->setDomCheckerProvider(new DomCheckerProvider($this, $client->getProfile()->getTranslationEngine()))->setRegexCheckerProvider(new RegexCheckerProvider($this))->setIgnoredNodesFormatter(new IgnoredNodes());
     }
+
     /**
      * @return $this
      */
     public function setClient(Client $client)
     {
         $this->client = $client;
+
         return $this;
     }
+
     /**
      * @return Client
      */
@@ -121,14 +126,17 @@ class Parser
     {
         return $this->client;
     }
+
     /**
      * @return $this
      */
     public function setExcludeBlocks(array $excludeBlocks)
     {
         $this->excludeBlocks = $excludeBlocks;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -136,14 +144,17 @@ class Parser
     {
         return $this->excludeBlocks;
     }
+
     /**
      * @return $this
      */
     public function setWhiteList(array $whiteList)
     {
         $this->whiteList = $whiteList;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -151,6 +162,7 @@ class Parser
     {
         return $this->whiteList;
     }
+
     /**
      * @return array
      */
@@ -158,22 +170,27 @@ class Parser
     {
         return $this->translateInsideExclusionsBlocks;
     }
+
     /**
      * @return $this
      */
     public function setTranslateInsideExclusionsBlocks(array $translateInsideExclusionsBlocks)
     {
         $this->translateInsideExclusionsBlocks = $translateInsideExclusionsBlocks;
+
         return $this;
     }
+
     /**
      * @return $this
      */
     public function setCustomSwitchers(array $customSwitchers)
     {
         $this->customSwitchers = $customSwitchers;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -181,14 +198,17 @@ class Parser
     {
         return $this->customSwitchers;
     }
+
     /**
      * @return $this
      */
     public function setConfigProvider(ConfigProviderInterface $config)
     {
         $this->configProvider = $config;
+
         return $this;
     }
+
     /**
      * @return ConfigProviderInterface
      */
@@ -196,6 +216,7 @@ class Parser
     {
         return $this->configProvider;
     }
+
     /**
      * @param string $languageFrom
      *
@@ -204,8 +225,10 @@ class Parser
     public function setLanguageFrom($languageFrom)
     {
         $this->languageFrom = $languageFrom;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -213,6 +236,7 @@ class Parser
     {
         return $this->languageFrom;
     }
+
     /**
      * @param string $languageTo
      *
@@ -221,8 +245,10 @@ class Parser
     public function setLanguageTo($languageTo)
     {
         $this->languageTo = $languageTo;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -230,14 +256,17 @@ class Parser
     {
         return $this->languageTo;
     }
+
     /**
      * @return $this
      */
     public function setWords(WordCollection $wordCollection)
     {
         $this->words = $wordCollection;
+
         return $this;
     }
+
     /**
      * @return WordCollection
      */
@@ -245,14 +274,17 @@ class Parser
     {
         return $this->words;
     }
+
     /**
      * @return $this
      */
     public function setRegexCheckerProvider(RegexCheckerProvider $regexCheckerProvider)
     {
         $this->regexCheckerProvider = $regexCheckerProvider;
+
         return $this;
     }
+
     /**
      * @return RegexCheckerProvider
      */
@@ -260,14 +292,17 @@ class Parser
     {
         return $this->regexCheckerProvider;
     }
+
     /**
      * @return $this
      */
     public function setDomCheckerProvider(DomCheckerProvider $domCheckerProvider)
     {
         $this->domCheckerProvider = $domCheckerProvider;
+
         return $this;
     }
+
     /**
      * @return DomCheckerProvider
      */
@@ -275,14 +310,17 @@ class Parser
     {
         return $this->domCheckerProvider;
     }
+
     /**
      * @return $this
      */
     public function setIgnoredNodesFormatter(IgnoredNodes $ignoredNodesFormatter)
     {
         $this->ignoredNodesFormatter = $ignoredNodesFormatter;
+
         return $this;
     }
+
     /**
      * @return IgnoredNodes
      */
@@ -290,6 +328,7 @@ class Parser
     {
         return $this->ignoredNodesFormatter;
     }
+
     /**
      * @param string $source
      * @param string $languageFrom
@@ -322,8 +361,10 @@ class Parser
             return $source;
         }
         $translated = $this->apiTranslate($title, $canonical, $requestUrl);
+
         return $this->formatters($source, $translated, $tree);
     }
+
     /**
      * @param string $source
      * @param array  $extraKeys
@@ -342,8 +383,10 @@ class Parser
         } else {
             $tree = $this->parseText($source);
         }
+
         return ['tree' => $tree, 'words' => $this->getWords()];
     }
+
     /**
      * @param string $source
      *
@@ -374,9 +417,11 @@ class Parser
             $dom = $excludeBlocks->getDom();
         }
         // checkers
-        list($nodes, $regexes) = $this->checkers($dom, $source);
+        [$nodes, $regexes] = $this->checkers($dom, $source);
+
         return ['type' => SourceType::SOURCE_HTML, 'source' => $source, 'dom' => $dom, 'nodes' => $nodes, 'regexes' => $regexes];
     }
+
     /**
      * @param string $jsonString
      * @param array  $extraKeys
@@ -388,8 +433,10 @@ class Parser
     public function parseJSON($jsonString, $extraKeys = [])
     {
         $checker = new JsonChecker($this, $jsonString, $extraKeys);
+
         return $checker->handle();
     }
+
     /**
      * @param string      $text
      * @param string|null $regex
@@ -401,8 +448,10 @@ class Parser
     public function parseText($text, $regex = null)
     {
         $this->getWords()->addOne(new WordEntry($text, WordType::TEXT));
+
         return ['type' => SourceType::SOURCE_TEXT, 'source' => $regex, 'text' => $text];
     }
+
     /**
      * @param string $title
      * @param string $canonical
@@ -439,8 +488,10 @@ class Parser
             exit($e->getMessage());
         }
         $translate = new CdnTranslate($translate, $this->client);
+
         return $translate->handle();
     }
+
     /**
      * @return string
      */
@@ -452,8 +503,10 @@ class Parser
                 $title = $node->innertext;
             }
         }
+
         return $title;
     }
+
     /**
      * @param simple_html_dom $dom
      * @param string          $source
@@ -466,8 +519,10 @@ class Parser
     {
         $nodes = $this->getDomCheckerProvider()->handle($dom);
         $regexes = $this->getRegexCheckerProvider()->handle($source);
+
         return [$nodes, $regexes];
     }
+
     /**
      * @param string                            $source
      * @param HtmlTree|JsonTree|TextTree|string $tree
@@ -502,14 +557,16 @@ class Parser
                     $translatedRegex = \call_user_func($regex['revert_callback'], $translatedRegex);
                 }
                 if (SourceType::SOURCE_TEXT === $regex['type'] && $regex['source'] == $regex['text']) {
-                    $source = preg_replace('#\b' . preg_quote($regex['source'], '#') . '\b#', $translatedRegex, $source);
+                    $source = preg_replace('#\b'.preg_quote($regex['source'], '#').'\b#', $translatedRegex, $source);
                 } else {
                     $source = str_replace($regex['source_before_callback'], $translatedRegex, $source);
                 }
             }
         }
+
         return $source;
     }
+
     /**
      * @param string $source
      *
@@ -523,6 +580,7 @@ class Parser
         if (Text::isHTML($source)) {
             return SourceType::SOURCE_HTML;
         }
+
         return SourceType::SOURCE_TEXT;
     }
 }

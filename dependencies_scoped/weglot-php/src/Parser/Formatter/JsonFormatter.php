@@ -6,12 +6,14 @@ use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\Weglot\Util\JsonUtil;
 use Weglot\Vendor\Weglot\Util\SourceType;
+
 class JsonFormatter extends AbstractFormatter
 {
     /**
      * @var string
      */
     protected $source;
+
     /**
      * @param string $source
      */
@@ -20,6 +22,7 @@ class JsonFormatter extends AbstractFormatter
         $this->setSource($source);
         parent::__construct($parser, $translated);
     }
+
     /**
      * @param string $source
      *
@@ -28,8 +31,10 @@ class JsonFormatter extends AbstractFormatter
     public function setSource($source)
     {
         $this->source = $source;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -37,6 +42,7 @@ class JsonFormatter extends AbstractFormatter
     {
         return $this->source;
     }
+
     public function handle(array $tree, &$index)
     {
         $translated_words = $this->getTranslated()->getOutputWords();

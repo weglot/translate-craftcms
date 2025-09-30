@@ -11,20 +11,24 @@ interface ClientInterface
      * @return void
      */
     public function addUserAgentInfo($service, $value);
+
     /**
      * @return array<string, string>
      */
     public function getUserAgentInfo();
+
     /**
      * @param string $header
      *
      * @return void
      */
     public function addHeader($header);
+
     /**
      * @return array<string>
      */
     public function getDefaultHeaders();
+
     /**
      * @param string               $method The HTTP method being used
      * @param string               $absUrl The URL being requested, including domain and protocol

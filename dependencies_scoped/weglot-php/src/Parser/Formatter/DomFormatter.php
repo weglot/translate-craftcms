@@ -15,6 +15,7 @@ if (!\function_exists('array_column') && !\function_exists('Weglot\Vendor\array_
         foreach ($input as $value) {
             if (!\array_key_exists($columnKey, $value)) {
                 trigger_error("Key \"{$columnKey}\" does not exist in array");
+
                 return \false;
             }
             if (null === $indexKey) {
@@ -22,15 +23,18 @@ if (!\function_exists('array_column') && !\function_exists('Weglot\Vendor\array_
             } else {
                 if (!\array_key_exists($indexKey, $value)) {
                     trigger_error("Key \"{$indexKey}\" does not exist in array");
+
                     return \false;
                 }
                 if (!\is_scalar($value[$indexKey])) {
                     trigger_error("Key \"{$indexKey}\" does not contain scalar value");
+
                     return \false;
                 }
                 $array[$value[$indexKey]] = $value[$columnKey];
             }
         }
+
         return $array;
     }
 }
@@ -51,6 +55,7 @@ class DomFormatter extends AbstractFormatter
         }
         $index += \count($nodes);
     }
+
     /**
      * @param string $translated
      * @param array  $translatable_attributes
@@ -77,14 +82,15 @@ class DomFormatter extends AbstractFormatter
                             $attribute = $translated_words[$pos];
                         }
                     }
-                    $attributeString .= $key . '="' . $attribute . '" ';
+                    $attributeString .= $key.'="'.$attribute.'" ';
                 }
-                $attributeString = \strlen($attributeString) > 0 ? ' ' . $attributeString : $attributeString;
-                $details['node']->{$property} = str_replace(' ' . $wg . '=""', rtrim($attributeString), $details['node']->{$property});
-                $details['node']->{$property} = str_replace(' ' . $wg . '=\'\'', rtrim($attributeString), $details['node']->{$property});
+                $attributeString = \strlen($attributeString) > 0 ? ' '.$attributeString : $attributeString;
+                $details['node']->{$property} = str_replace(' '.$wg.'=""', rtrim($attributeString), $details['node']->{$property});
+                $details['node']->{$property} = str_replace(' '.$wg.'=\'\'', rtrim($attributeString), $details['node']->{$property});
             }
         }
     }
+
     /**
      * @param string $translated
      * @param int    $index
@@ -101,11 +107,12 @@ class DomFormatter extends AbstractFormatter
         }
         if ('\Weglot\Parser\Check\Dom\ImageDataSource' === $details['class']) {
             $dataSrcSet = 'data-srcset';
-            if ($details['node']->hasAttribute('data-srcset') && $details['node']->{$dataSrcSet} != '' && $translated != $words[$index]->getWord()) {
+            if ($details['node']->hasAttribute('data-srcset') && '' != $details['node']->{$dataSrcSet} && $translated != $words[$index]->getWord()) {
                 $details['node']->{$dataSrcSet} = '';
             }
         }
     }
+
     /**
      * @return array
      */
@@ -116,6 +123,7 @@ class DomFormatter extends AbstractFormatter
         foreach ($checkers as $class) {
             $attributes[] = $class::toArray()[1];
         }
+
         return $attributes;
     }
 }

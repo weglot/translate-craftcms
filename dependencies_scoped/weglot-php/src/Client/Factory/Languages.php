@@ -3,24 +3,29 @@
 namespace Weglot\Vendor\Weglot\Client\Factory;
 
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
+
 class Languages
 {
     /**
      * @var array
      */
     protected $language;
+
     public function __construct(array $language)
     {
         $this->language = $language;
     }
+
     /**
      * @return $this
      */
     public function setLanguage(array $language)
     {
         $this->language = $language;
+
         return $this;
     }
+
     /**
      * @param string|null $key
      *
@@ -29,18 +34,22 @@ class Languages
     public function getLanguage($key = null)
     {
         if (null !== $key) {
-            return isset($this->language[$key]) ? $this->language[$key] : null;
+            return $this->language[$key] ?? null;
         }
+
         return $this->language;
     }
+
     /**
      * @return LanguageEntry
      */
     public function handle()
     {
         $language = new LanguageEntry($this->getLanguage('internal_code'), $this->getLanguage('external_code'), $this->getLanguage('english'), $this->getLanguage('local'), $this->getLanguage('rtl'));
+
         return $language;
     }
+
     /**
      * Only used to replace API endpoint
      * We planned to make this endpoint available soon !

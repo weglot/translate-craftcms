@@ -7,6 +7,7 @@ use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\Weglot\Util\JsonUtil;
 use Weglot\Vendor\Weglot\Util\SourceType;
 use Weglot\Vendor\Weglot\Util\Text;
+
 class JsonChecker
 {
     /**
@@ -25,14 +26,17 @@ class JsonChecker
      * @var array
      */
     protected $extraKeys;
+
     /**
      * @return $this
      */
     public function setParser(Parser $parser)
     {
         $this->parser = $parser;
+
         return $this;
     }
+
     /**
      * @return Parser
      */
@@ -40,6 +44,7 @@ class JsonChecker
     {
         return $this->parser;
     }
+
     /**
      * @param string $jsonString
      * @param array  $extraKeys
@@ -48,6 +53,7 @@ class JsonChecker
     {
         $this->setParser($parser)->setJSonString($jsonString)->setExtraKeys($extraKeys);
     }
+
     /**
      * @param string $jsonString
      *
@@ -56,8 +62,10 @@ class JsonChecker
     public function setJsonString($jsonString)
     {
         $this->jsonString = $jsonString;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -65,6 +73,7 @@ class JsonChecker
     {
         return $this->jsonString;
     }
+
     /**
      * @param array $extraKeys
      *
@@ -73,8 +82,10 @@ class JsonChecker
     public function setExtraKeys($extraKeys)
     {
         $this->extraKeys = $extraKeys;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -82,6 +93,7 @@ class JsonChecker
     {
         return $this->extraKeys;
     }
+
     /**
      * @return array
      *
@@ -94,8 +106,10 @@ class JsonChecker
         if (\is_array($json)) {
             $this->findWords($json, '', $paths);
         }
+
         return ['type' => SourceType::SOURCE_JSON, 'source' => $this->jsonString, 'jsonArray' => $json, 'paths' => $paths];
     }
+
     /**
      * @param array<mixed>                                 $json
      * @param string                                       $currentKey
@@ -110,11 +124,11 @@ class JsonChecker
         foreach ($json as $key => $value) {
             if (!\is_string($value)) {
                 if (\is_array($value)) {
-                    $this->findWords($value, ltrim($currentKey . JsonUtil::SEPARATOR . $key, JsonUtil::SEPARATOR), $paths);
+                    $this->findWords($value, ltrim($currentKey.JsonUtil::SEPARATOR.$key, JsonUtil::SEPARATOR), $paths);
                 }
                 continue;
             }
-            $k = ltrim($currentKey . JsonUtil::SEPARATOR . $key, JsonUtil::SEPARATOR);
+            $k = ltrim($currentKey.JsonUtil::SEPARATOR.$key, JsonUtil::SEPARATOR);
             if (Text::isJSON($value)) {
                 $parsed = $this->getParser()->parseJSON($value, $this->getExtraKeys());
             } elseif (Text::isHTML($value)) {

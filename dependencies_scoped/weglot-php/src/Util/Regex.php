@@ -3,6 +3,7 @@
 namespace Weglot\Vendor\Weglot\Util;
 
 use Weglot\Vendor\Weglot\Util\Regex\RegexEnum;
+
 class Regex
 {
     /**
@@ -10,7 +11,7 @@ class Regex
      * - We have a lot of real URL in database, so `/` should be avoided as delimiter.
      * - `#` is used as anchor in URL so cannot be used as delimiter.
      */
-    const REGEX_DELIMITER = '~';
+    public const REGEX_DELIMITER = '~';
     /**
      * @var string
      */
@@ -19,6 +20,7 @@ class Regex
      * @var string
      */
     private $value;
+
     /**
      * @param string $type
      * @param string $value
@@ -28,6 +30,7 @@ class Regex
         $this->type = $type;
         $this->value = $value;
     }
+
     /**
      * @return string
      */
@@ -54,8 +57,10 @@ class Regex
             case RegexEnum::MATCH_REGEX:
                 return $value;
         }
+
         return $value;
     }
+
     /**
      * @param string $value
      *
@@ -84,6 +89,7 @@ class Regex
                 return 1 === preg_match($this->getPHPRegex(), $value);
         }
     }
+
     /**
      * @return string
      */

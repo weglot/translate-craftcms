@@ -8,6 +8,7 @@ use Weglot\Vendor\Weglot\Client\Caching\Cache;
 use Weglot\Vendor\Weglot\Client\Caching\CacheInterface;
 use Weglot\Vendor\Weglot\Client\HttpClient\ClientInterface;
 use Weglot\Vendor\Weglot\Client\HttpClient\CurlClient;
+
 class Client
 {
     /**
@@ -15,7 +16,7 @@ class Client
      *
      * @var string
      */
-    const VERSION = '0.5.11';
+    public const VERSION = '0.5.11';
     /**
      * Weglot API Key.
      *
@@ -48,6 +49,7 @@ class Client
      * @var CacheInterface
      */
     protected $cache;
+
     /**
      * @param string               $apiKey            your Weglot API key
      * @param int                  $translationEngine
@@ -61,6 +63,7 @@ class Client
         $this->profile = new Profile($apiKey, $translationEngine);
         $this->setHttpClient()->setOptions($options)->setCache();
     }
+
     /**
      * Creating Guzzle HTTP connector based on $options.
      *
@@ -70,6 +73,7 @@ class Client
     {
         $this->httpClient = new CurlClient();
     }
+
     /**
      * Default options values.
      *
@@ -79,6 +83,7 @@ class Client
     {
         return ['host' => 'https://api.weglot.com'];
     }
+
     /**
      * @return array<string, mixed>
      */
@@ -86,6 +91,7 @@ class Client
     {
         return $this->options;
     }
+
     /**
      * @param array<string, mixed> $options
      *
@@ -95,8 +101,10 @@ class Client
     {
         // merging default options with user options
         $this->options = array_merge($this->defaultOptions(), $options);
+
         return $this;
     }
+
     /**
      * @param ClientInterface|null $httpClient
      * @param string|null          $customHeader
@@ -107,17 +115,19 @@ class Client
     {
         if (null === $httpClient) {
             $httpClient = new CurlClient();
-            $header = 'Weglot-Context: PHP\\' . self::VERSION;
+            $header = 'Weglot-Context: PHP\\'.self::VERSION;
             if (null !== $customHeader) {
-                $header .= ' ' . $customHeader;
+                $header .= ' '.$customHeader;
             }
             $httpClient->addHeader($header);
         }
         if ($httpClient instanceof ClientInterface) {
             $this->httpClient = $httpClient;
         }
+
         return $this;
     }
+
     /**
      * @return ClientInterface
      */
@@ -125,6 +135,7 @@ class Client
     {
         return $this->httpClient;
     }
+
     /**
      * @return Profile
      */
@@ -132,6 +143,7 @@ class Client
     {
         return $this->profile;
     }
+
     /**
      * @param CacheInterface|null $cache
      *
@@ -143,8 +155,10 @@ class Client
             $cache = new Cache();
         }
         $this->cache = $cache;
+
         return $this;
     }
+
     /**
      * @return CacheInterface
      */
@@ -152,6 +166,7 @@ class Client
     {
         return $this->cache;
     }
+
     /**
      * @param CacheItemPoolInterface|null $cacheItemPool
      *
@@ -160,8 +175,10 @@ class Client
     public function setCacheItemPool($cacheItemPool)
     {
         $this->getCache()->setItemPool($cacheItemPool);
+
         return $this;
     }
+
     /**
      * Recursively converts an array or string to UTF-8 encoding.
      *
@@ -183,10 +200,13 @@ class Client
             if (\false !== $encoding) {
                 return mb_convert_encoding($data, 'UTF-8', $encoding);
             }
+
             return $data;
         }
+
         return $data;
     }
+
     /**
      * Make the API call and return the response.
      *
@@ -215,18 +235,20 @@ class Client
                 $body = $this->recursivelyConvertToUtf8($body);
                 $jsonBody = json_encode($body);
                 if (\false === $jsonBody) {
-                    throw new \Exception('JSON encoding error: ' . json_last_error_msg());
+                    throw new \Exception('JSON encoding error: '.json_last_error_msg());
                 }
             }
-            list($rawBody, $httpStatusCode, $httpHeader) = $this->getHttpClient()->request($method, $this->makeAbsUrl($endpoint), $urlParams, $body);
+            [$rawBody, $httpStatusCode, $httpHeader] = $this->getHttpClient()->request($method, $this->makeAbsUrl($endpoint), $urlParams, $body);
         } catch (\Exception $e) {
             throw new ApiError($e->getMessage(), $body);
         }
         if ($asArray) {
             return json_decode($rawBody, \true);
         }
+
         return [$rawBody, $httpStatusCode, $httpHeader];
     }
+
     /**
      * @param string $endpoint
      *
@@ -234,6 +256,6 @@ class Client
      */
     protected function makeAbsUrl($endpoint)
     {
-        return $this->options['host'] . $endpoint;
+        return $this->options['host'].$endpoint;
     }
 }

@@ -12,6 +12,7 @@ class Profile
      * @var int
      */
     protected $translationEngine;
+
     /**
      * @param string $apiKey
      * @param int    $translationEngine
@@ -20,6 +21,7 @@ class Profile
     {
         $this->setup($apiKey, $translationEngine);
     }
+
     /**
      * @param string $apiKey
      * @param int    $translationEngine
@@ -35,6 +37,7 @@ class Profile
             $this->setApiVersion(2)->setTranslationEngine($translationEngine);
         }
     }
+
     /**
      * @param int $version
      *
@@ -43,8 +46,10 @@ class Profile
     public function setApiVersion($version)
     {
         $this->version = $version;
+
         return $this;
     }
+
     /**
      * @return int
      */
@@ -52,6 +57,7 @@ class Profile
     {
         return $this->version;
     }
+
     /**
      * @param int $translationEngine
      *
@@ -60,8 +66,10 @@ class Profile
     public function setTranslationEngine($translationEngine)
     {
         $this->translationEngine = $translationEngine;
+
         return $this;
     }
+
     /**
      * @return int
      */

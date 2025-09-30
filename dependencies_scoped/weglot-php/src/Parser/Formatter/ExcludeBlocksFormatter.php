@@ -4,6 +4,7 @@ namespace Weglot\Vendor\Weglot\Parser\Formatter;
 
 use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom;
+
 class ExcludeBlocksFormatter
 {
     /**
@@ -22,6 +23,7 @@ class ExcludeBlocksFormatter
      * @var array
      */
     protected $translateInsideExclusionsBlocks;
+
     /**
      * @param simple_html_dom $dom
      * @param array           $excludeBlocks
@@ -33,14 +35,17 @@ class ExcludeBlocksFormatter
         $this->setDom($dom)->setExcludeBlocks($excludeBlocks)->setWhiteList($whiteList)->setTranslateInsideExclusionsBlocks($translateInsideExclusionsBlocks);
         $this->handle();
     }
+
     /**
      * @return $this
      */
     public function setDom(simple_html_dom $dom)
     {
         $this->dom = $dom;
+
         return $this;
     }
+
     /**
      * @return simple_html_dom
      */
@@ -48,14 +53,17 @@ class ExcludeBlocksFormatter
     {
         return $this->dom;
     }
+
     /**
      * @return $this
      */
     public function setExcludeBlocks(array $excludeBlocks)
     {
         $this->excludeBlocks = $excludeBlocks;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -63,14 +71,17 @@ class ExcludeBlocksFormatter
     {
         return $this->excludeBlocks;
     }
+
     /**
      * @return $this
      */
     public function setWhiteList(array $whiteList)
     {
         $this->whiteList = $whiteList;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -78,6 +89,7 @@ class ExcludeBlocksFormatter
     {
         return $this->whiteList;
     }
+
     /**
      * @return array
      */
@@ -85,14 +97,17 @@ class ExcludeBlocksFormatter
     {
         return $this->translateInsideExclusionsBlocks;
     }
+
     /**
      * @return $this
      */
     public function setTranslateInsideExclusionsBlocks(array $translateInsideExclusionsBlocks)
     {
         $this->translateInsideExclusionsBlocks = $translateInsideExclusionsBlocks;
+
         return $this;
     }
+
     /**
      * Add ATTRIBUTE_NO_TRANSLATE to dom elements that don't
      * want to be translated or ATTRIBUTE_TRANSLATE if on mode

@@ -34,6 +34,7 @@ class RegexChecker
      * @var callable|null
      */
     public $revert_callback;
+
     /**
      * @param string        $regex
      * @param string        $type
@@ -51,6 +52,7 @@ class RegexChecker
         $this->callback = $callback;
         $this->revert_callback = $revert_callback;
     }
+
     /**
      * @return array
      */

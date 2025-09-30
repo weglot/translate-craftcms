@@ -8,24 +8,29 @@ use Weglot\Vendor\Weglot\Client\Api\Exception\MissingRequiredParamException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
 use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Client\Api\WordEntry;
+
 class Translate
 {
     /**
      * @var array
      */
     protected $response = [];
+
     public function __construct(array $response)
     {
         $this->setResponse($response);
     }
+
     /**
      * @return $this
      */
     public function setResponse(array $response)
     {
         $this->response = $response;
+
         return $this;
     }
+
     /**
      * @return array
      */
@@ -33,6 +38,7 @@ class Translate
     {
         return $this->response;
     }
+
     /**
      * @return TranslateEntry
      *
@@ -44,7 +50,7 @@ class Translate
     public function handle()
     {
         $response = $this->getResponse();
-        $params = ['language_from' => isset($response['l_from']) ? $response['l_from'] : null, 'language_to' => isset($response['l_to']) ? $response['l_to'] : null, 'bot' => isset($response['bot']) ? $response['bot'] : null, 'request_url' => isset($response['request_url']) ? $response['request_url'] : null, 'title' => isset($response['title']) ? $response['title'] : null];
+        $params = ['language_from' => $response['l_from'] ?? null, 'language_to' => $response['l_to'] ?? null, 'bot' => $response['bot'] ?? null, 'request_url' => $response['request_url'] ?? null, 'title' => $response['title'] ?? null];
         $translate = new TranslateEntry($params);
         if (!isset($response['to_words'])) {
             throw new MissingWordsOutputException();
@@ -58,6 +64,7 @@ class Translate
         foreach ($response['to_words'] as $toWord) {
             $translate->getOutputWords()->addOne(new WordEntry($toWord));
         }
+
         return $translate;
     }
 }

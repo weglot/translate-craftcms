@@ -13,6 +13,7 @@ class Text
     {
         return trim($word, " \t\n\r\x00\v\xa0�");
     }
+
     /**
      * @param string $haystack
      * @param string $search
@@ -27,6 +28,7 @@ class Text
             return \false;
         }
     }
+
     /**
      * @param string|null $filename
      *
@@ -35,8 +37,10 @@ class Text
     public static function removeFileExtension($filename)
     {
         $filename = null !== $filename ? $filename : '';
+
         return preg_replace('/\.[^.\s]{3,4}$/', '', $filename);
     }
+
     /**
      * @param string|null $regex
      *
@@ -50,6 +54,7 @@ class Text
             return str_replace('\\\\/', '\/', str_replace('/', '\/', ''));
         }
     }
+
     /**
      * @param mixed $string
      *
@@ -61,8 +66,10 @@ class Text
             return \false;
         }
         json_decode($string);
+
         return \JSON_ERROR_NONE == json_last_error() && \in_array(substr($string, 0, 1), ['{', '[']);
     }
+
     /**
      * @param mixed $string
      *

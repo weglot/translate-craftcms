@@ -5,6 +5,7 @@ namespace Weglot\Vendor\Weglot\Client\Api;
 use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
 use Weglot\Vendor\Weglot\Client\Api\Shared\AbstractCollectionEntry;
+
 class WordEntry extends AbstractCollectionEntry
 {
     /**
@@ -15,6 +16,7 @@ class WordEntry extends AbstractCollectionEntry
      * @var int
      */
     protected $type = WordType::TEXT;
+
     /**
      * @param string $word
      * @param int    $type
@@ -25,6 +27,7 @@ class WordEntry extends AbstractCollectionEntry
     {
         $this->setWord($word)->setType($type);
     }
+
     /**
      * @param string $word
      *
@@ -33,8 +36,10 @@ class WordEntry extends AbstractCollectionEntry
     public function setWord($word)
     {
         $this->word = $word;
+
         return $this;
     }
+
     /**
      * @return string
      */
@@ -42,6 +47,7 @@ class WordEntry extends AbstractCollectionEntry
     {
         return $this->word;
     }
+
     /**
      * Set type of word you gonna translate.
      * Returns false if type is incorrect.
@@ -65,8 +71,10 @@ class WordEntry extends AbstractCollectionEntry
             throw new InvalidWordTypeException();
         }
         $this->type = $type;
+
         return $this;
     }
+
     /**
      * @return int
      */
@@ -75,6 +83,7 @@ class WordEntry extends AbstractCollectionEntry
     {
         return $this->type;
     }
+
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

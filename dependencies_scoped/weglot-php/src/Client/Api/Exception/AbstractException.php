@@ -12,6 +12,7 @@ abstract class AbstractException extends \Exception
      * @var array<mixed>
      */
     protected $jsonBody;
+
     /**
      * @param string       $message
      * @param int          $weglotCode
@@ -23,6 +24,7 @@ abstract class AbstractException extends \Exception
         $this->weglotCode = $weglotCode;
         $this->jsonBody = $jsonBody;
     }
+
     /**
      * @return int
      */
@@ -30,6 +32,7 @@ abstract class AbstractException extends \Exception
     {
         return $this->weglotCode;
     }
+
     /**
      * @return array<mixed>
      */

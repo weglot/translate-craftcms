@@ -7,37 +7,37 @@ abstract class RegexEnum
     /**
      * @var string
      */
-    const START_WITH = 'START_WITH';
+    public const START_WITH = 'START_WITH';
     /**
      * @var string
      */
-    const NOT_START_WITH = 'NOT_START_WITH';
+    public const NOT_START_WITH = 'NOT_START_WITH';
     /**
      * @var string
      */
-    const END_WITH = 'END_WITH';
+    public const END_WITH = 'END_WITH';
     /**
      * @var string
      */
-    const NOT_END_WITH = 'NOT_END_WITH';
+    public const NOT_END_WITH = 'NOT_END_WITH';
     /**
      * @var string
      */
-    const CONTAIN = 'CONTAIN';
+    public const CONTAIN = 'CONTAIN';
     /**
      * @var string
      */
-    const NOT_CONTAIN = 'NOT_CONTAIN';
+    public const NOT_CONTAIN = 'NOT_CONTAIN';
     /**
      * @var string
      */
-    const IS_EXACTLY = 'IS_EXACTLY';
+    public const IS_EXACTLY = 'IS_EXACTLY';
     /**
      * @var string
      */
-    const NOT_IS_EXACTLY = 'NOT_IS_EXACTLY';
+    public const NOT_IS_EXACTLY = 'NOT_IS_EXACTLY';
     /**
      * @var string
      */
-    const MATCH_REGEX = 'MATCH_REGEX';
+    public const MATCH_REGEX = 'MATCH_REGEX';
 }

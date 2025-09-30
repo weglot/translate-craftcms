@@ -3,9 +3,9 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Weglot\Vendor\Weglot\Client\Client;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
+use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ExternalLinkHref;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageDataSource;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageSource;

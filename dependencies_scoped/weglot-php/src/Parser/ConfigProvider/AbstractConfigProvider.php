@@ -20,6 +20,7 @@ abstract class AbstractConfigProvider implements ConfigProviderInterface
      * @var int
      */
     protected $bot;
+
     /**
      * @param string      $url
      * @param int         $bot
@@ -29,6 +30,7 @@ abstract class AbstractConfigProvider implements ConfigProviderInterface
     {
         $this->setUrl($url)->setBot($bot)->setTitle($title);
     }
+
     /**
      * If we put a null value into $title, we would force
      * the auto discover for the Parser.
@@ -41,45 +43,58 @@ abstract class AbstractConfigProvider implements ConfigProviderInterface
     {
         $this->setAutoDiscoverTitle(null === $title);
         $this->title = $title;
+
         return $this;
     }
+
     public function getTitle()
     {
         return $this->title;
     }
+
     public function setAutoDiscoverTitle($autoDiscoverTitle)
     {
         $this->autoDiscoverTitle = $autoDiscoverTitle;
+
         return $this;
     }
+
     public function getAutoDiscoverTitle()
     {
         return $this->autoDiscoverTitle;
     }
+
     public function setUrl($url)
     {
         $this->url = $url;
+
         return $this;
     }
+
     public function getUrl()
     {
         return $this->url;
     }
+
     public function setBot($bot)
     {
         $this->bot = $bot;
+
         return $this;
     }
+
     public function getBot()
     {
         return $this->bot;
     }
+
     public function asArray()
     {
         $data = ['request_url' => $this->getUrl(), 'bot' => $this->getBot()];
         if (!$this->getAutoDiscoverTitle()) {
             $data['title'] = $this->getTitle();
         }
+
         return $data;
     }
 }

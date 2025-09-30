@@ -3,6 +3,7 @@
 namespace Weglot\Vendor\Weglot\Util;
 
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
+
 /**
  * @phpstan-type ExcludedUrl = array{Regex, mixed}
  * @phpstan-type CustomUrl = array<string, string>
@@ -61,6 +62,7 @@ class Url
      * @var string|null
      */
     protected $redirect;
+
     /**
      * @param string                   $url                  Current visited url
      * @param LanguageEntry            $originalLanguage     Default language represented by ISO 639-1 code
@@ -79,6 +81,7 @@ class Url
         $this->customUrlsByLanguage = $customUrlsByLanguage;
         $this->detectUrlDetails();
     }
+
     /**
      * @return string
      */
@@ -86,6 +89,7 @@ class Url
     {
         return $this->url;
     }
+
     /**
      * Sets the full URL.
      *
@@ -98,6 +102,7 @@ class Url
         $this->url = $url;
         $this->detectUrlDetails();
     }
+
     /**
      * @return string|null
      */
@@ -105,6 +110,7 @@ class Url
     {
         return $this->host;
     }
+
     /**
      * @return string|null
      */
@@ -112,6 +118,7 @@ class Url
     {
         return $this->path;
     }
+
     /**
      * @return string
      */
@@ -119,6 +126,7 @@ class Url
     {
         return $this->pathPrefix;
     }
+
     /**
      * @param array<ExcludedUrl> $excludedUrls
      *
@@ -127,8 +135,10 @@ class Url
     public function setExcludedUrls($excludedUrls)
     {
         $this->excludedUrls = $excludedUrls;
+
         return $this;
     }
+
     /**
      * @return LanguageEntry
      */
@@ -136,6 +146,7 @@ class Url
     {
         return $this->originalLanguage;
     }
+
     /**
      * @return string|null
      */
@@ -143,6 +154,7 @@ class Url
     {
         return $this->query;
     }
+
     /**
      * @return string|null
      */
@@ -150,6 +162,7 @@ class Url
     {
         return $this->fragment;
     }
+
     /**
      * @return string|null
      */
@@ -157,10 +170,12 @@ class Url
     {
         $pathAndQuery = $this->path;
         if (null !== $this->getQuery()) {
-            $pathAndQuery .= '?' . $this->getQuery();
+            $pathAndQuery .= '?'.$this->getQuery();
         }
+
         return $pathAndQuery;
     }
+
     /**
      * @return string|null
      */
@@ -168,6 +183,7 @@ class Url
     {
         return $this->redirect;
     }
+
     /**
      * Returns the destination languages external codes.
      *
@@ -179,6 +195,7 @@ class Url
             return $l->getExternalCode();
         }, $this->destinationLanguages);
     }
+
     /**
      * @param LanguageEntry $language
      * @param bool          $evenExcluded
@@ -193,11 +210,14 @@ class Url
                 if (!$evenExcluded && $url['excluded']) {
                     return \false;
                 }
+
                 return $url['url'];
             }
         }
+
         return \false;
     }
+
     /**
      * @param LanguageEntry $language
      * @param string        $option
@@ -227,8 +247,10 @@ class Url
                 }
             }
         }
+
         return \false;
     }
+
     /**
      * Check if we need to translate given URL.
      *
@@ -242,8 +264,10 @@ class Url
         if ($this->getForLanguage($language, $evenExcluded)) {
             return \true;
         }
+
         return \false;
     }
+
     /**
      * Check if we need to translate given URL.
      *
@@ -259,8 +283,10 @@ class Url
                 $availableLanguage[] = $destinationLanguage;
             }
         }
+
         return $availableLanguage;
     }
+
     /**
      * Check current locale, based on URI segments from the given URL.
      *
@@ -270,6 +296,7 @@ class Url
     {
         return $this->currentLanguage;
     }
+
     /**
      * Generate possible host & base URL then store it into internal variables.
      *
@@ -281,7 +308,7 @@ class Url
             return null;
         }
         $escapedPathPrefix = Text::escapeForRegex($this->pathPrefix);
-        $urlNoPrefix = preg_replace('#' . $escapedPathPrefix . '#i', '', $this->getUrl(), 1);
+        $urlNoPrefix = preg_replace('#'.$escapedPathPrefix.'#i', '', $this->getUrl(), 1);
         $uriPath = parse_url($urlNoPrefix, \PHP_URL_PATH);
         $uriSegments = [];
         if (\is_string($uriPath)) {
@@ -296,14 +323,14 @@ class Url
         } else {
             $this->currentLanguage = $this->originalLanguage;
         }
-        $urlNoPrefixNoLanguage = str_replace('/' . $this->currentLanguage->getExternalCode() . '/', '/', $urlNoPrefix);
+        $urlNoPrefixNoLanguage = str_replace('/'.$this->currentLanguage->getExternalCode().'/', '/', $urlNoPrefix);
         $parsed = parse_url($urlNoPrefixNoLanguage);
         if (isset($parsed['scheme']) && isset($parsed['host'])) {
-            $this->host = $parsed['scheme'] . '://' . $parsed['host'] . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+            $this->host = $parsed['scheme'].'://'.$parsed['host'].(isset($parsed['port']) ? ':'.$parsed['port'] : '');
         }
         $this->path = isset($parsed['path']) ? urldecode($parsed['path']) : '/';
-        $this->query = isset($parsed['query']) ? $parsed['query'] : null;
-        $this->fragment = isset($parsed['fragment']) ? $parsed['fragment'] : null;
+        $this->query = $parsed['query'] ?? null;
+        $this->fragment = $parsed['fragment'] ?? null;
         if ('' === $this->path) {
             $this->path = '/';
         }
@@ -334,15 +361,17 @@ class Url
             }
             $this->path = implode('/', $slugs);
         }
-        $url = $this->getHost() . $this->getPathPrefix() . $this->getPath();
+        $url = $this->getHost().$this->getPathPrefix().$this->getPath();
         if (null !== $this->getQuery()) {
-            $url .= '?' . $this->getQuery();
+            $url .= '?'.$this->getQuery();
         }
         if (null !== $this->getFragment()) {
-            $url .= '#' . $this->getFragment();
+            $url .= '#'.$this->getFragment();
         }
+
         return $url;
     }
+
     /**
      * Returns advance excluded option button displayed.
      *
@@ -356,8 +385,10 @@ class Url
         if (isset($excludedUrl[2])) {
             $exclusionBehavior = $excludedUrl[2];
         }
+
         return $exclusionBehavior;
     }
+
     /**
      * Returns advance excluded option button displayed.
      *
@@ -371,8 +402,10 @@ class Url
         if (isset($excludedUrl[3]) && \false === $excludedUrl[3]) {
             $languageButtonDisplayed = \false;
         }
+
         return $languageButtonDisplayed;
     }
+
     /**
      * Returns array with all possible URL for current Request.
      *
@@ -386,12 +419,12 @@ class Url
         $urls = $this->allUrls;
         if (null === $urls) {
             $urls = [];
-            $originalURL = $this->getHost() . $this->getPathPrefix() . $this->getPath();
+            $originalURL = $this->getHost().$this->getPathPrefix().$this->getPath();
             if (null !== $this->getQuery()) {
-                $originalURL .= '?' . $this->getQuery();
+                $originalURL .= '?'.$this->getQuery();
             }
             if (null !== $this->getFragment()) {
-                $originalURL .= '#' . $this->getFragment();
+                $originalURL .= '#'.$this->getFragment();
             }
             $languageButtonDisplayed = \true;
             $exclusionBehavior = 'NOT_TRANSLATED';
@@ -433,17 +466,18 @@ class Url
                     }
                     $translatedPath = implode('/', $slugs);
                 }
-                $url = $this->getHost() . $this->getPathPrefix() . '/' . $language->getExternalCode() . $translatedPath;
+                $url = $this->getHost().$this->getPathPrefix().'/'.$language->getExternalCode().$translatedPath;
                 if (null !== $this->getQuery()) {
-                    $url .= '?' . $this->getQuery();
+                    $url .= '?'.$this->getQuery();
                 }
                 if (null !== $this->getFragment()) {
-                    $url .= '#' . $this->getFragment();
+                    $url .= '#'.$this->getFragment();
                 }
                 $urls[] = ['language' => $language, 'url' => $url, 'excluded' => $isExcluded, 'exclusion_behavior' => $exclusionBehavior, 'language_button_displayed' => $languageButtonDisplayed];
             }
             $this->allUrls = $urls;
         }
+
         return $urls;
     }
 }

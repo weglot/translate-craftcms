@@ -3,6 +3,7 @@
 namespace Weglot\Vendor\Weglot\Util;
 
 use Weglot\Vendor\Weglot\Client\Api\Enum\BotType;
+
 class Server
 {
     /**
@@ -12,8 +13,9 @@ class Server
      */
     public static function fullUrl(array $server, $use_forwarded_host = \false)
     {
-        return self::urlOrigin($server, $use_forwarded_host) . $server['REQUEST_URI'];
+        return self::urlOrigin($server, $use_forwarded_host).$server['REQUEST_URI'];
     }
+
     /**
      * @param bool $use_forwarded_host
      *
@@ -21,8 +23,9 @@ class Server
      */
     public static function urlOrigin(array $server, $use_forwarded_host = \false)
     {
-        return self::getProtocol($server) . '://' . self::getHost($server, $use_forwarded_host);
+        return self::getProtocol($server).'://'.self::getHost($server, $use_forwarded_host);
     }
+
     /**
      * @return bool
      */
@@ -33,8 +36,10 @@ class Server
         if (null !== $userAgent && $checkBotVe) {
             return \true;
         }
+
         return \false;
     }
+
     /**
      * @return int
      */
@@ -58,8 +63,10 @@ class Server
                 return $agentBot;
             }
         }
+
         return BotType::OTHER;
     }
+
     /**
      * @return array
      */
@@ -67,6 +74,7 @@ class Server
     {
         return ['bing' => BotType::BING, 'yahoo' => BotType::YAHOO, 'Baidu' => BotType::BAIDU, 'Yandex' => BotType::YANDEX];
     }
+
     /**
      * @return bool
      */
@@ -85,16 +93,20 @@ class Server
         if (isset($server['HTTP_X_FORWARDED_PROTO']) && 'https' === $server['HTTP_X_FORWARDED_PROTO']) {
             return \true;
         }
+
         return \false;
     }
+
     /**
      * @return string
      */
     public static function getProtocol(array $server)
     {
         $protocol = isset($server['SERVER_PROTOCOL']) ? strtolower($server['SERVER_PROTOCOL']) : 'http';
-        return substr($protocol, 0, strpos($protocol, '/')) . (self::isSsl($server) ? 's' : '');
+
+        return substr($protocol, 0, strpos($protocol, '/')).(self::isSsl($server) ? 's' : '');
     }
+
     /**
      * @return string
      */
@@ -104,8 +116,10 @@ class Server
         if (!$ssl && '80' === self::getPort($server) || $ssl && '443' === self::getPort($server)) {
             return '';
         }
-        return ':' . self::getPort($server);
+
+        return ':'.self::getPort($server);
     }
+
     /**
      * @return string
      */
@@ -114,8 +128,10 @@ class Server
         if (!isset($server['SERVER_PORT'])) {
             return '';
         }
+
         return $server['SERVER_PORT'];
     }
+
     /**
      * @param bool $use_forwarded_host
      *
@@ -130,15 +146,17 @@ class Server
             $host = $server['HTTP_HOST'];
         }
         if (null === $host && isset($server['SERVER_NAME'])) {
-            $host = $server['SERVER_NAME'] . self::getPort($server);
+            $host = $server['SERVER_NAME'].self::getPort($server);
         }
+
         return $host;
     }
+
     /**
      * @return string|null
      */
     public static function getUserAgent(array $server)
     {
-        return isset($server['HTTP_USER_AGENT']) ? $server['HTTP_USER_AGENT'] : null;
+        return $server['HTTP_USER_AGENT'] ?? null;
     }
 }
