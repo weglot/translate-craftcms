@@ -70,8 +70,8 @@ jobs:
         with:
           commit_message: "chore(scope): refresh dependencies_scoped [skip ci]"
           file_pattern: dependencies_scoped/**
-          commit_user_name: weglot-bot
-          commit_user_email: bot@weglot.com
+          commit_user_name: Edson
+          commit_user_email: edson@weglot.com
           skip_fetch: false
 
   release-guard:
