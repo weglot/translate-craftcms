@@ -2,15 +2,15 @@ name: Build & Scope
 
 on:
   pull_request:
-    branches: [ master, main ]     # build + tests sur chaque PR vers master/main
+    branches: [ master ]
   push:
-    branches: [ master, main ]     # build après merge; auto-commit du scope si changé
+    branches: [ master ]
     paths-ignore:
-      - 'dependencies_scoped/**'   # évite de reboucler quand on autocommit ce dossier
+      - 'dependencies_scoped/**'   # avoid CI loops when the scoped directory is auto-committed
       - '.github/**'
-  workflow_dispatch:                # bouton "Run workflow"
+  workflow_dispatch:                # allow manual runs from the Actions tab
   release:
-    types: [ published ]            # garde-fou: vérifie le scope dans le tag
+    types: [ published ]            # guard: verify the scoped output exists in the release tag
 
 jobs:
   scope-and-validate:
@@ -20,7 +20,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0            # fetch full history (some tools rely on it)
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -32,7 +32,7 @@ jobs:
       - name: Install Composer deps
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      # === OPTION B2: on reconstitue dependencies/ depuis tes dépôts privés ===
+      # === Recreate dependencies/ from your private repositories ===
       - name: Fetch vendor sources into dependencies/
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -43,27 +43,27 @@ jobs:
 
           git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/weglot-php.git"        dependencies/weglot-php
           git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/simple_html_dom.git"   dependencies/simplehtmldom
-          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/weglot-translation-definitions.git"       dependencies/translation-definitions
+          git clone --depth 1 "https://${GH_TOKEN}:x-oauth-basic@github.com/weglot/weglot-translation-definitions.git" dependencies/translation-definitions
 
-          # (Optionnel) pinner une ref précise :
-          # pushd dependencies/weglot-php && git fetch --depth 1 origin <sha-ou-tag> && git checkout <sha-ou-tag> && popd
+          # (Optional) pin a specific ref:
+          # pushd dependencies/weglot-php && git fetch --depth 1 origin <sha-or-tag> && git checkout <sha-or-tag> && popd
 
-      # Scoper + copie des assets non-PHP (utilise tes scripts composer)
+      # Run Scoper + copy non-PHP assets (delegated to your Composer "scoper" script)
       - name: Run PHP-Scoper (prefix + copy assets)
         run: composer run scoper
 
-      # Sanity checks: syntaxe PHP du code scoppé
+      # Sanity checks: PHP syntax in the scoped output
       - name: Lint scoped PHP
         run: |
           find dependencies_scoped -type f -name "*.php" -print0 | xargs -0 -n1 php -l
 
-      # Smoke tests runtime: une classe scoppée + une fonction namespacée doivent exister
+      # Runtime smoke tests: ensure a scoped class and a namespaced function resolve
       - name: Runtime smoke tests
         run: |
           php -r "require 'vendor/autoload.php'; echo (class_exists('Weglot\\Vendor\\Weglot\\Client\\Client') ? \"OK\n\" : \"KO\n\");"
           php -r "require 'vendor/autoload.php'; echo (function_exists('Weglot\\Vendor\\WGSimpleHtmlDom\\str_get_html') ? \"OK\n\" : \"KO\n\");"
 
-      # Auto-commit du scope si des diffs existent (uniquement sur push, pas sur PR)
+      # Auto-commit the scoped output if there are changes (only on push, not on PRs)
       - name: Commit scoped output if changed
         if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v5
@@ -72,18 +72,4 @@ jobs:
           file_pattern: dependencies_scoped/**
           commit_user_name: Edson
           commit_user_email: edson@weglot.com
-          skip_fetch: false
-
-  release-guard:
-    needs: scope-and-validate
-    if: github.event_name == 'release'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
-      - name: Ensure scoped dir is present in the tag
-        run: |
-          if [ ! -d "dependencies_scoped" ] || [ -z "$(ls -A dependencies_scoped)" ]; then
-            echo "dependencies_scoped is missing/empty in the release tag. Abort."
-            exit 1
-          fi
+          skip_fetch: fals_

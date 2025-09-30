@@ -2,9 +2,9 @@
 
 namespace Weglot\Vendor\Weglot\Client\Caching;
 
-use Weglot\Vendor\Psr\Cache\CacheItemInterface;
-use Weglot\Vendor\Psr\Cache\CacheItemPoolInterface;
-use Weglot\Vendor\Psr\Cache\InvalidArgumentException;
+use Psr\Cache\CacheItemInterface;
+use Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\InvalidArgumentException;
 class Cache implements CacheInterface
 {
     /**

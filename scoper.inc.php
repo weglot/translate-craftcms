@@ -6,11 +6,22 @@ use Isolated\Symfony\Component\Finder\Finder;
 return [
 	'prefix' => 'Weglot\\Vendor',
 	'finders' => [
-		(new Finder())->files()->in(__DIR__ . '/dependencies')->name('*.php')->ignoreVCS(true),
+		(new Finder())
+			->files()
+			->in(__DIR__ . '/dependencies')
+			->name('*.php')
+			->ignoreVCS(true),
 	],
 	'exclude-namespaces' => ['Weglot\\Craft', 'craft', 'yii'],
+	'expose-namespaces' => [
+		'Psr\\Cache',
+	],
+	'expose-classes' => [
+		'Psr\\Cache\\*', // <- wildcard
+	],
+	'expose-functions' => [],
+	'expose-constants' => [],
 
-	// 👇 patcher pour réécrire la constante
 	'patchers' => [
 		static function (string $filePath, string $prefix, string $content): string {
 			if (str_contains($filePath, 'weglot-php/src/Parser/Check/DomCheckerProvider.php')) {
@@ -20,6 +31,7 @@ return [
 					$content
 				);
 			}
+			$content = str_replace('Weglot\\Vendor\\Psr\\Cache\\', 'Psr\\Cache\\', $content);
 			return $content;
 		},
 	],

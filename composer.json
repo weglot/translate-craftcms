@@ -10,9 +10,14 @@
     "php": ">=8.2",
     "ext-libxml": "*",
     "ext-simplexml": "*",
+    "ext-curl": "*",
+    "ext-filter": "*",
+    "ext-iconv": "*",
+    "ext-mbstring": "*",
     "craftcms/cms": "^5.0.0",
     "guzzlehttp/guzzle": "^7.10",
-    "yiisoft/yii2": "^2.0"
+    "yiisoft/yii2": "^2.0",
+    "psr/cache": "^3.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.88",
@@ -29,12 +34,9 @@
     "psr-4": {
       "weglot\\craftweglot\\": "src/",
       "Weglot\\Vendor\\Weglot\\": "dependencies_scoped/weglot-php/src/",
-      "Weglot\\Vendor\\WGSimpleHtmlDom\\": "dependencies_scoped/simplehtmldom/src/"
+      "Weglot\\Vendor\\WGSimpleHtmlDom\\": "dependencies_scoped/simplehtmldom/src/",
+      "Weglot\\Vendor\\WeglotLanguages\\": "dependencies_scoped/weglot-php/node_modules/@weglot/languages/dist/"
     },
-    "classmap": [
-      "dependencies_scoped/weglot-php/src",
-      "dependencies_scoped/simplehtmldom/src"
-    ],
     "files": [
       "src/bootstrap_simplehtmldom.php",
       "src/bootstrap_simplehtmldom_constants.php"

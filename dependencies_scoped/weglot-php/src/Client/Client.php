@@ -2,7 +2,7 @@
 
 namespace Weglot\Vendor\Weglot\Client;
 
-use Weglot\Vendor\Psr\Cache\CacheItemPoolInterface;
+use Psr\Cache\CacheItemPoolInterface;
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Caching\Cache;
 use Weglot\Vendor\Weglot\Client\Caching\CacheInterface;
