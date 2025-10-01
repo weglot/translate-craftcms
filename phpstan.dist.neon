@@ -5,18 +5,27 @@ includes:
 parameters:
     level: 6
     tmpDir: .cache/phpstan
+
     scanFiles:
         - vendor/craftcms/cms/src/Craft.php
         - vendor/yiisoft/yii2/Yii.php
+
     paths:
         - src
+
     stubFiles:
         - phpstan/stubs/yii/BaseYii.stub
         - phpstan/stubs/craft/console/Application.stub
         - phpstan/stubs/craft/web/Application.stub
+
     strictRules:
         strictArrayFilter: false
+
     type_coverage:
         return: 100
-        param: 99
+        param: 100
         property: 100
+
+    ignoreErrors:
+            - identifier: typeCoverage.paramTypeCoverage
+              path: src/controllers/ApiController.php

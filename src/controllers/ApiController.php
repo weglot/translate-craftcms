@@ -9,9 +9,7 @@ use yii\web\Response;
 
 class ApiController extends Controller
 {
-    /**
-     * @param Action $action
-     */
+	/** @phpstan-param \yii\base\Action $action */
     public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
