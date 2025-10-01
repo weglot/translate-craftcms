@@ -1,5 +1,6 @@
 includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/tomasvotruba/type-coverage/config/extension.neon
 
 parameters:
     level: 6
@@ -15,3 +16,7 @@ parameters:
         - phpstan/stubs/craft/web/Application.stub
     strictRules:
         strictArrayFilter: false
+    type_coverage:
+        return: 100
+        param: 99
+        property: 100

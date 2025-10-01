@@ -154,13 +154,10 @@ class TranslateService extends Component
         );
     }
 
-    /**
-     * @param string $html
-     *
-     * @return string
-     */
-    private function removeComments($html)
+    private function removeComments(string $html): string
     {
-        return preg_replace('/<!--(.*)-->/Uis', '', $html);
+        $result = preg_replace('/<!--.*?-->/s', '', $html);
+
+        return $result ?? $html;
     }
 }

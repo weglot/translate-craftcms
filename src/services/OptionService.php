@@ -17,12 +17,12 @@ class OptionService extends Component
     /**
      * @var string|array<string, mixed>|null
      */
-    protected $optionsCdn;
+    protected string|array|null $optionsCdn = null;
 
     /**
      * @var array<string, mixed>|null
      */
-    protected $optionsFromApi;
+    protected ?array $optionsFromApi = null;
 
     /**
      * @var array<string, mixed>|null
@@ -34,7 +34,7 @@ class OptionService extends Component
     /**
      * @var array<string,mixed>
      */
-    protected $optionsDefault = [
+    protected array $optionsDefault = [
         'api_key_private' => '',
         'api_key' => '',
         'language_from' => 'en',
@@ -75,7 +75,7 @@ class OptionService extends Component
     /**
      * @var array<string,mixed>
      */
-    protected $optionsBddDefault = [
+    protected array $optionsBddDefault = [
         'has_first_settings' => true,
         'show_box_first_settings' => false,
         'menu_switcher' => [],
@@ -235,9 +235,9 @@ class OptionService extends Component
     }
 
     /**
-     * @return mixed|null
+     * @return array<mixed>|null
      */
-    public function getOption(string $key)
+    public function getOption(string $key): string|array|null
     {
         $options = $this->getOptions();
 
