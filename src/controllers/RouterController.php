@@ -15,14 +15,9 @@ class RouterController extends Controller
     protected array|int|bool $allowAnonymous = ['forward'];
 
     /**
-     * @param string $lang the language code to process the request for, extracted from the URL
-     * @param string $rest the remaining path segment after the language code, used for routing or rendering
-     *
-     * @return mixed The response of the routed action or rendered template. Throws exceptions if no proper route is found.
-     *
      * @throws NotFoundHttpException if the path starts with "actions/" or no valid route/template is resolved
      */
-    public function actionForward(string $lang, string $rest = '')
+    public function actionForward(string $lang, string $rest = ''): mixed
     {
         if (str_starts_with($rest, 'actions/')) {
             $routeId = substr($rest, \strlen('actions/')); // ex: "debug/default/toolbar"

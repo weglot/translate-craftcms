@@ -1,17 +1,31 @@
 includes:
     - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/tomasvotruba/type-coverage/config/extension.neon
 
 parameters:
     level: 6
     tmpDir: .cache/phpstan
+
     scanFiles:
         - vendor/craftcms/cms/src/Craft.php
         - vendor/yiisoft/yii2/Yii.php
+
     paths:
         - src
+
     stubFiles:
         - phpstan/stubs/yii/BaseYii.stub
         - phpstan/stubs/craft/console/Application.stub
         - phpstan/stubs/craft/web/Application.stub
+
     strictRules:
         strictArrayFilter: false
+
+    type_coverage:
+        return: 100
+        param: 100
+        property: 100
+
+    ignoreErrors:
+            - identifier: typeCoverage.paramTypeCoverage
+              path: src/controllers/ApiController.php

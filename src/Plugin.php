@@ -192,7 +192,10 @@ class Plugin extends BasePlugin
                         return;
                     }
 
-                    $group = implode('|', array_map(fn ($l) => preg_quote($l, '#'), $langs));
+                    $group = implode('|', array_map(
+                        static fn (string $l): string => preg_quote($l, '#'),
+                        $langs
+                    ));
                     $e->rules["<lang:($group)>/actions/<action:.+>"] = 'actions/<action>';
                     $e->rules["<lang:($group)>/index.php/actions/<action:.+>"] = 'actions/<action>';
 

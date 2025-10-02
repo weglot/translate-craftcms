@@ -69,13 +69,9 @@ class WeglotVirtualRequest extends Request
     }
 
     /**
-     * Retrieves a specific segment based on the given number.
-     *
-     * @param int|string $num the segment number to retrieve (1-based index)
-     *
-     * @return string|null the segment corresponding to the given number, or null if it does not exist
+     * Retrieves a specific segment based on the given number (1-based index).
      */
-    public function getSegment($num): ?string
+    public function getSegment(int|string $num): ?string
     {
         $i = (int) $num - 1;
         $segments = $this->forcedSegments();

@@ -186,7 +186,7 @@ class LanguageService extends Component
         }
 
         $codes = array_values(array_unique(array_map(
-            static fn ($c) => strtolower(str_replace('_', '-', $c)),
+            static fn (string $c) => strtolower(str_replace('_', '-', $c)),
             $codes
         )));
 
