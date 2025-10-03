@@ -22,7 +22,10 @@ class DashboardHelper
             $this->organizationSlug = $optionService->getOption('organization_slug');
         }
 
-        $this->canGenerate = null !== $this->projectSlug && '' !== $this->projectSlug && '0' !== $this->projectSlug && (null !== $this->organizationSlug && '' !== $this->organizationSlug && '0' !== $this->organizationSlug);
+        $this->canGenerate = null !== $this->projectSlug
+            && '' !== $this->projectSlug
+            && null !== $this->organizationSlug
+            && '' !== $this->organizationSlug;
     }
 
     private function getBaseUrl(): string

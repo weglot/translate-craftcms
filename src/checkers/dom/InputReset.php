@@ -9,8 +9,5 @@ class InputReset extends AbstractDomChecker
 {
     public const DOM = "input[type='reset']";
     public const PROPERTY = 'value';
-    /**
-     * @var int
-     */
     public const WORD_TYPE = WordType::TEXT;
 }

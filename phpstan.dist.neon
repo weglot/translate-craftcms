@@ -25,7 +25,4 @@ parameters:
         return: 100
         param: 100
         property: 100
-
-    ignoreErrors:
-            - identifier: typeCoverage.paramTypeCoverage
-              path: src/controllers/ApiController.php
+        constant: 0 # Require PHP 8.3

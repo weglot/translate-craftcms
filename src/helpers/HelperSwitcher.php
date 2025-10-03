@@ -9,7 +9,7 @@ class HelperSwitcher
     private const CACHE_TTL = 86400;
 
     /**
-     * @return array<string,mixed>
+     * @return array<string, mixed>
      */
     public static function getTemplateHash(?string $name = null): array
     {
@@ -68,9 +68,9 @@ class HelperSwitcher
     }
 
     /**
-     * @param array<int,array<string,mixed>>|null $switchers
+     * @param array<int, array<string, mixed>>|null $switchers
      *
-     * @return array{css:array<int,array<string,mixed>>,js:array<int,array<string,mixed>>}
+     * @return array{css: array<int, array<string, mixed>>, js: array<int, array<string, mixed>>}
      */
     public static function buildSwitcherAssets(?array $switchers = null, bool $forceDefault = false): array
     {
@@ -131,7 +131,7 @@ class HelperSwitcher
     }
 
     /**
-     * @return array{name:string,hash?:string}|null
+     * @return array{name: string, hash?: string}|null
      */
     private static function normalizeTemplate(mixed $tpl): ?array
     {

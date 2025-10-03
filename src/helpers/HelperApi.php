@@ -10,7 +10,6 @@ class HelperApi
     private const ENV_STAGING = 'staging';
 
     private const API_URL_PROD = 'https://api.weglot.com';
-
     private const CDN_URL_PROD = 'https://cdn.weglot.com/';
 
     public static function getEnvironment(): string

@@ -9,7 +9,11 @@ use yii\web\Response;
 
 class ApiController extends Controller
 {
-    /** @phpstan-param Action $action */
+    /**
+     * @param Action $action
+     *
+     * @phpstan-ignore-next-line typeCoverage.paramTypeCoverage
+     */
     public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {

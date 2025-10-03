@@ -9,8 +9,5 @@ class ButtonValue extends AbstractDomChecker
 {
     public const DOM = 'button';
     public const PROPERTY = 'value';
-    /**
-     * @var int
-     */
     public const WORD_TYPE = WordType::VALUE;
 }

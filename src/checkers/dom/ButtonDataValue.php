@@ -8,10 +8,6 @@ use Weglot\Parser\Check\Dom\AbstractDomChecker;
 class ButtonDataValue extends AbstractDomChecker
 {
     public const DOM = 'button';
-
     public const PROPERTY = 'data-value';
-    /**
-     * @var int
-     */
     public const WORD_TYPE = WordType::VALUE;
 }

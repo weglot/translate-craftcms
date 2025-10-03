@@ -5,7 +5,7 @@ namespace weglot\craftweglot\helpers;
 class HelperReplaceUrl
 {
     /**
-     * @return array<string,string>
+     * @return array<string, string>
      */
     public static function getReplaceModifyLink(): array
     {
@@ -24,7 +24,7 @@ class HelperReplaceUrl
     }
 
     /**
-     * @return array<string,string>
+     * @return array<string, string>
      */
     public static function getReplaceModifyLinkInXml(): array
     {

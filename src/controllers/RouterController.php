@@ -62,7 +62,6 @@ class RouterController extends Controller
         try {
             // Attempt "element" (Entry, Category, etc.)
             foreach ($candidates as $uri) {
-                /** @var ?Element $element */
                 $element = \Craft::$app->getElements()->getElementByUri($uri, $siteId, true);
 
                 if (null !== $element) {
