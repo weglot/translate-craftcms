@@ -23,7 +23,6 @@
     "phpunit/phpunit": "^11.5",
     "rector/rector": "^2.1",
     "shipmonk/composer-dependency-analyser": "^1.8",
-    "symplify/easy-coding-standard": "^10.3",
     "tomasvotruba/type-coverage": "^2.0"
   },
   "autoload": {
@@ -68,10 +67,6 @@
     {
       "type": "vcs",
       "url": "git@github.com:weglot/simple_html_dom.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:glx77/morphism-php.git"
     }
   ]
 }

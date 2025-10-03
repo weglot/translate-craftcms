@@ -41,26 +41,26 @@ class Plugin extends BasePlugin
      * Configures and returns an array of components and their respective services.
      *
      * @return array{
-     *     components: array<string, class-string>
+     *     components: array<string, array{'class': class-string}>
      * }
      */
     public static function config(): array
     {
         return [
             'components' => [
-                'domCheckersService' => DomCheckersService::class,
-                'frontEndScripts' => FrontEndScriptsService::class,
-                'userApi' => UserApiService::class,
-                'option' => OptionService::class,
-                'language' => LanguageService::class,
-                'translateService' => TranslateService::class,
-                'parserService' => ParserService::class,
-                'regexCheckersService' => RegexCheckersService::class,
-                'requestUrlService' => RequestUrlService::class,
-                'replaceUrlService' => ReplaceUrlService::class,
-                'replaceLinkService' => ReplaceLinkService::class,
-                'hrefLangService' => HrefLangService::class,
-                'dashboardHelper' => DashboardHelper::class,
+                'domCheckersService' => ['class' => DomCheckersService::class],
+                'frontEndScripts' => ['class' => FrontEndScriptsService::class],
+                'userApi' => ['class' => UserApiService::class],
+                'option' => ['class' => OptionService::class],
+                'language' => ['class' => LanguageService::class],
+                'translateService' => ['class' => TranslateService::class],
+                'parserService' => ['class' => ParserService::class],
+                'regexCheckersService' => ['class' => RegexCheckersService::class],
+                'requestUrlService' => ['class' => RequestUrlService::class],
+                'replaceUrlService' => ['class' => ReplaceUrlService::class],
+                'replaceLinkService' => ['class' => ReplaceLinkService::class],
+                'hrefLangService' => ['class' => HrefLangService::class],
+                'dashboardHelper' => ['class' => DashboardHelper::class],
             ],
         ];
     }
