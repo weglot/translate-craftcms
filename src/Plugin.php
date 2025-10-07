@@ -148,6 +148,7 @@ class Plugin extends BasePlugin
                 }
 
                 $realPath = $req->getPathInfo(true);
+
                 $parts = array_values(array_filter(explode('/', trim($realPath, '/'))));
                 $first = $parts[0] ?? null;
                 if (null === $first) {
@@ -156,11 +157,10 @@ class Plugin extends BasePlugin
 
                 $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                 $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
-
+                $langs = array_map('strtolower', $langs);
                 if ([] === $langs || !\in_array($first, $langs, true)) {
                     return;
                 }
-
                 $internalPath = implode('/', \array_slice($parts, 1));
 
                 $this->weglotOriginalRequest = $req;
@@ -191,11 +191,10 @@ class Plugin extends BasePlugin
                     if ([] === $langs) {
                         return;
                     }
-
-                    $group = implode('|', array_map(
+                    $group = strtolower(implode('|', array_map(
                         static fn (string $l): string => preg_quote($l, '#'),
                         $langs
-                    ));
+                    )));
                     $e->rules["<lang:($group)>/actions/<action:.+>"] = 'actions/<action>';
                     $e->rules["<lang:($group)>/index.php/actions/<action:.+>"] = 'actions/<action>';
 
