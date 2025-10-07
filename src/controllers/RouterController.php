@@ -31,6 +31,7 @@ class RouterController extends Controller
         }
 
         $currentLanguage = Plugin::getInstance()->getLanguage()->getLanguageFromExternal($lang);
+
         if (null !== $currentLanguage) {
             Plugin::getInstance()->handleExcludedUrlRedirects($currentLanguage);
         }
