@@ -114,6 +114,14 @@ class Plugin extends BasePlugin
             $success = (true === $result['success']);
 
             if ($success) {
+                if (false === $settings->hasFirstSettings) {
+                    $settings->hasFirstSettings = true;
+                    $settings->showBoxFirstSettings = false;
+
+                    \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
+
+                    \Craft::$app->getSession()->set('weglot_show_first_settings_popup', true);
+                }
                 \Craft::$app->getSession()->setNotice(\Craft::t('weglot', 'Paramètres Weglot synchronisés avec succès.'));
             } else {
                 $code = $result['code'] ?? 'unknown';
@@ -281,12 +289,22 @@ class Plugin extends BasePlugin
             $cdnSettings = self::getInstance()->getOption()->getOptionsFromCdnWithApiKey($settings->apiKey);
         }
 
+        // Récupération du flag de session pour afficher la popup
+        $session = \Craft::$app->getSession();
+        $showFirstSettingsPopup = $session->get('weglot_show_first_settings_popup', false);
+
+        // On supprime le flag de session après l'avoir récupéré
+        if ($showFirstSettingsPopup) {
+            $session->remove('weglot_show_first_settings_popup');
+        }
+
         return \Craft::$app->getView()->renderTemplate(
             'weglot/_settings',
             [
                 'settings' => $settings,
                 'apiSettings' => $apiSettings,
                 'cdnSettings' => $cdnSettings,
+                'showFirstSettingsPopup' => $showFirstSettingsPopup,
             ]
         );
     }

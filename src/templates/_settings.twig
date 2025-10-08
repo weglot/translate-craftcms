@@ -75,7 +75,6 @@
     {% set dashboardHelper = craft.app.plugins.getPlugin('weglot').dashboardHelper %}
     {% if dashboardHelper %}
         {% set editUrl = dashboardHelper.getEditTranslationsUrl() %}
-        {# Display buttons only if URLs could be generated #}
         {% if editUrl and editUrl != '#' %}
             <div class="weglot-dashboard-container">
                 <h3>{{ "Quick access to Weglot dashboard"|t('weglot') }}</h3>
@@ -89,4 +88,19 @@
             </div>
         {% endif %}
     {% endif %}
+{% endif %}
+{% if showFirstSettingsPopup is defined and showFirstSettingsPopup %}
+    <div id="weglot-box-first-settings" class="weglot-box-overlay" data-weglot-show-popup="true">
+        <div class="weglot-box">
+            <button type="button" class="weglot-btn-close" aria-label="{{ 'Close'|t('weglot') }}">
+                <span aria-hidden="true">×</span>
+            </button>
+            <h3 class="weglot-box--title">{{ 'Well done! Your website is now multilingual.'|t('weglot') }}</h3>
+            <p class="weglot-box--text">{{ 'Go on your website, there is a language switcher bottom right. Try it :)'|t('weglot') }}</p>
+            <a class="btn submit" href="{{ craft.app.sites.primarySite.baseUrl }}" target="_blank" rel="noopener">
+                {{ 'Go on my front page.'|t('weglot') }}
+            </a>
+            <p class="weglot-box--subtext">{{ 'Next step, customize the language button as you want and manually edit your translations directly in your Weglot account.'|t('weglot') }}</p>
+        </div>
+    </div>
 {% endif %}

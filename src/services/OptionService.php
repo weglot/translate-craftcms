@@ -159,7 +159,7 @@ class OptionService extends Component
     }
 
     /**
-     * @return array{success: bool, result: array<string, mixed>}
+     * @return array{success: true, result: array<string, mixed>}|array{success: false, result: array<string, mixed>}
      */
     public function getOptionsFromApiWithApiKey(string $apiKey): array
     {
@@ -462,9 +462,9 @@ class OptionService extends Component
      */
     public function saveWeglotSettings(string $publicApiKey, string $languageFrom, array|string $destinationLanguages): array
     {
-        $cdn = $this->getOptionsFromCdnWithApiKey($publicApiKey);
+        $cdn = $this->getOptionsFromApiWithApiKey($publicApiKey);
 
-        if (($cdn['success'] ?? false) !== true || !isset($cdn['result']) || !\is_array($cdn['result'])) {
+        if (false === $cdn['success']) {
             return [
                 'success' => false,
                 'code' => 'cdn_fetch_fail',
