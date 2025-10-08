@@ -289,11 +289,9 @@ class Plugin extends BasePlugin
             $cdnSettings = self::getInstance()->getOption()->getOptionsFromCdnWithApiKey($settings->apiKey);
         }
 
-        // Récupération du flag de session pour afficher la popup
         $session = \Craft::$app->getSession();
         $showFirstSettingsPopup = $session->get('weglot_show_first_settings_popup', false);
 
-        // On supprime le flag de session après l'avoir récupéré
         if ($showFirstSettingsPopup) {
             $session->remove('weglot_show_first_settings_popup');
         }
