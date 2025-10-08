@@ -8,8 +8,9 @@ use weglot\craftweglot\Plugin;
 class Settings extends Model
 {
     public string $apiKey = '';
-
     public string $languageFrom = 'en';
+    public bool $hasFirstSettings = false;
+    public bool $showBoxFirstSettings = true;
 
     /**
      * @var string[]

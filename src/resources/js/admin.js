@@ -159,8 +159,48 @@
 
     }
 
+    function initFirstSettingsPopup() {
+        var popup = document.getElementById('settings-weglot-box-first-settings');
+        if (!popup) {
+            return;
+        }
+        function closePopup() {
+            popup.style.opacity = '0';
+            setTimeout(function() {
+                popup.remove();
+            }, 200);
+        }
+
+        var closeBtn = popup.querySelector('.weglot-btn-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                closePopup();
+            });
+        }
+
+        popup.addEventListener('click', function(e) {
+            if (e.target === popup) {
+                closePopup();
+            }
+        });
+
+        var escapeHandler = function(e) {
+            if (e.key === 'Escape') {
+                closePopup();
+                document.removeEventListener('keydown', escapeHandler);
+            }
+        };
+        document.addEventListener('keydown', escapeHandler);
+    }
+
     function init() {
         initDestinationSelectize();
+
+        setTimeout(function() {
+            initFirstSettingsPopup();
+        }, 100);
     }
 
     if (document.readyState === 'loading') {
@@ -170,6 +210,10 @@
     }
 
     if (window.Garnish && Garnish.$doc) {
-        Garnish.$doc.on('pjax:end', init);
+        Garnish.$doc.on('pjax:end', function() {
+            setTimeout(function() {
+                init();
+            }, 100);
+        });
     }
 })();
