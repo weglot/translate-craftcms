@@ -8,17 +8,98 @@ on:
     repository_dispatch:
         types:
             - craftcms/new-release
+    pull_request:
+    push:
+      branches:
+        - master
 
 jobs:
     build:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: write
-        steps:
-            - uses: ncipollo/release-action@v1
-              with:
-                  body: ${{ github.event.client_payload.notes }}
-                  makeLatest: ${{ github.event.client_payload.latest }}
-                  name: ${{ github.event.client_payload.version }}
-                  prerelease: ${{ github.event.client_payload.prerelease }}
-                  tag: ${{ github.event.client_payload.tag }}
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v5
+
+        - name: Checkout weglot-php
+          uses: actions/checkout@v5
+          with:
+            repository: weglot/weglot-php
+            token: ${{ secrets.GH_PAT }}
+            path: build/vendor-src/weglot-php
+            ref: 1.9.2
+
+        - name: Checkout weglot-translation-definitions
+          uses: actions/checkout@v5
+          with:
+            repository: weglot/weglot-translation-definitions
+            token: ${{ secrets.GH_PAT }}
+            path: build/vendor-src/weglot-translation-definitions
+            ref: v2.7.0
+        
+        - name: Checkout simple_html_dom
+          uses: actions/checkout@v5
+          with:
+            repository: weglot/simple_html_dom
+            token: ${{ secrets.GH_PAT }}
+            path: build/vendor-src/simple_html_dom
+            ref: 0.8.4
+
+        - name: Setup PHP
+          uses: shivammathur/setup-php@v2
+          with:
+            php-version: '8.2'
+            tools: composer:v2
+
+        - name: Install Composer dependencies
+          run: |
+            composer --prefer-dist --no-progress --no-interaction install
+
+        - name: Prefix with php-scoper
+          run: |
+            composer run php-scoper
+
+        - name: Verify autoload
+          run: |
+            jq '.autoload."psr-4" += {"Weglot\\\\Vendor\\\\": "src/vendor/weglot/"}' composer.json > composer.tmp && mv composer.tmp composer.json
+            composer --quiet --no-ansi --no-interaction dump-autoload --optimize
+
+        - name: PHP Syntax check (lint)
+          run: |
+              find src -type f -name "*.php" -print0 | xargs -0 -n1 php -l
+
+        - name: Upload build artifact
+          uses: actions/upload-artifact@v4
+          with:
+            name: plugin
+            include-hidden-files: true
+            path: |
+              src/
+              README.md
+              LICENSE.md
+              composer.json
+              composer.lock
+            if-no-files-found: error
+            retention-days: 7
+
+    release:
+      needs: build
+      if: success() && github.event.client_payload.tag != null
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
+      steps:
+        - name: Download artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: plugin
+
+        - name: Create release
+          uses: ncipollo/release-action@v1
+          with:
+            body: ${{ github.event.client_payload.notes }}
+            makeLatest: ${{ github.event.client_payload.latest }}
+            name: ${{ github.event.client_payload.version }}
+            prerelease: ${{ github.event.client_payload.prerelease }}
+            tag: ${{ github.event.client_payload.tag }}

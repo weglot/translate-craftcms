@@ -165,7 +165,7 @@ class Plugin extends BasePlugin
 
                 $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                 $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
-                $langs = array_map('strtolower', $langs);
+                $langs = array_map(strtolower(...), $langs);
                 if ([] === $langs || !\in_array($first, $langs, true)) {
                     return;
                 }

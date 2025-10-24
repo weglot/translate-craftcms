@@ -2,7 +2,7 @@
   "name": "weglot/craft-weglot",
   "description": "Translate your Craft website in 110+ languages within minutes with Weglot Translate, without any coding.",
   "type": "craft-plugin",
-  "license": "mit",
+  "license": "proprietary",
   "support": {
     "email": "support@weglot.com"
   },
@@ -12,11 +12,11 @@
     "ext-simplexml": "*",
     "craftcms/cms": "^5.8.0",
     "guzzlehttp/guzzle": "^7.10",
-    "weglot/weglot-php": "^1.7.3",
     "yiisoft/yii2": "^2.0"
   },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.88",
+    "humbug/php-scoper": "^0.18",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-phpunit": "^2.0",
     "phpstan/phpstan-strict-rules": "^2.0",
@@ -43,6 +43,7 @@
   "scripts": {
     "check-cs": "php-cs-fixer fix --dry-run --diff",
     "fix-cs": "php-cs-fixer fix",
+    "php-scoper": "php-scoper add-prefix scoper.inc.php",
     "phpstan": "phpstan --memory-limit=1G",
     "check-dependency": "composer-dependency-analyser",
     "test": "phpunit tests",
@@ -58,15 +59,5 @@
       "craftcms/plugin-installer": true,
       "phpstan/extension-installer": true
     }
-  },
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "https://github.com/weglot/weglot-php.git"
-    },
-    {
-      "type": "vcs",
-      "url": "git@github.com:weglot/simple_html_dom.git"
-    }
-  ]
+  }
 }
