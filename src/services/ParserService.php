@@ -3,14 +3,14 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Weglot\Client\Client;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
-use Weglot\Parser\Check\Dom\ExternalLinkHref;
-use Weglot\Parser\Check\Dom\ImageDataSource;
-use Weglot\Parser\Check\Dom\ImageSource;
-use Weglot\Parser\ConfigProvider\ServerConfigProvider;
-use Weglot\Parser\Parser;
+use Weglot\Vendor\Weglot\Client\Client;
+use Weglot\Vendor\Weglot\Parser\Check\Dom\ExternalLinkHref;
+use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageDataSource;
+use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageSource;
+use Weglot\Vendor\Weglot\Parser\ConfigProvider\ServerConfigProvider;
+use Weglot\Vendor\Weglot\Parser\Parser;
 
 class ParserService extends Component
 {
