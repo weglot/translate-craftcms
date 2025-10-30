@@ -6,11 +6,11 @@ use Isolated\Symfony\Component\Finder\Finder;
 
 return [
     'prefix' => 'Weglot\\Vendor',
-    'output-dir' => __DIR__.'/src/vendor/weglot',
+    'output-dir' => 'build/scoped-vendor',
     'finders' => [
         (new Finder())
             ->files()
-            ->in(__DIR__.'/build/vendor-src')
+            ->in('build/vendor-src')
             ->name('*.php')
             ->ignoreVCS(true),
     ],
