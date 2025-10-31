@@ -110,7 +110,7 @@ jobs:
           uses: ncipollo/release-action@v1
           with:
             artifactErrorsFailBuild: true
-            artifacts: "plugin/**"
+            artifacts: "plugin.zip"
             body: ${{ github.event.client_payload.notes }}
             makeLatest: ${{ github.event.client_payload.latest }}
             name: ${{ github.event.client_payload.version }}
