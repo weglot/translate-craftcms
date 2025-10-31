@@ -64,7 +64,7 @@ jobs:
 
         - name: Update composer.json
           run: |
-            jq '.autoload."psr-4" += {"Weglot\\\\Vendor\\\\": "src/vendor/weglot/"}' composer.json > composer.tmp && mv composer.tmp composer.json
+            jq '.autoload."psr-4" += {"Weglot\\\\Vendor\\\\": "src/vendor/weglot/"} | .autoload.classmap = ["src/vendor/weglot/build/vendor-src/"]' composer.json > composer.tmp && mv composer.tmp composer.json
 
         - name: Verify autoload
           run: |
