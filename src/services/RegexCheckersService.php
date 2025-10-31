@@ -3,7 +3,7 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Weglot\Parser\Check\Regex\RegexChecker;
+use Weglot\Vendor\Weglot\Parser\Check\Regex\RegexChecker;
 
 class RegexCheckersService extends Component
 {

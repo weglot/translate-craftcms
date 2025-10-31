@@ -3,8 +3,8 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\Plugin;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 
 class ReplaceLinkService extends Component
 {
