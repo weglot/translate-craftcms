@@ -28,10 +28,7 @@
   "autoload": {
     "psr-4": {
       "weglot\\craftweglot\\": "src/"
-    },
-    "classmap": [
-      "src/vendor/weglot/build/vendor-src/"
-    ]
+    }
   },
   "extra": {
     "handle": "weglot",

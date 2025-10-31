@@ -52,9 +52,6 @@ jobs:
             php-version: '8.2'
             tools: composer:v2
 
-        - name: Prepare directory classmap
-          run: mkdir -p src/vendor/weglot/build/vendor-src/
-
         - name: Update composer.json
           run: |
               jq '.autoload."psr-4" += {"Weglot\\\\Vendor\\\\": "src/vendor/weglot/"} | .autoload.classmap = ["src/vendor/weglot/build/vendor-src/"]' composer.json > composer.tmp && mv composer.tmp composer.json
@@ -62,9 +59,6 @@ jobs:
         - name: Install Composer dependencies
           run: |
             composer --prefer-dist --no-progress --no-interaction install
-
-        - name: Remove build directory to avoid mv conflict
-          run: rm -rf src/vendor/weglot
 
         - name: Prefix with php-scoper
           run: |
