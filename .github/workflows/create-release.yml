@@ -100,12 +100,15 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             name: plugin
+            path: plugin
 
+        - run: ls -la plugin
+        
         - name: Create release
           uses: ncipollo/release-action@v1
           with:
             artifactErrorsFailBuild: true
-            artifacts: "plugin"
+            artifacts: "plugin/**"
             body: ${{ github.event.client_payload.notes }}
             makeLatest: ${{ github.event.client_payload.latest }}
             name: ${{ github.event.client_payload.version }}
