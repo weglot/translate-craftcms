@@ -6,3 +6,5 @@
 - use intermediate build dir for php-scoper output
 ## 0.1.2-alpha
 - Add classmap for autoload
+## 0.1.3-alpha
+- Update CI add classmap directly on composer.json
