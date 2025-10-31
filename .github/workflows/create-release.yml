@@ -105,8 +105,6 @@ jobs:
           with:
             name: plugin
             path: plugin.zip
-
-        - run: ls -la plugin
         
         - name: Create release
           uses: ncipollo/release-action@v1
