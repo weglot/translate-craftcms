@@ -52,9 +52,15 @@ jobs:
             php-version: '8.2'
             tools: composer:v2
 
+        - name: Prepare directory classmap
+          run: mkdir -p src/vendor/weglot/build/vendor-src/
+
         - name: Install Composer dependencies
           run: |
             composer --prefer-dist --no-progress --no-interaction install
+
+        - name: Remove build directory to avoid mv conflict
+          run: rm -rf src/vendor/weglot/build
 
         - name: Prefix with php-scoper
           run: |
