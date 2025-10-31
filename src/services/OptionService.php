@@ -9,8 +9,8 @@ use GuzzleHttp\Exception\RequestException;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\helpers\HelperFlagType;
 use weglot\craftweglot\Plugin;
-use Weglot\Util\Regex;
-use Weglot\Util\Regex\RegexEnum;
+use Weglot\Vendor\Weglot\Util\Regex;
+use Weglot\Vendor\Weglot\Util\Regex\RegexEnum;
 
 class OptionService extends Component
 {

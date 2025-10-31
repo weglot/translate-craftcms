@@ -3,7 +3,7 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
-use Weglot\Client\Api\Exception\ApiError;
+use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 
 class TranslateService extends Component
 {
