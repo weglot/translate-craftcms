@@ -37,6 +37,9 @@ jobs:
             - name: Clear Composer cache
               run: composer clear-cache
 
+            - name: Prepare directory classmap
+              run: mkdir -p src/vendor/weglot/build/vendor-src/
+
             - name: Install Composer dependencies
               run: composer install --prefer-dist --no-progress --no-interaction -vvv
 
