@@ -59,6 +59,9 @@ jobs:
           run: |
             composer --prefer-dist --no-progress --no-interaction install
 
+        - name: Remove build directory to avoid mv conflict
+          run: rm -rf src/vendor/weglot/build
+
         - name: Prefix with php-scoper
           run: |
             composer run php-scoper
