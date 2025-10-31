@@ -73,7 +73,11 @@ jobs:
         - name: PHP Syntax check (lint)
           run: |
               find src -type f -name "*.php" -print0 | xargs -0 -n1 php -l
-
+        
+        - name: Create zip archive
+          run: |
+              zip -r plugin.zip src/ CHANGELOG.md composer.json composer.lock LICENSE.md README.md
+        
         - name: Upload build artifact
           uses: actions/upload-artifact@v4
           with:
@@ -100,7 +104,7 @@ jobs:
           uses: actions/download-artifact@v4
           with:
             name: plugin
-            path: plugin
+            path: plugin.zip
 
         - run: ls -la plugin
         
