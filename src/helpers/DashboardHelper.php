@@ -100,6 +100,6 @@ class DashboardHelper
 
     public function getRegistrationUrl(): string
     {
-        return $this->getBaseUrl().'/register?project=craft';
+        return self::DASHBOARD_URL_PROD.'/register-craftcms';
     }
 }
