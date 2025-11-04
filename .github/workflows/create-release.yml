@@ -14,97 +14,15 @@ on:
         - master
 
 jobs:
-    build:
-      runs-on: ubuntu-latest
-      permissions:
-        contents: read
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v5
-
-        - name: Checkout weglot-php
-          uses: actions/checkout@v5
-          with:
-            repository: weglot/weglot-php
-            token: ${{ secrets.GH_PAT }}
-            path: build/vendor-src/weglot-php
-            ref: 1.9.2
-
-        - name: Checkout weglot-translation-definitions
-          uses: actions/checkout@v5
-          with:
-            repository: weglot/weglot-translation-definitions
-            token: ${{ secrets.GH_PAT }}
-            path: build/vendor-src/weglot-translation-definitions
-            ref: v2.7.0
-        
-        - name: Checkout simple_html_dom
-          uses: actions/checkout@v5
-          with:
-            repository: weglot/simple_html_dom
-            token: ${{ secrets.GH_PAT }}
-            path: build/vendor-src/simple_html_dom
-            ref: 0.8.4
-
-        - name: Setup PHP
-          uses: shivammathur/setup-php@v2
-          with:
-            php-version: '8.2'
-            tools: composer:v2
-
-        - name: Install Composer dependencies
-          run: |
-              composer --prefer-dist --no-progress --no-interaction install
-
-        - name: Update composer.json
-          run: |
-              jq '.autoload."psr-4" += {"Weglot\\\\Vendor\\\\": "src/vendor/weglot/"} | .autoload.classmap = ["src/vendor/weglot/build/vendor-src/"]' composer.json > composer.tmp && mv composer.tmp composer.json
-
-        - name: Prefix with php-scoper
-          run: |
-            composer run php-scoper
-            mkdir -p src/vendor/weglot/
-            mv build/scoped-vendor/* src/vendor/weglot/
-
-
-        - name: Verify autoload
-          run: |
-            composer --no-interaction dump-autoload --optimize
-
-        - name: PHP Syntax check (lint)
-          run: |
-              find src -type f -name "*.php" -print0 | xargs -0 -n1 php -l
-        
-        - name: Create zip archive
-          run: |
-              zip -r plugin.zip src/ CHANGELOG.md composer.json composer.lock LICENSE.md README.md
-        
-        - name: Upload build artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: plugin
-            path: plugin.zip
-            if-no-files-found: error
-            retention-days: 7
-
     release:
-      needs: build
-      if: success() && github.event.client_payload.tag != null
+      if: github.event.client_payload.tag != null
       runs-on: ubuntu-latest
       permissions:
         contents: write
       steps:
-        - name: Download artifact
-          uses: actions/download-artifact@v4
-          with:
-            name: plugin
-            path: plugin
-        
         - name: Create release
           uses: ncipollo/release-action@v1
           with:
-            artifactErrorsFailBuild: true
-            artifacts: "plugin/plugin.zip"
             body: ${{ github.event.client_payload.notes }}
             makeLatest: ${{ github.event.client_payload.latest }}
             name: ${{ github.event.client_payload.version }}

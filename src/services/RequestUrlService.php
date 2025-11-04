@@ -4,7 +4,7 @@ namespace weglot\craftweglot\services;
 
 use craft\base\Component;
 use weglot\craftweglot\Plugin;
-use Weglot\Util\Url;
+use Weglot\Vendor\Weglot\Util\Url;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 
 class RequestUrlService extends Component
