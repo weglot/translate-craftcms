@@ -92,6 +92,7 @@ class TranslateService extends Component
                     // TODO: Manage filters for attribute escaping (HTML, Vue.js).
 
                     $translatedContent = $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
+
                     // TODO: Integrate URL proxying and other end-processing.
                     return $this->weglotRenderDom($translatedContent);
                 default:

@@ -5,6 +5,7 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
     ->exclude('node_modules')
     ->exclude('vendor')
+    ->exclude('src/vendor')
     ->name('*.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
