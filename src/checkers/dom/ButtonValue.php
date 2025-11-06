@@ -2,8 +2,8 @@
 
 namespace weglot\craftweglot\checkers\dom;
 
-use Weglot\Client\Api\Enum\WordType;
-use Weglot\Parser\Check\Dom\AbstractDomChecker;
+use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
+use Weglot\Vendor\Weglot\Parser\Check\Dom\AbstractDomChecker;
 
 class ButtonValue extends AbstractDomChecker
 {

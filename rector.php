@@ -15,4 +15,5 @@ return RectorConfig::configure()
     ->withImportNames(importShortClasses: false)
     ->withSkip([
         NullToStrictStringFuncCallArgRector::class,
+        __DIR__.'/src/vendor',
     ]);

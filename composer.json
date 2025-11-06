@@ -27,8 +27,13 @@
   },
   "autoload": {
     "psr-4": {
-      "weglot\\craftweglot\\": "src/"
-    }
+      "weglot\\craftweglot\\": "src/",
+      "Weglot\\Vendor\\": "src/vendor/weglot/"
+    },"classmap": [
+      "src/vendor/weglot/build/vendor-src/"
+    ],"files": [
+      "src/vendor/weglot/build/vendor-src/simple_html_dom/src/simple_html_dom.php"
+    ]
   },
   "extra": {
     "handle": "weglot",

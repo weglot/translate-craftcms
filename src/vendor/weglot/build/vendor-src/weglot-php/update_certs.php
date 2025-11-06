@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php 
+namespace Weglot\Vendor;
+
+\chdir(__DIR__);
+\set_time_limit(0);
+// unlimited max execution time
+$fp = \fopen(__DIR__ . '/data/ca-certificates.crt', 'w+');
+$options = [\CURLOPT_FILE => $fp, \CURLOPT_TIMEOUT => 3600, \CURLOPT_URL => 'https://curl.se/ca/cacert.pem'];
+$ch = \curl_init();
+\curl_setopt_array($ch, $options);
+\curl_exec($ch);
+\curl_close($ch);
+\fclose($fp);

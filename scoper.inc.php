@@ -13,6 +13,11 @@ return [
             ->in('build/vendor-src')
             ->name('*.php')
             ->ignoreVCS(true),
+        (new Finder())
+            ->files()
+            ->in('build/vendor-src/weglot-php/data')
+            ->ignoreVCS(true)
+            ->ignoreDotFiles(false),
     ],
     'exclude-namespaces' => ['Weglot\\Craft', 'craft', 'yii'],
     'expose-namespaces' => [
