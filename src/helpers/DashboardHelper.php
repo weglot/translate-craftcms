@@ -70,7 +70,7 @@ class DashboardHelper
         );
     }
 
-    public function getSwiterEditor(): string
+    public function getSwitcherEditor(): string
     {
         if (!$this->canGenerate) {
             return '#';
