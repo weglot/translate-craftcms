@@ -70,6 +70,40 @@ class DashboardHelper
         );
     }
 
+    public function getSwiterEditor(): string
+    {
+        if (!$this->canGenerate) {
+            return '#';
+        }
+
+        $launchUrl = Url::home();
+
+        return \sprintf(
+            '%s/workspaces/%s/projects/%s/settings/language-switcher/editor?url=%s',
+            $this->getBaseUrl(),
+            $this->organizationSlug,
+            $this->projectSlug,
+            urlencode($launchUrl)
+        );
+    }
+
+    public function getLanguageModel(): string
+    {
+        if (!$this->canGenerate) {
+            return '#';
+        }
+
+        $launchUrl = Url::home();
+
+        return \sprintf(
+            '%s/workspaces/%s/projects/%s/settings/language-model',
+            $this->getBaseUrl(),
+            $this->organizationSlug,
+            $this->projectSlug,
+            urlencode($launchUrl)
+        );
+    }
+
     public function getManageUrlExclusionsUrl(): string
     {
         if (!$this->canGenerate) {

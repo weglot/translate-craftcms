@@ -22,7 +22,7 @@ class AdminAsset extends AssetBundle
         $this->css = [
             'vendor/selectize/selectize.css',
             'vendor/selectize/selectize.default.css',
-            'css/admin.css',
+            'css/style.css',
         ];
 
         $this->js = [
