@@ -17,6 +17,38 @@ $spacing-base: 20px;
     }
 }
 #main-content{
+
+    .btn{
+        border-radius: var(--Radius-rounded-8, 8px);
+        background: var(--Background-brand-base, #473AE0);
+        padding: var(--Spacing-p-8, 8px) var(--Spacing-p-12, 12px);
+
+        color: var(--Text-base-inverse, #FFF);
+        text-align: center;
+
+        /* Content/Note/regular */
+        font-size: var(--Font-Size-sm, 14px);
+        font-style: normal;
+        font-weight: var(--Font-Weight-Regular, 400);
+        line-height: var(--Font-Line-height-text-sm, 19.6px); /* 140% */
+
+        &.submit{
+            border-radius: var(--Radius-rounded-8, 8px);
+            background: var(--Background-brand-base, #473AE0) !important;
+            padding: var(--Spacing-p-8, 8px) var(--Spacing-p-12, 12px);
+
+            color: var(--Text-base-inverse, #FFF) !important;
+            text-align: center;
+
+            /* Content/Note/regular */
+            font-size: var(--Font-Size-sm, 14px);
+            font-style: normal;
+            font-weight: var(--Font-Weight-Regular, 400);
+            line-height: var(--Font-Line-height-text-sm, 19.6px); /* 140% */
+            width: 100%;
+        }
+    }
+
     font-family: 'Inter', sans-serif;
     border-radius: var(--Radius-rounded-8, 8px);
     width: 1024px;
