@@ -266,12 +266,18 @@ $spacing-base: 20px;
 // Modal Box
 .weglot-box {
     background: #fff;
-    padding: 30px;
     border-radius: $border-radius;
-    max-width: 500px;
-    width: 90%;
     position: relative;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+
+    display: flex;
+    width: 600px;
+    max-width: 672px;
+    padding: var(--Spacing-p-32, 32px);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--Spacing-p-32, 32px);
 
     &--title {
         margin: 0 0 15px 0;
