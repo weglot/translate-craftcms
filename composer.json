@@ -38,7 +38,7 @@
   "extra": {
     "handle": "weglot",
     "class": "weglot\\craftweglot\\Plugin",
-    "name": "weglot",
+    "name": "Weglot",
     "developer": "Weglot",
     "documentationUrl": "",
     "craft-plugin": {

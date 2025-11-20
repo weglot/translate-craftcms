@@ -1,6 +1,6 @@
 {% do craft.app.plugins.getPlugin('weglot').language.injectLanguagesJsonScript() %}
 {% do craft.app.view.registerAssetBundle('weglot\\craftweglot\\resources\\AdminAsset') %}
-
+<h1>General</h1>
 {% import '_includes/forms.twig' as forms %}
 {% set weglotPlugin = craft.app.plugins.getPlugin('weglot') %}
 
@@ -25,11 +25,12 @@
 
 {% if not settings.apiKey or settings.getErrors('apiKey') %}
     <div class="buttons" style="margin-top: 10px;">
-        <a href="{{ craft.app.plugins.getPlugin('weglot').dashboardHelper.getRegistrationUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Register on Weglot"|t('weglot') }}</a>
+        <a href="{{ craft.app.plugins.getPlugin('weglot').dashboardHelper.getRegistrationUrl() }}" class="btn"
+           target="_blank" rel="noopener">{{ "Register on Weglot"|t('weglot') }}</a>
     </div>
 {% endif %}
 
-<div data-weglot-api-status style="margin-top: 10px;"></div>
+<div class="error-message" data-weglot-api-status></div>
 
 {% set allLangEntries = weglotPlugin ? weglotPlugin.language.getAllLanguages() : [] %}
 {% set languageOptions = [] %}
@@ -77,14 +78,114 @@
         {% set editUrl = dashboardHelper.getEditTranslationsUrl() %}
         {% if editUrl and editUrl != '#' %}
             <div class="weglot-dashboard-container">
-                <h3>{{ "Quick access to Weglot dashboard"|t('weglot') }}</h3>
-                <p>{{ "Manage your project directly on Weglot.com."|t('weglot') }}</p>
-                <div class="buttons">
-                    <a href="{{ editUrl }}" class="btn submit" target="_blank" rel="noopener">{{ "Edit my translations"|t('weglot') }}</a>
-                    <a href="{{ dashboardHelper.getVisualEditorUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Visual Editor"|t('weglot') }}</a>
-                    <a href="{{ dashboardHelper.getManageUrlExclusionsUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Manage URL Exclusions"|t('weglot') }}</a>
-                    <a href="{{ dashboardHelper.getExcludeBlocksUrl() }}" class="btn" target="_blank" rel="noopener">{{ "Exclusion Blocks"|t('weglot') }}</a>
-                </div>
+                <h1>{{ "Quick access to Weglot dashboard"|t('weglot') }}</h1>
+                <a href="{{ editUrl }}" class="menu-card-link">
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/pencils.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">Translation list</div>
+                                <div class="card-desc">Edit translations</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+
+                <a href="{{ dashboardHelper.getExcludeBlocksUrl() }}" class="menu-card-link">
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/puzzle.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">Block exclusion</div>
+                                <div class="card-desc">Choose blocks to exclude via css selector</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+
+
+                <a href="{{ dashboardHelper.getManageUrlExclusionsUrl() }}" class="menu-card-link">
+
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/rocket.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">URL exclusion</div>
+                                <div class="card-desc">Choose words, pages or lang to exclude</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+
+                <a href="{{ dashboardHelper.getVisualEditorUrl() }}" class="menu-card-link">
+
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/laptop.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">Visual Editor</div>
+                                <div class="card-desc">Custom easily your translations</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+
+                <a href="{{ dashboardHelper.getSwitcherEditor() }}" class="menu-card-link">
+
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/language.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">Switcher Editor</div>
+                                <div class="card-desc">Custom easily your switcher(s)</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+
+                <a href="{{ dashboardHelper.getLanguageModel() }}" class="menu-card-link">
+
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/diamond.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">Language model</div>
+                                <div class="card-desc">Personalize tone for better translations</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+
             </div>
         {% endif %}
     {% endif %}

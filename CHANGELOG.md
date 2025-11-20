@@ -8,3 +8,9 @@
 - Add classmap for autoload
 ## 0.1.3-alpha
 - Update CI add classmap directly on composer.json
+## 0.1.4-alpha
+- Update CI add classmap directly on composer.json
+## 0.1.5-alpha
+- Update CI add classmap directly on composer.json
+## 0.2.0-beta
+- Update admin-design
