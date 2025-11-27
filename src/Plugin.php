@@ -172,10 +172,7 @@ class Plugin extends BasePlugin
                 $internalPath = implode('/', \array_slice($parts, 1));
 
                 $this->weglotOriginalRequest = $req;
-                $virtual = new WeglotVirtualRequest($internalPath, $req, [
-                    'cookieValidationKey' => $req->cookieValidationKey,
-                    'csrfParam' => $req->csrfParam,
-                ]);
+                $virtual = new WeglotVirtualRequest($internalPath, $req);
                 $app->set('request', $virtual);
             }
         );

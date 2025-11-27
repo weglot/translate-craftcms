@@ -13,6 +13,8 @@
 ## 0.1.5-alpha
 - Update CI add classmap directly on composer.json
 ## 0.2.0-beta
-- Refresh admin interface design
-## 0.2.0-beta
+- Update admin-design
+## 0.2.1-beta
 - Update cookieValidationKey and csrfParam configuration
+## 0.2.2-beta
+- Update cookieValidationKey and csrfParam configuration directly on construct

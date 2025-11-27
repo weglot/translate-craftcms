@@ -16,6 +16,14 @@ class WeglotVirtualRequest extends Request
         private readonly Request $original,
         array $config = [],
     ) {
+        if (!isset($config['cookieValidationKey'])) {
+            $config['cookieValidationKey'] = $original->cookieValidationKey;
+        }
+
+        if (!isset($config['csrfParam'])) {
+            $config['csrfParam'] = $original->csrfParam;
+        }
+
         parent::__construct($config);
     }
 
