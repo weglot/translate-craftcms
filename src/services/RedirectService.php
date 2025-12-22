@@ -145,7 +145,7 @@ class RedirectService extends Component
         $originalLanguage = $languageService->getOriginalLanguage();
         $currentLanguage = $requestUrlService->getCurrentLanguage();
 
-        if (null !== $bestLanguage && null !== $originalLanguage && null !== $currentLanguage && ($bestLanguage->getInternalCode() !== $originalLanguage->getInternalCode() && $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode())) {
+        if (!in_array(null, [$bestLanguage, $originalLanguage, $currentLanguage], true) && ($bestLanguage->getInternalCode() !== $originalLanguage->getInternalCode() && $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode())) {
             // Ensure URL is not excluded and get final URL
             $weglotUrl = $requestUrlService->getWeglotUrl();
             if (!$weglotUrl->getForLanguage($bestLanguage, false)) {
