@@ -69,6 +69,7 @@ class RedirectService extends Component
      *
      * @param array<int,string> $navigatorLanguages
      * @param array<int,string> $availableLanguagesExternal
+     *
      * @return string|null External code
      */
     public function getBestAvailableLanguage(array $navigatorLanguages, array $availableLanguagesExternal): ?string
@@ -80,19 +81,19 @@ class RedirectService extends Component
 
         $availableLanguagesExternal = array_values(array_unique(array_map('strtolower', $availableLanguagesExternal)));
 
-        if ($navigatorLanguages !== []) {
+        if ([] !== $navigatorLanguages) {
             foreach ($navigatorLanguages as $navigatorLanguage) {
                 $nav = strtolower($navigatorLanguage);
                 // exact match
-                if (in_array($nav, $availableLanguagesExternal, true)) {
+                if (\in_array($nav, $availableLanguagesExternal, true)) {
                     return $nav;
                 }
                 $normalized = strtolower($this->languageException($nav));
-                if (in_array($normalized, $availableLanguagesExternal, true)) {
+                if (\in_array($normalized, $availableLanguagesExternal, true)) {
                     return $normalized;
                 }
                 $primary = substr($nav, 0, 2);
-                if (in_array($primary, $availableLanguagesExternal, true)) {
+                if (\in_array($primary, $availableLanguagesExternal, true)) {
                     return $primary;
                 }
                 foreach ($availableLanguagesExternal as $destination) {
