@@ -21,6 +21,7 @@ use weglot\craftweglot\services\RegexCheckersService;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\ReplaceUrlService;
 use weglot\craftweglot\services\RequestUrlService;
+use weglot\craftweglot\services\RedirectService;
 use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
 use weglot\craftweglot\web\WeglotVirtualRequest;
@@ -61,6 +62,7 @@ class Plugin extends BasePlugin
                 'replaceLinkService' => ['class' => ReplaceLinkService::class],
                 'hrefLangService' => ['class' => HrefLangService::class],
                 'dashboardHelper' => ['class' => DashboardHelper::class],
+                'redirectService' => ['class' => RedirectService::class],
             ],
         ];
     }
@@ -267,7 +269,32 @@ class Plugin extends BasePlugin
 
     private function checkRedirect(): void
     {
-        // TODO: Implement automatic redirection logic here.
+        try {
+            $request = \Craft::$app->getRequest();
+            if (!$request->getIsSiteRequest() || $request->getIsAjax()) {
+                return;
+            }
+
+            // Ensure languages are initialized
+            $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
+            $currentLanguage = self::getInstance()->getRequestUrlService()->getCurrentLanguage();
+            if (null === $originalLanguage || null === $currentLanguage) {
+                return;
+            }
+
+            // Always process user choice parameter first
+            $this->getRedirectService()->verifyNoRedirect();
+
+            // Check if auto redirect is enabled
+            $autoRedirect = (bool) ($this->getOption()->getOption('auto_redirect') ?? $this->getOption()->getOption('auto_switch') ?? false);
+            if (!$autoRedirect) {
+                return;
+            }
+
+            $this->getRedirectService()->autoRedirect();
+        } catch (\Throwable $e) {
+            \Craft::error('checkRedirect error: '.$e->getMessage(), __METHOD__);
+        }
     }
 
     protected function createSettingsModel(): ?Model
@@ -408,5 +435,10 @@ class Plugin extends BasePlugin
     public function getHrefLangService(): HrefLangService
     {
         return $this->get('hrefLangService');
+    }
+
+    public function getRedirectService(): RedirectService
+    {
+        return $this->get('redirectService');
     }
 }
