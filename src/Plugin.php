@@ -16,6 +16,7 @@ use weglot\craftweglot\services\FrontEndScriptsService;
 use weglot\craftweglot\services\HrefLangService;
 use weglot\craftweglot\services\LanguageService;
 use weglot\craftweglot\services\OptionService;
+use weglot\craftweglot\services\PageViewsService;
 use weglot\craftweglot\services\ParserService;
 use weglot\craftweglot\services\RegexCheckersService;
 use weglot\craftweglot\services\ReplaceLinkService;
@@ -61,6 +62,7 @@ class Plugin extends BasePlugin
                 'replaceLinkService' => ['class' => ReplaceLinkService::class],
                 'hrefLangService' => ['class' => HrefLangService::class],
                 'dashboardHelper' => ['class' => DashboardHelper::class],
+                'pageViews' => ['class' => PageViewsService::class],
             ],
         ];
     }
@@ -223,6 +225,7 @@ class Plugin extends BasePlugin
                 Plugin::getInstance()->getHrefLangService()->injectHrefLangTags();
                 Plugin::getInstance()->getOption()->generateWeglotData();
                 $this->getFrontEndScripts()->injectSwitcherAssets();
+                $this->getPageViews()->injectPageViewsScript();
             }
         );
 
@@ -408,5 +411,10 @@ class Plugin extends BasePlugin
     public function getHrefLangService(): HrefLangService
     {
         return $this->get('hrefLangService');
+    }
+
+    public function getPageViews(): PageViewsService
+    {
+        return $this->get('pageViews');
     }
 }
