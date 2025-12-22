@@ -79,27 +79,25 @@ class RedirectService extends Component
             $availableLanguagesExternal[] = $original->getExternalCode();
         }
 
-        $availableLanguagesExternal = array_values(array_unique(array_map('strtolower', $availableLanguagesExternal)));
+        $availableLanguagesExternal = array_values(array_unique(array_map(strtolower(...), $availableLanguagesExternal)));
 
-        if ([] !== $navigatorLanguages) {
-            foreach ($navigatorLanguages as $navigatorLanguage) {
-                $nav = strtolower($navigatorLanguage);
-                // exact match
-                if (\in_array($nav, $availableLanguagesExternal, true)) {
-                    return $nav;
-                }
-                $normalized = strtolower($this->languageException($nav));
-                if (\in_array($normalized, $availableLanguagesExternal, true)) {
-                    return $normalized;
-                }
-                $primary = substr($nav, 0, 2);
-                if (\in_array($primary, $availableLanguagesExternal, true)) {
-                    return $primary;
-                }
-                foreach ($availableLanguagesExternal as $destination) {
-                    if (substr($nav, 0, 2) === substr($destination, 0, 2)) {
-                        return $destination;
-                    }
+        foreach ($navigatorLanguages as $navigatorLanguage) {
+            $nav = strtolower($navigatorLanguage);
+            // exact match
+            if (\in_array($nav, $availableLanguagesExternal, true)) {
+                return $nav;
+            }
+            $normalized = strtolower($this->languageException($nav));
+            if (\in_array($normalized, $availableLanguagesExternal, true)) {
+                return $normalized;
+            }
+            $primary = substr($nav, 0, 2);
+            if (\in_array($primary, $availableLanguagesExternal, true)) {
+                return $primary;
+            }
+            foreach ($availableLanguagesExternal as $destination) {
+                if (substr($nav, 0, 2) === substr($destination, 0, 2)) {
+                    return $destination;
                 }
             }
         }
@@ -147,21 +145,17 @@ class RedirectService extends Component
         $originalLanguage = $languageService->getOriginalLanguage();
         $currentLanguage = $requestUrlService->getCurrentLanguage();
 
-        if (null !== $bestLanguage && null !== $originalLanguage && null !== $currentLanguage) {
-            if ($bestLanguage->getInternalCode() !== $originalLanguage->getInternalCode()
-                && $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()
-            ) {
-                // Ensure URL is not excluded and get final URL
-                $weglotUrl = $requestUrlService->getWeglotUrl();
-                if (!$weglotUrl->getForLanguage($bestLanguage, false)) {
-                    return;
-                }
-                $url = $weglotUrl->getForLanguage($bestLanguage, true);
-                if (\is_string($url) && '' !== $url) {
-                    \Craft::$app->getResponse()->getHeaders()->set('Vary', 'Accept-Language');
-                    \Craft::$app->getResponse()->redirect($url, 302)->send();
-                    exit;
-                }
+        if (null !== $bestLanguage && null !== $originalLanguage && null !== $currentLanguage && ($bestLanguage->getInternalCode() !== $originalLanguage->getInternalCode() && $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode())) {
+            // Ensure URL is not excluded and get final URL
+            $weglotUrl = $requestUrlService->getWeglotUrl();
+            if (!$weglotUrl->getForLanguage($bestLanguage, false)) {
+                return;
+            }
+            $url = $weglotUrl->getForLanguage($bestLanguage, true);
+            if (\is_string($url) && '' !== $url) {
+                \Craft::$app->getResponse()->getHeaders()->set('Vary', 'Accept-Language');
+                \Craft::$app->getResponse()->redirect($url, 302)->send();
+                exit;
             }
         }
 
@@ -171,7 +165,7 @@ class RedirectService extends Component
             $fallbackLanguage = $languageService->getLanguageFromInternal((string) $fallbackInternal);
             if ($fallbackLanguage instanceof LanguageEntry) {
                 $origExternal = $originalLanguage instanceof LanguageEntry ? $originalLanguage->getExternalCode() : '';
-                $origInNavigator = \in_array(strtolower($origExternal), array_map('strtolower', $navigatorLanguages), true);
+                $origInNavigator = \in_array(strtolower($origExternal), array_map(strtolower(...), $navigatorLanguages), true);
 
                 if (null === $bestLanguage || !$origInNavigator) {
                     $weglotUrl = $requestUrlService->getWeglotUrl();
