@@ -25,8 +25,6 @@ class PageViewsService extends Component
             return;
         }
 
-        // Enablement is controlled via options fetched from Weglot API
-        // We only inject if `page_views_enabled` exists and is strictly true.
         $options = Plugin::getInstance()->getOption()->getOptions();
         if (!isset($options['page_views_enabled']) || true !== $options['page_views_enabled']) {
             return;
