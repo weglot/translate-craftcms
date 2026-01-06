@@ -93,10 +93,16 @@ class Plugin extends BasePlugin
                     $splitResult = preg_split('/[|,\s]+/', $item, -1, \PREG_SPLIT_NO_EMPTY);
                     $parts = false !== $splitResult ? $splitResult : [];
                     foreach ($parts as $p) {
-                        $normalized[] = strtolower(trim($p));
+                        $cleaned = strtolower(trim($p));
+                        if (preg_match('/^[a-z]{2}(-[a-z]{2})?$/i', $cleaned)) {
+                            $normalized[] = $cleaned;
+                        }
                     }
                 } elseif ('' !== $item) {
-                    $normalized[] = strtolower(trim($item));
+                    $cleaned = strtolower(trim($item));
+                    if (preg_match('/^[a-z]{2}(-[a-z]{2})?$/i', $cleaned)) {
+                        $normalized[] = $cleaned;
+                    }
                 }
             }
             $languages = array_values(array_unique(array_filter($normalized)));

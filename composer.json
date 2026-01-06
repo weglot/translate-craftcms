@@ -35,6 +35,11 @@
       "src/vendor/weglot/build/vendor-src/simple_html_dom/src/simple_html_dom.php"
     ]
   },
+  "autoload-dev": {
+    "psr-4": {
+      "weglot\\craftweglot\\tests\\": "tests/"
+    }
+  },
   "extra": {
     "handle": "weglot",
     "class": "weglot\\craftweglot\\Plugin",

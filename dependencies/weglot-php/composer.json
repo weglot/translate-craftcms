@@ -1,0 +1,84 @@
+{
+    "name": "weglot/weglot-php",
+    "description": "PHP library for the Weglot API",
+    "homepage": "https://weglot.com/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Baptiste Leduc",
+            "email": "baptiste@weglot.com",
+            "homepage": "https://baptiste-leduc.now.sh/",
+            "role": "Developer"
+        },
+        {
+            "name": "Thomas Deneulin",
+            "email": "thomas@weglot.com",
+            "role": "Review"
+        },
+        {
+            "name": "Edson Galina Fortes",
+            "email": "edson@weglot.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "support@weglot.com",
+        "source": "https://github.com/weglot/weglot-php",
+        "docs": "https://weglot.github.io/weglot-documentation/"
+    },
+    "keywords": [
+        "php",
+        "weglot",
+        "weglot-library",
+        "translate",
+        "translation",
+        "translator",
+        "localization",
+        "languages",
+        "i18n"
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/weglot/weglot-translation-definitions"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/weglot/simple_html_dom"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Weglot\\": "src/",
+            "WeglotLanguages\\": "node_modules/@weglot/languages/dist/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Weglot\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=7.2",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "psr/cache": "^1.0 || ^2.0 || ^3.0",
+        "weglot/simplehtmldom": "^0.8",
+        "weglot/translation-definitions": "^2.0",
+        "symfony/polyfill-php80": "^1.31"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^2 || ^3.64",
+        "phpstan/phpstan": "^1.11",
+        "phpstan/phpstan-deprecation-rules": "^1.1",
+        "phpunit/phpunit": "^5.7 || ^6.5 || ^7.5 || ^8.5 || ^9.6 || ^10.5 || ^11.4",
+        "symfony/dotenv": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1",
+        "symfony/cache": "^3.4 || 4.4 || ^5.4 || ^6.4 || ^7.1"
+    },
+    "scripts": {
+        "cs": "vendor/bin/php-cs-fixer fix",
+        "phpstan": "vendor/bin/phpstan",
+        "test": "vendor/bin/phpunit tests"
+    }
+}

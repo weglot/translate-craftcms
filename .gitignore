@@ -30,3 +30,5 @@ phpstan.neon
 # Vite
 .vite/
 dist/
+
+tests/_craft
