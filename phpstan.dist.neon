@@ -12,7 +12,7 @@ parameters:
 
     paths:
         - src
-
+        - tests
     stubFiles:
         - phpstan/stubs/yii/BaseYii.stub
         - phpstan/stubs/craft/console/Application.stub

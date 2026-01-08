@@ -29,13 +29,16 @@ class ReplaceLinkService extends Component
 
         $parsedUrl = parse_url($replacedUrl);
 
-        if (isset($parsedUrl['path']) && ('' !== $parsedUrl['path'] && '0' !== $parsedUrl['path']) && !str_ends_with($parsedUrl['path'], '/')) {
+        if (isset($parsedUrl['path']) && '' !== $parsedUrl['path'] && '0' !== $parsedUrl['path'] && !str_ends_with($parsedUrl['path'], '/')) {
             $parsedUrl['path'] .= '/';
         }
 
         $rebuiltUrl = '';
         if (isset($parsedUrl['scheme'], $parsedUrl['host'])) {
             $rebuiltUrl .= $parsedUrl['scheme'].'://'.$parsedUrl['host'];
+        }
+        if (isset($parsedUrl['port'])) {
+            $rebuiltUrl .= ':'.$parsedUrl['port'];
         }
         if (isset($parsedUrl['path']) && ('' !== $parsedUrl['path'] && '0' !== $parsedUrl['path'])) {
             $rebuiltUrl .= $parsedUrl['path'];
