@@ -1,0 +1,6 @@
+# The project has no dependency
+composer.lock
+/vendor/
+node_modules
+yarn.lock
+test*

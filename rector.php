@@ -8,6 +8,7 @@ use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 return RectorConfig::configure()
     ->withPaths([
         __DIR__.'/src',
+        __DIR__.'/tests',
     ])
     ->withCache('.cache/rector')
     ->withPhpSets(php82: true)
