@@ -446,8 +446,9 @@ class Plugin extends BasePlugin
         return $this->get('hrefLangService');
     }
 
-    public function getPageViews(): PageViewsService {
-        return $this->get( 'pageViews' );
+    public function getPageViews(): PageViewsService
+    {
+        return $this->get('pageViews');
     }
 
     public function getRedirectService(): RedirectService
