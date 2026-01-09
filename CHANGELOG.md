@@ -18,3 +18,6 @@
 - Update cookieValidationKey and csrfParam configuration
 ## 0.2.2-beta
 - Update cookieValidationKey and csrfParam configuration directly on construct
+## 1.0
+- Add auto-redirect feature
+- Add Pageviews feature
