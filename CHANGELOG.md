@@ -21,3 +21,5 @@
 ## 1.0
 - Add auto-redirect feature
 - Add Pageviews feature
+## 1.1
+- Remove credentials,keepalive and header content type from header 

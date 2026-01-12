@@ -54,10 +54,8 @@ class PageViewsService extends Component
                         if (window.fetch) {
                             fetch(url, {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: body,
-                                credentials: 'omit',
-                                keepalive: true
+                                headers: {},
+                                body: body
                             }).catch(function(){/* silent */});
                         } else {
                             var xhr = new XMLHttpRequest();
