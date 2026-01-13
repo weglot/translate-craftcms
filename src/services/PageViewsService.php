@@ -53,7 +53,6 @@ class PageViewsService extends Component
 
                             if (navigator.sendBeacon) {
                                 try {
-                                    // NB: pas de header fetch ajouté ; ici on passe juste un Blob typé.
                                     var queued = navigator.sendBeacon(url, body);
                                     if (queued) {
                                         return;
