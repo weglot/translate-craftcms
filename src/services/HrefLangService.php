@@ -71,7 +71,7 @@ class HrefLangService extends Component
                             $internalPath = ltrim($path, '/'); // ex: blog-fr
                             $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
                                 $apiKey,
-                                [$currentExternal],   // on force la langue source (celle de la page courante)
+                                [$currentExternal],
                                 $currentExternal,
                                 $internalPath
                             );

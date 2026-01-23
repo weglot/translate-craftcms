@@ -191,7 +191,7 @@ class Plugin extends BasePlugin
                     if (!in_array('', [$apiKey, $langExternal, $internalPath], true)) {
                         $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
                             $apiKey,
-                            [$langExternal],     // on force la langue cible (évite mismatch)
+                            [$langExternal],
                             $langExternal,
                             $internalPath
                         );

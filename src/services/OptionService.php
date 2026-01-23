@@ -451,7 +451,6 @@ class OptionService extends Component
                                     if (null !== $rewritten && $rewritten !== $internalPath) {
                                         $newPath = '/'.ltrim($rewritten, '/');
 
-                                        // Reconstruit l’URL (garde query/fragment si présents)
                                         $rebuilt = $newPath;
                                         if (\is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
                                             $rebuilt = $parsed['scheme'].'://'.$parsed['host']
