@@ -41,45 +41,45 @@ class PageViewsService extends Component
         $safeEndpoint = Json::htmlEncode($endpoint);
 
         $js = <<<JS
-                    (function(){
-                        try {
-                            var url = {$safeEndpoint};
-                            var payload = {
-                                url: (location.protocol + '//' + location.host + location.pathname),
-                                language: document.documentElement.getAttribute('lang'),
-                                browser_language: (navigator.language || navigator.userLanguage)
-                            };
-                            var body = JSON.stringify(payload);
+                (function(){
+                    try {
+                        var url = {$safeEndpoint};
+                        var payload = {
+                            url: (location.protocol + '//' + location.host + location.pathname),
+                            language: document.documentElement.getAttribute('lang'),
+                            browser_language: (navigator.language || navigator.userLanguage)
+                        };
+                        var body = JSON.stringify(payload);
 
-                            if (navigator.sendBeacon) {
-                                try {
-                                    var queued = navigator.sendBeacon(url, body);
-                                    if (queued) {
-                                        return;
-                                    }
-                                } catch (e) {
-                                    // silent (fallbacks ci-dessous)
+                        if (navigator.sendBeacon) {
+                            try {
+                                var queued = navigator.sendBeacon(url, body);
+                                if (queued) {
+                                    return;
                                 }
+                            } catch (e) {
+                                // silent (fallbacks ci-dessous)
                             }
-
-                            if (window.fetch) {
-                                fetch(url, {
-                                    method: 'POST',
-                                    headers: {},
-                                    body: body,
-                                    keepalive: true
-                                }).catch(function(){/* silent */});
-                            } else {
-                                var xhr = new XMLHttpRequest();
-                                xhr.open('POST', url, true);
-                                try { xhr.setRequestHeader('Content-Type', 'application/json'); } catch(e) {}
-                                try { xhr.send(body); } catch(e) {}
-                            }
-                        } catch (e) {
-                            // silent
                         }
-                    })();
-                JS;
+
+                        if (window.fetch) {
+                            fetch(url, {
+                                method: 'POST',
+                                headers: {},
+                                body: body,
+                                keepalive: true
+                            }).catch(function(){/* silent */});
+                        } else {
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', url, true);
+                            try { xhr.setRequestHeader('Content-Type', 'application/json'); } catch(e) {}
+                            try { xhr.send(body); } catch(e) {}
+                        }
+                    } catch (e) {
+                        // silent
+                    }
+                })();
+            JS;
 
         $view->registerJs($js, View::POS_END);
 
