@@ -188,7 +188,7 @@ class Plugin extends BasePlugin
                     $apiKey = trim((string) $settings->apiKey);
 
                     $langExternal = strtolower((string) $first);
-                    if (!in_array('', [$apiKey, $langExternal, $internalPath], true)) {
+                    if (!\in_array('', [$apiKey, $langExternal, $internalPath], true)) {
                         $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
                             $apiKey,
                             [$langExternal],
