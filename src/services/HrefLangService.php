@@ -15,11 +15,25 @@ class HrefLangService extends Component
 
         try {
             $requestUrlService = Plugin::getInstance()->getRequestUrlService();
+            $languageService = Plugin::getInstance()->getLanguage();
 
             $eligible = $requestUrlService->isEligibleUrl($requestUrlService->getFullUrl());
             if ([] === $eligible) {
                 return $render;
             }
+
+            $currentLanguage = $requestUrlService->getCurrentLanguage();
+            $originalLanguage = $languageService->getOriginalLanguage();
+
+            $settings = Plugin::getInstance()->getTypedSettings();
+            $apiKey = trim((string) $settings->apiKey);
+
+            $currentExternal = ($currentLanguage instanceof LanguageEntry) ? strtolower(trim($currentLanguage->getExternalCode())) : '';
+            $isOnTranslatedPage = (
+                $currentLanguage instanceof LanguageEntry
+                && $originalLanguage instanceof LanguageEntry
+                && $currentLanguage->getInternalCode() !== $originalLanguage->getInternalCode()
+            );
 
             $urls = $requestUrlService->getWeglotUrl()->getAllUrls();
 
@@ -32,14 +46,52 @@ class HrefLangService extends Component
                 if ('' === $rawHref) {
                     continue;
                 }
+
+                $language = $url['language'] ?? null;
+                if (!$language instanceof LanguageEntry) {
+                    continue;
+                }
+
                 $href = explode('?', $rawHref, 2)[0];
                 if ('' === $href) {
                     continue;
                 }
 
-                $language = $url['language'] ?? null;
-                if (!$language instanceof LanguageEntry) {
-                    continue;
+                try {
+                    if (
+                        $isOnTranslatedPage
+                        && $originalLanguage instanceof LanguageEntry
+                        && $language->getInternalCode() === $originalLanguage->getInternalCode()
+                        && '' !== $apiKey
+                        && '' !== $currentExternal
+                    ) {
+                        $parsed = parse_url($href);
+                        $path = \is_array($parsed) ? ($parsed['path'] ?? '') : '';
+                        if (\is_string($path) && '' !== $path) {
+                            $internalPath = ltrim($path, '/'); // ex: blog-fr
+                            $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+                                $apiKey,
+                                [$currentExternal],   // on force la langue source (celle de la page courante)
+                                $currentExternal,
+                                $internalPath
+                            );
+
+                            if (null !== $rewritten && $rewritten !== $internalPath) {
+                                $newPath = '/'.ltrim($rewritten, '/');
+
+                                if (\is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
+                                    $href = $parsed['scheme'].'://'.$parsed['host']
+                                            .(isset($parsed['port']) ? ':'.$parsed['port'] : '')
+                                            .$newPath
+                                            .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
+                                } else {
+                                    $href = $newPath.(\is_array($parsed) && isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
+                                }
+                            }
+                        }
+                    }
+                } catch (\Throwable) {
+                    // silent
                 }
 
                 $hreflang = $language->getExternalCode();

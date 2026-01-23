@@ -412,6 +412,8 @@ class OptionService extends Component
             $destinations = $languageService->getDestinationLanguages();
             $autoRedirect = (bool) ($this->getOption('auto_redirect') ?? $this->getOption('auto_switch') ?? false);
 
+            $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
+
             $allLanguages = [];
             if (null !== $original) {
                 $allLanguages[] = $original;
@@ -423,6 +425,55 @@ class OptionService extends Component
             foreach ($allLanguages as $lang) {
                 $link = $requestUrl->getForLanguage($lang, true);
                 if ('' !== $link) {
+                    try {
+                        if (
+                            null !== $original
+                            && null !== $currentLanguage
+                            && $lang->getInternalCode() === $original->getInternalCode()
+                            && $currentLanguage->getInternalCode() !== $original->getInternalCode()
+                        ) {
+                            $settingsModel = Plugin::getInstance()->getTypedSettings();
+                            $apiKey = trim((string) $settingsModel->apiKey);
+
+                            $fromExternal = strtolower(trim((string) $currentLanguage->getExternalCode())); // ex: fr
+                            if ('' !== $apiKey && '' !== $fromExternal) {
+                                $parsed = parse_url($link);
+                                $path = \is_array($parsed) ? ($parsed['path'] ?? '') : '';
+                                if (\is_string($path) && '' !== $path) {
+                                    $internalPath = ltrim($path, '/'); // ex: blog-fr
+                                    $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+                                        $apiKey,
+                                        [$fromExternal],
+                                        $fromExternal,
+                                        $internalPath
+                                    );
+
+                                    if (null !== $rewritten && $rewritten !== $internalPath) {
+                                        $newPath = '/'.ltrim($rewritten, '/');
+
+                                        // Reconstruit l’URL (garde query/fragment si présents)
+                                        $rebuilt = $newPath;
+                                        if (\is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
+                                            $rebuilt = $parsed['scheme'].'://'.$parsed['host']
+                                                       .(isset($parsed['port']) ? ':'.$parsed['port'] : '')
+                                                       .$newPath
+                                                       .(isset($parsed['query']) && '' !== $parsed['query'] ? '?'.$parsed['query'] : '')
+                                                       .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
+                                        } elseif (\is_array($parsed)) {
+                                            $rebuilt = $newPath
+                                                       .(isset($parsed['query']) && '' !== $parsed['query'] ? '?'.$parsed['query'] : '')
+                                                       .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
+                                        }
+
+                                        $link = $rebuilt;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (\Throwable) {
+                        // silent
+                    }
+
                     if ($autoRedirect && null !== $original) {
                         $isOrig = ($lang->getInternalCode() === $original->getInternalCode()) ? 'true' : 'false';
                         if (str_contains($link, '?')) {

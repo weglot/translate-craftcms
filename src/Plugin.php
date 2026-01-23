@@ -23,6 +23,7 @@ use weglot\craftweglot\services\RegexCheckersService;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\ReplaceUrlService;
 use weglot\craftweglot\services\RequestUrlService;
+use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
 use weglot\craftweglot\web\WeglotVirtualRequest;
@@ -54,6 +55,7 @@ class Plugin extends BasePlugin
                 'frontEndScripts' => ['class' => FrontEndScriptsService::class],
                 'userApi' => ['class' => UserApiService::class],
                 'option' => ['class' => OptionService::class],
+                'slug' => ['class' => SlugService::class],
                 'language' => ['class' => LanguageService::class],
                 'translateService' => ['class' => TranslateService::class],
                 'parserService' => ['class' => ParserService::class],
@@ -181,6 +183,27 @@ class Plugin extends BasePlugin
                 }
                 $internalPath = implode('/', \array_slice($parts, 1));
 
+                try {
+                    $settings = Plugin::getInstance()->getTypedSettings();
+                    $apiKey = trim((string) $settings->apiKey);
+
+                    $langExternal = strtolower((string) $first);
+                    if (!in_array('', [$apiKey, $langExternal, $internalPath], true)) {
+                        $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+                            $apiKey,
+                            [$langExternal],     // on force la langue cible (évite mismatch)
+                            $langExternal,
+                            $internalPath
+                        );
+
+                        if (null !== $rewritten && $rewritten !== $internalPath) {
+                            $internalPath = $rewritten;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Craft::warning('VirtualRequest slug rewrite failed: '.$e->getMessage(), __METHOD__);
+                }
+
                 $this->weglotOriginalRequest = $req;
                 $virtual = new WeglotVirtualRequest($internalPath, $req);
                 $app->set('request', $virtual);
@@ -284,17 +307,14 @@ class Plugin extends BasePlugin
                 return;
             }
 
-            // Ensure languages are initialized
             $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
             $currentLanguage = self::getInstance()->getRequestUrlService()->getCurrentLanguage();
             if (null === $originalLanguage || null === $currentLanguage) {
                 return;
             }
 
-            // Always process user choice parameter first
             $this->getRedirectService()->verifyNoRedirect();
 
-            // Check if auto redirect is enabled
             $autoRedirect = (bool) ($this->getOption()->getOption('auto_redirect') ?? $this->getOption()->getOption('auto_switch') ?? false);
             if (!$autoRedirect) {
                 return;
@@ -404,6 +424,11 @@ class Plugin extends BasePlugin
     public function getOption(): OptionService
     {
         return $this->get('option');
+    }
+
+    public function getSlug(): SlugService
+    {
+        return $this->get('slug');
     }
 
     public function getReplaceUrlService(): ReplaceUrlService
