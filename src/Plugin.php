@@ -12,6 +12,7 @@ use craft\web\View;
 use weglot\craftweglot\helpers\DashboardHelper;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;
+use weglot\craftweglot\services\DynamicsService;
 use weglot\craftweglot\services\FrontEndScriptsService;
 use weglot\craftweglot\services\HrefLangService;
 use weglot\craftweglot\services\LanguageService;
@@ -46,6 +47,9 @@ class Plugin extends BasePlugin
      *     components: array<string, array{'class': class-string}>
      * }
      */
+    public const EVENT_REGISTER_WHITELIST_SELECTORS = 'registerWhitelistSelectors';
+    public const EVENT_REGISTER_DYNAMICS_SELECTORS = 'registerDynamicsSelectors';
+
     public static function config(): array
     {
         return [
@@ -65,6 +69,7 @@ class Plugin extends BasePlugin
                 'dashboardHelper' => ['class' => DashboardHelper::class],
                 'pageViews' => ['class' => PageViewsService::class],
                 'redirectService' => ['class' => RedirectService::class],
+                'dynamics' => ['class' => DynamicsService::class],
             ],
         ];
     }
@@ -88,6 +93,14 @@ class Plugin extends BasePlugin
 
         try {
             $settings = $this->getTypedSettings();
+
+            $dyn = trim($settings->dynamicsSelectors ?? '');
+            if ('' !== $dyn && $settings->dynamicsWhitelistSelectors !== $dyn) {
+                $settings->dynamicsWhitelistSelectors = $dyn;
+
+                \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
+            }
+
             $apiKey = trim($settings->apiKey);
             $languageFrom = $settings->languageFrom;
             $languages = $settings->languages;
@@ -232,6 +245,7 @@ class Plugin extends BasePlugin
             function () {
                 Plugin::getInstance()->getHrefLangService()->injectHrefLangTags();
                 Plugin::getInstance()->getOption()->generateWeglotData();
+                Plugin::getInstance()->getDynamics()->addDynamics();
                 $this->getFrontEndScripts()->injectSwitcherAssets();
                 $this->getPageViews()->injectPageViewsScript();
             }
@@ -454,5 +468,10 @@ class Plugin extends BasePlugin
     public function getRedirectService(): RedirectService
     {
         return $this->get('redirectService');
+    }
+
+    public function getDynamics(): DynamicsService
+    {
+        return $this->get('dynamics');
     }
 }
