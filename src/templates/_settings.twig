@@ -72,6 +72,8 @@
     inputAttributes: { class: 'weglot-select-destination' }
 }) }}
 
+
+
 {% if settings.apiKey %}
     {% set dashboardHelper = craft.app.plugins.getPlugin('weglot').dashboardHelper %}
     {% if dashboardHelper %}
@@ -189,6 +191,25 @@
             </div>
         {% endif %}
     {% endif %}
+    <h2>Dynamics</h2>
+
+    {{ forms.lightswitchField({
+        label: 'Enable dynamics'|t('weglot'),
+        instructions: 'Injects Weglot in the <head> and enables dynamic translation. Inputs accept JSON or CSV (one selector per line).'|t('weglot'),
+        id: 'enableDynamics',
+        name: 'enableDynamics',
+        on: settings.enableDynamics ?? false
+    }) }}
+
+
+    {{ forms.textareaField({
+        label: 'Dynamics selectors'|t('weglot'),
+        instructions: 'JSON: [{"value":".cart"}] or list: .cart\\n#checkout'|t('weglot'),
+        id: 'dynamicsSelectors',
+        name: 'dynamicsSelectors',
+        value: settings.dynamicsSelectors ?? '',
+        rows: 6
+    }) }}
 {% endif %}
 {% if showFirstSettingsPopup is defined and showFirstSettingsPopup %}
     <div id="weglot-box-first-settings" class="weglot-box-overlay" data-weglot-show-popup="true">

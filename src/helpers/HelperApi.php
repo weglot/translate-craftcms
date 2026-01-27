@@ -45,6 +45,16 @@ class HelperApi
             : self::CDN_URL_PROD;
     }
 
+    public static function getRootCdnBase(): string
+    {
+        return rtrim(self::getCdnUrl(), '/');
+    }
+
+    public static function getWeglotJsUrl(): string
+    {
+        return self::getRootCdnBase().'/weglot.min.js';
+    }
+
     public static function getTplSwitchersUrl(): string
     {
         return self::getCdnUrl().'switchers/';

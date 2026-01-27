@@ -12,12 +12,25 @@ use weglot\craftweglot\Plugin;
 class FrontEndScriptsService extends Component
 {
     private bool $switcherAssetsInjected = false;
+    private bool $weglotScriptsInjected = false;
 
-    public function injectWeglotScripts(): void
+    /**
+     * @param array<string, mixed> $extraConfig
+     */
+    public function injectWeglotScripts(array $extraConfig = []): void
     {
+        if ($this->weglotScriptsInjected) {
+            return;
+        }
+
         $settings = Plugin::getInstance()->getTypedSettings();
 
         if ('' === $settings->apiKey) {
+            return;
+        }
+
+        $apiKey = Plugin::getInstance()->getOption()->getPublicApiKey();
+        if ('' === $apiKey) {
             return;
         }
 
@@ -27,20 +40,27 @@ class FrontEndScriptsService extends Component
             'position' => View::POS_HEAD,
         ]);
 
-        $apiKey = Plugin::getInstance()->getOption()->getOption('api_key');
-        $whiteList = [];
         $weglotConfig = [
             'api_key' => $apiKey,
-            'whitelist' => $whiteList,
-            'hide_switcher' => 'false',
+            'whitelist' => [],
+            'hide_switcher' => 'true',
             'auto_switch' => 'false',
         ];
-        $safeJson = Json::htmlEncode($weglotConfig);
 
+        if ([] !== $extraConfig) {
+            $weglotConfig = array_merge($weglotConfig, $extraConfig);
+        }
+
+        $safeJson = Json::htmlEncode($weglotConfig);
         $js = "Weglot.initialize($safeJson);";
         $view->registerJs($js, View::POS_HEAD);
+
+        $this->weglotScriptsInjected = true;
     }
 
+    /**
+     * @param bool $forceDefault whether to enforce default settings for switcher assets
+     */
     public function injectSwitcherAssets(bool $forceDefault = true): void
     {
         if ($this->switcherAssetsInjected) {
