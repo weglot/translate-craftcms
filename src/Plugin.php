@@ -184,6 +184,11 @@ class Plugin extends BasePlugin
                 $this->weglotOriginalRequest = $req;
                 $virtual = new WeglotVirtualRequest($internalPath, $req);
                 $app->set('request', $virtual);
+
+                // Reverse translate des paramètres GET (sans toucher aux templates)
+                $this->injectReverseTranslatedQueryParams($virtual, [
+                    'query' => 'query',
+                ]);
             }
         );
 
@@ -383,6 +388,68 @@ class Plugin extends BasePlugin
                     exit;
                 }
             }
+        }
+    }
+
+    /**
+     * @param array<string,string> $map sourceParam => targetParam
+     */
+    private function injectReverseTranslatedQueryParams(Request $request, array $map): void
+    {
+        $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
+        $currentLanguage = self::getInstance()->getRequestUrlService()->getCurrentLanguage();
+
+        if (
+            null === $originalLanguage
+            || null === $currentLanguage
+            || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()
+        ) {
+            return;
+        }
+
+        $queryParams = $request->getQueryParams();
+
+        $hasChanged = false;
+
+        foreach ($map as $sourceParam => $targetParam) {
+            if (!isset($queryParams[$sourceParam])) {
+                continue;
+            }
+
+            $raw = trim((string) $queryParams[$sourceParam]);
+            if ('' === $raw) {
+                continue;
+            }
+
+            $userKey = $sourceParam.'_user';
+
+            if ($sourceParam === $targetParam && isset($queryParams[$userKey]) && '' !== trim((string) $queryParams[$userKey])) {
+                continue;
+            }
+
+            $translated = self::getInstance()->getTranslateService()->reverseTranslateSearchQuery(
+                $raw,
+                $currentLanguage,
+                $originalLanguage
+            );
+
+            if ($sourceParam === $targetParam) {
+                $queryParams[$userKey] = $raw;
+                $queryParams[$targetParam] = $translated;
+                $hasChanged = true;
+                continue;
+            }
+
+            if (isset($queryParams[$targetParam]) && '' !== trim((string) $queryParams[$targetParam])) {
+                continue;
+            }
+
+            $queryParams[$targetParam] = $translated;
+            $hasChanged = true;
+        }
+
+        if ($hasChanged) {
+            $request->setQueryParams($queryParams);
         }
     }
 
