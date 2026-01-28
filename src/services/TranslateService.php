@@ -2,8 +2,8 @@
 
 namespace weglot\craftweglot\services;
 
-use weglot\craftweglot\helpers\HelperApi;
 use craft\base\Component;
+use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
