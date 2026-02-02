@@ -22,8 +22,8 @@ class IframeSrc extends AbstractDomChecker
 
         if (isset($server_host) && isset($parsed_url['host']) && str_replace('www.', '', $parsed_url['host']) !== str_replace('www.', '', $server_host)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }
