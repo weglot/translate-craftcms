@@ -41,7 +41,7 @@ class RouterController extends Controller
         Event::on(
             ElementQuery::class,
             ElementQuery::EVENT_INIT,
-            function (Event $event) {
+            static function (Event $event) {
                 /** @var ElementQuery<int, Element> $query */
                 $query = $event->sender;
                 if (null === $query->siteId) {

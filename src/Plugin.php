@@ -215,7 +215,7 @@ class Plugin extends BasePlugin
             Event::on(
                 UrlManager::class,
                 UrlManager::EVENT_REGISTER_SITE_URL_RULES,
-                function (RegisterUrlRulesEvent $e) {
+                static function (RegisterUrlRulesEvent $e) {
                     $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                     $langs = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
 
