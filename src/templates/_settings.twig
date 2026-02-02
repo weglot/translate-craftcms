@@ -201,15 +201,6 @@
         on: settings.enableDynamics ?? false
     }) }}
 
-
-    {{ forms.textareaField({
-        label: 'Dynamics selectors'|t('weglot'),
-        instructions: 'JSON: [{"value":".cart"}] or list: .cart\\n#checkout'|t('weglot'),
-        id: 'dynamicsSelectors',
-        name: 'dynamicsSelectors',
-        value: settings.dynamicsSelectors ?? '',
-        rows: 6
-    }) }}
 {% endif %}
 {% if showFirstSettingsPopup is defined and showFirstSettingsPopup %}
     <div id="weglot-box-first-settings" class="weglot-box-overlay" data-weglot-show-popup="true">

@@ -32,9 +32,13 @@ final class DynamicsService
             $this->parseSelectorsInput((string) ($settings->dynamicsWhitelistSelectors ?? ''))
         );
 
+        // Récupération des dynamics depuis les options (plus depuis les settings/formulaire)
+        $rawDynamics = Plugin::getInstance()->getOption()->getOption('dynamics');
+        $dynamicsFromOptions = $this->normalizeSelectorsFromOptions($rawDynamics);
+
         $dynamics = $this->mergeSelectors(
             $defaultDynamics,
-            $this->parseSelectorsInput((string) ($settings->dynamicsSelectors ?? ''))
+            $dynamicsFromOptions
         );
 
         // Extension “type apply_filters”
@@ -50,6 +54,40 @@ final class DynamicsService
             'whitelist' => $whitelist,
             'dynamics' => $dynamics,
         ]);
+    }
+
+    /**
+     * @return array<int, array{value: string}>
+     */
+    private function normalizeSelectorsFromOptions(mixed $raw): array
+    {
+        if (\is_string($raw)) {
+            return $this->parseSelectorsInput($raw);
+        }
+
+        if (!\is_array($raw)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($raw as $item) {
+            if (\is_string($item)) {
+                $s = trim($item);
+                if ('' !== $s) {
+                    $out[] = ['value' => $s];
+                }
+                continue;
+            }
+
+            if (\is_array($item) && isset($item['value']) && \is_string($item['value'])) {
+                $s = trim($item['value']);
+                if ('' !== $s) {
+                    $out[] = ['value' => $s];
+                }
+            }
+        }
+
+        return $this->dedupeSelectors($out);
     }
 
     /**

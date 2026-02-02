@@ -13,16 +13,7 @@ class Settings extends Model
     public bool $showBoxFirstSettings = true;
     public bool $enableDynamics = false;
 
-    /**
-     * JSON ou CSV/ligne.
-     * Ex: [{"value":".cart"}] ou ".cart\n#checkout".
-     */
     public string $dynamicsWhitelistSelectors = '';
-
-    /**
-     * JSON ou CSV/ligne.
-     */
-    public string $dynamicsSelectors = '';
 
     public string $dynamicsAllowedUrls = '';
     /**
@@ -44,7 +35,6 @@ class Settings extends Model
             ['languages', 'each', 'rule' => ['string']],
             ['enableDynamics', 'boolean'],
             ['dynamicsWhitelistSelectors', 'string'],
-            ['dynamicsSelectors', 'string'],
             ['dynamicsAllowedUrls', 'string'],
         ];
     }
