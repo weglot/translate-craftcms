@@ -17,7 +17,7 @@ class index
     private static function sortedJSONArray($pathKey, $sortKey, $sortOrder = \SORT_ASC)
     {
         $array = self::loadJSON($pathKey);
-        array_multisort(array_map(function ($el) use ($sortKey) {
+        array_multisort(array_map(static function ($el) use ($sortKey) {
             return $el[$sortKey];
         }, $array), $sortOrder, $array);
 
@@ -26,7 +26,7 @@ class index
 
     public static function init()
     {
-        self::$languages = array_map(function ($language) {
+        self::$languages = array_map(static function ($language) {
             return [
                 'label' => $language[self::$labelKey],
                 'value' => $language['code'],

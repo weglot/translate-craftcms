@@ -206,7 +206,7 @@ class DomCheckerProvider
     protected function loadDefaultCheckers()
     {
         $files = array_diff(scandir(__DIR__.'/Dom'), ['AbstractDomChecker.php', '..', '.']);
-        $checkers = array_map(function ($filename) {
+        $checkers = array_map(static function ($filename) {
             return self::DEFAULT_CHECKERS_NAMESPACE.Text::removeFileExtension($filename);
         }, $files);
 
@@ -391,9 +391,8 @@ class DomCheckerProvider
                     $number = $this->numberOfTextNodeInParentAfterChild($n, null, $countEmptyText);
                     if (false === $number) {
                         return false;
-                    } else {
-                        $count += $number;
                     }
+                    $count += $number;
                 }
             }
             $node->nodes = array_values($node->nodes);
@@ -465,9 +464,9 @@ class DomCheckerProvider
         if ($this->isText($node)) {
             if ('' != Text::fullTrim($node->innertext())) {
                 return false;
-            } else {
-                return true;
             }
+
+            return true;
         }
 
         foreach ($node->nodes as $child) {
@@ -518,15 +517,14 @@ class DomCheckerProvider
     {
         if ($this->isBlock($node)) {
             return true;
-        } else {
-            foreach ($node->nodes as $n) {
-                if ($this->containsBlock($n)) {
-                    return true;
-                }
-            }
-
-            return false;
         }
+        foreach ($node->nodes as $n) {
+            if ($this->containsBlock($n)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

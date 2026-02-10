@@ -15,6 +15,7 @@ class TranslateService extends Component
         private readonly RequestUrlService $requestUrlService,
         private readonly ParserService $parserService,
         private readonly ReplaceUrlService $replaceUrlService,
+        private readonly OptionService $optionService,
         array $config = [],
     ) {
         parent::__construct($config);
@@ -91,6 +92,8 @@ class TranslateService extends Component
                 case 'html':
                     // TODO: Manage filters for attribute escaping (HTML, Vue.js).
 
+                    $html = $this->injectAiDisclaimer($html);
+
                     $translatedContent = $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
 
                     // TODO: Integrate URL proxying and other end-processing.
@@ -160,5 +163,97 @@ class TranslateService extends Component
         $result = preg_replace('/<!--.*?-->/s', '', $html);
 
         return $result ?? $html;
+    }
+
+    /**
+     * @param string $html the HTML content to process
+     *
+     * @return string the HTML with AI disclaimer injected if applicable
+     */
+    private function injectAiDisclaimer(string $html): string
+    {
+        $customSettings = $this->optionService->getOption('custom_settings');
+
+        $aiDisclaimerSelector = null;
+
+        if (\is_array($customSettings) && isset($customSettings['ai_disclaimer_selector'])) {
+            $aiDisclaimerSelector = $customSettings['ai_disclaimer_selector'];
+        }
+
+        if (!\is_string($aiDisclaimerSelector) || '' === trim($aiDisclaimerSelector)) {
+            return $html;
+        }
+
+        $selector = trim($aiDisclaimerSelector);
+        $disclaimerText = 'Translated content on this website may be generated using artificial intelligence. Learn more about AI-generated translations';
+
+        $dom = new \DOMDocument();
+        libxml_use_internal_errors(true);
+
+        $dom->loadHTML('<?xml encoding="utf-8" ?>'.$html, \LIBXML_HTML_NOIMPLIED | \LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+
+        $xpath = new \DOMXPath($dom);
+
+        $xpathQuery = $this->cssToXPath($selector);
+
+        try {
+            $elements = $xpath->query($xpathQuery);
+
+            if ($elements && $elements->length > 0) {
+                $targetElement = $elements->item(0);
+
+                $disclaimerNode = $dom->createTextNode($disclaimerText);
+
+                $targetElement->appendChild($disclaimerNode);
+
+                $html = $dom->saveHTML();
+
+                $html = preg_replace('/<\?xml encoding="utf-8" \?>\s*/', '', $html);
+            }
+        } catch (\Exception) {
+            // Silently fail - don't block the site if disclaimer injection fails
+        }
+
+        return $html;
+    }
+
+    /**
+     * Converts a basic CSS selector to XPath.
+     *
+     * @param string $selector the CSS selector to convert
+     *
+     * @return string the XPath query
+     */
+    private function cssToXPath(string $selector): string
+    {
+        // Handle ID selector
+        if (str_starts_with($selector, '#')) {
+            $id = substr($selector, 1);
+
+            return "//*[@id='$id']";
+        }
+
+        // Handle class selector
+        if (str_starts_with($selector, '.')) {
+            $class = substr($selector, 1);
+
+            return "//*[contains(concat(' ', normalize-space(@class), ' '), ' $class ')]";
+        }
+
+        // Handle attribute selector
+        if (preg_match('/\[([^\]=]+)(?:=["\']?([^"\'\]]+)["\']?)?\]/', $selector, $matches)) {
+            $attr = $matches[1];
+            if (isset($matches[2])) {
+                $value = $matches[2];
+
+                return "//*[@$attr='$value']";
+            }
+
+            return "//*[@$attr]";
+        }
+
+        // Default: element selector
+        return "//$selector";
     }
 }
