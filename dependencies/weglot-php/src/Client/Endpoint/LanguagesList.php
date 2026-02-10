@@ -30,7 +30,7 @@ class LanguagesList extends Endpoint
         $languageCollection = new LanguageCollection();
         $data = $this->getLanguages();
 
-        $data = array_map(function ($data) {
+        $data = array_map(static function ($data) {
             $external_code = $data['code'];
             if ('tw' == $external_code) {
                 $external_code = 'zh-tw';

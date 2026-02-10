@@ -219,9 +219,9 @@ class simple_html_dom_node
             echo $string;
 
             return;
-        } else {
-            return $string;
         }
+
+        return $string;
     }
 
     // returns the parent of node
@@ -1138,9 +1138,8 @@ class simple_html_dom_node
         while ($currentNode->parent() && 'html' != $currentNode->parent()->tag) {
             if (isset($currentNode->parent()->$attribute)) {
                 return true;
-            } else {
-                $currentNode = $currentNode->parent();
             }
+            $currentNode = $currentNode->parent();
         }
 
         return false;

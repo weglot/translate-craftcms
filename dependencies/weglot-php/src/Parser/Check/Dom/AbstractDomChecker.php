@@ -116,14 +116,14 @@ abstract class AbstractDomChecker
                 '' != Text::fullTrim($this->node->$property)
                 && $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE)
             ;
-        } else {
-            return
-                '' != Text::fullTrim($this->node->$property)
-                && (
-                    !$this->node->hasAncestorAttribute(Parser::ATTRIBUTE_NO_TRANSLATE)
-                    || $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS)
-                );
         }
+
+        return
+            '' != Text::fullTrim($this->node->$property)
+            && (
+                !$this->node->hasAncestorAttribute(Parser::ATTRIBUTE_NO_TRANSLATE)
+                || $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS)
+            );
     }
 
     /**

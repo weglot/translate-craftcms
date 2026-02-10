@@ -49,6 +49,7 @@ class OptionService extends Component
             'translate_email' => false,
             'translate_amp' => false,
             'translate_search' => false,
+            'ai_disclaimer_selector' => '',
             'button_style' => [
                 'full_name' => true,
                 'with_name' => true,

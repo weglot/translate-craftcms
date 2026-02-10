@@ -203,7 +203,7 @@ class Url
      */
     public function getDestinationLanguagesExternal()
     {
-        return array_map(function ($l) { return $l->getExternalCode(); }, $this->destinationLanguages);
+        return array_map(static function ($l) { return $l->getExternalCode(); }, $this->destinationLanguages);
     }
 
     /**

@@ -206,7 +206,7 @@ class CurlClient implements ClientInterface
 
         // Create a callback to capture HTTP headers for the response
         $rheaders = [];
-        $headerCallback = function ($curl, $header_line) use (&$rheaders) {
+        $headerCallback = static function ($curl, $header_line) use (&$rheaders) {
             // Ignore the HTTP request line (HTTP/1.1 200 OK)
             if (!str_contains($header_line, ':')) {
                 return \strlen($header_line);

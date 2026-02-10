@@ -33,7 +33,7 @@ class LanguageService extends Component
         $languagesResult = $languagesApi->handle();
 
         $languagesArray = $languagesResult->jsonSerialize();
-        usort($languagesArray, [$this, 'compareLanguage']);
+        usort($languagesArray, $this->compareLanguage(...));
 
         $languageCollection = new LanguageCollection();
         foreach ($languagesArray as $language) {
