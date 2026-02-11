@@ -51,11 +51,23 @@ class PageViewsService extends Component
                         };
                         var body = JSON.stringify(payload);
 
+                        if (navigator.sendBeacon) {
+                            try {
+                                var queued = navigator.sendBeacon(url, body);
+                                if (queued) {
+                                    return;
+                                }
+                            } catch (e) {
+                                // silent (fallbacks ci-dessous)
+                            }
+                        }
+
                         if (window.fetch) {
                             fetch(url, {
                                 method: 'POST',
                                 headers: {},
-                                body: body
+                                body: body,
+                                keepalive: true
                             }).catch(function(){/* silent */});
                         } else {
                             var xhr = new XMLHttpRequest();
