@@ -11,14 +11,20 @@ class Settings extends Model
     public string $languageFrom = 'en';
     public bool $hasFirstSettings = false;
     public bool $showBoxFirstSettings = true;
+    public bool $enableDynamics = false;
 
+    public string $dynamicsWhitelistSelectors = '';
+
+    public string $dynamicsAllowedUrls = '';
     /**
      * @var string[]
      */
     public array $languages = [];
 
     /**
-     * @return array<int, mixed>
+     * Defines validation rules for the properties of the model.
+     *
+     * @return array list of validation rules for model attributes
      */
     public function rules(): array
     {
@@ -27,9 +33,16 @@ class Settings extends Model
             ['apiKey', 'validateApiKey'],
             ['languageFrom', 'string'],
             ['languages', 'each', 'rule' => ['string']],
+            ['enableDynamics', 'boolean'],
+            ['dynamicsWhitelistSelectors', 'string'],
+            ['dynamicsAllowedUrls', 'string'],
         ];
     }
 
+    /**
+     * @param string     $attribute the attribute name associated with the API key
+     * @param mixed|null $params    additional parameters passed for validation (optional)
+     */
     public function validateApiKey(string $attribute, mixed $params = null): void
     {
         $apiKey = trim($this->apiKey);

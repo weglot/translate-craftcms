@@ -24,9 +24,9 @@ class Text
     {
         if (\is_string($haystack) && str_contains($haystack, $search)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -50,9 +50,9 @@ class Text
     {
         if (null !== $regex) {
             return str_replace('\\\\/', '\/', str_replace('/', '\/', $regex));
-        } else {
-            return str_replace('\\\\/', '\/', str_replace('/', '\/', ''));
         }
+
+        return str_replace('\\\\/', '\/', str_replace('/', '\/', ''));
     }
 
     /**
@@ -79,8 +79,8 @@ class Text
     {
         if (\is_string($string)) {
             return strip_tags($string) !== $string;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

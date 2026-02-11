@@ -32,6 +32,11 @@ class OptionService extends Component
     public const NO_OPTIONS = 'OPTIONS_NOT_FOUND';
 
     /**
+     * @var int
+     */
+    private const PUBLIC_API_KEY_CACHE_TTL = 86400;
+
+    /**
      * @var array<string,mixed>
      */
     protected array $optionsDefault = [
@@ -350,6 +355,31 @@ class OptionService extends Component
         // TODO: Replace with a Craft event to allow third-party extensibility.
 
         return $excludeUrls;
+    }
+
+    /**
+     * @return string The public API key. Returns an empty string if no valid API key is found.
+     */
+    public function getPublicApiKey(): string
+    {
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $seed = (string) ($settings->apiKey ?? '');
+        $cacheKey = 'weglot_public_api_key_'.substr(sha1($seed), 0, 16);
+
+        $cache = \Craft::$app->getCache();
+        $cached = $cache->get($cacheKey);
+        if (\is_string($cached) && '' !== $cached) {
+            return $cached;
+        }
+
+        $value = $this->getOption('api_key');
+        $publicKey = \is_string($value) ? trim($value) : '';
+
+        if ('' !== $publicKey) {
+            $cache->set($cacheKey, $publicKey, self::PUBLIC_API_KEY_CACHE_TTL);
+        }
+
+        return $publicKey;
     }
 
     public function generateWeglotData(): void
