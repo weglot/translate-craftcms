@@ -3,7 +3,10 @@
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
+use weglot\craftweglot\helpers\HelperApi;
+use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 
 class TranslateService extends Component
 {
@@ -61,6 +64,12 @@ class TranslateService extends Component
         return 'html';
     }
 
+    /**
+     * @param string $html the input HTML content to process
+     *
+     * @return string the processed HTML content, potentially translated or transformed,
+     *                or the original input in case of certain conditions or errors
+     */
     public function processResponse(string $html): string
     {
         if (\in_array(trim($html), ['', '0'], true)) {
@@ -114,6 +123,12 @@ class TranslateService extends Component
         }
     }
 
+    /**
+     * @param string $html the input HTML string to be processed
+     *
+     * @return string the processed HTML string with modifications applied, including updated canonical tags
+     *                and translation attributes
+     */
     public function weglotRenderDom(string $html): string
     {
         $originalLanguage = $this->languageService->getOriginalLanguage();
@@ -155,10 +170,106 @@ class TranslateService extends Component
         );
     }
 
+    /**
+     * @param string $html the input string potentially containing HTML comments
+     *
+     * @return string the input string with all HTML comments removed
+     */
     private function removeComments(string $html): string
     {
         $result = preg_replace('/<!--.*?-->/s', '', $html);
 
         return $result ?? $html;
+    }
+
+    /**
+     * Reverse translate a search query from current language to original language.
+     * If current language is already original, returns the query unchanged.
+     */
+    public function reverseTranslateSearchQuery(
+        string $query,
+        ?LanguageEntry $currentLanguage = null,
+        ?LanguageEntry $originalLanguage = null,
+    ): string {
+        $query = trim($query);
+        if ('' === $query) {
+            return $query;
+        }
+
+        if (mb_strlen($query) > 200) {
+            $query = mb_substr($query, 0, 200);
+        }
+
+        $originalLanguage ??= $this->languageService->getOriginalLanguage();
+        $currentLanguage ??= $this->requestUrlService->getCurrentLanguage();
+
+        if (
+            !$originalLanguage instanceof LanguageEntry
+            || !$currentLanguage instanceof LanguageEntry
+            || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()
+        ) {
+            return $query;
+        }
+
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $apiKey = trim($settings->apiKey ?? '');
+        if ('' === $apiKey) {
+            return $query;
+        }
+
+        $cacheKey = 'weglot_reverse_search_'.sha1(
+            $currentLanguage->getInternalCode().'|'.$originalLanguage->getInternalCode().'|'.$query
+        );
+
+        $cached = \Craft::$app->getCache()->get($cacheKey);
+        if (\is_string($cached) && '' !== $cached) {
+            return $cached;
+        }
+
+        $url = \sprintf(
+            '%s/translate?api_key=%s',
+            HelperApi::getApiUrl(),
+            $apiKey
+        );
+
+        $requestUrl = (string) \Craft::$app->getRequest()->getAbsoluteUrl();
+
+        $payload = [
+            'l_from' => $currentLanguage->getInternalCode(),
+            'l_to' => $originalLanguage->getInternalCode(),
+            'request_url' => $requestUrl,
+            'words' => [
+                ['w' => $query, 't' => 1],
+            ],
+        ];
+
+        try {
+            $client = \Craft::createGuzzleClient();
+            $response = $client->request('POST', $url, [
+                'timeout' => 3,
+                'headers' => [
+                    'Content-Type' => 'application/json; charset=utf-8',
+                ],
+                'body' => json_encode($payload, \JSON_UNESCAPED_UNICODE),
+            ]);
+
+            $data = json_decode((string) $response->getBody(), true);
+
+            $translated =
+                $data['to_words'][0] ??
+                $data['words'][0]['w'] ??
+                null;
+
+            if (\is_string($translated) && '' !== trim($translated)) {
+                $translated = trim($translated);
+                \Craft::$app->getCache()->set($cacheKey, $translated, 300);
+
+                return $translated;
+            }
+        } catch (\Throwable $e) {
+            \Craft::warning('Reverse translate search query failed: '.$e->getMessage(), __METHOD__);
+        }
+
+        return $query;
     }
 }
