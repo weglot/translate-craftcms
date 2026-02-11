@@ -23,3 +23,9 @@
 - Add Pageviews feature
 ## 1.1
 - Remove credentials,keepalive and header content type from header 
+## 1.2.0
+- Improvement: Use navigator.sendBeacon instead of fetch when supported by the browser for sending data in the background.
+- Improvement: Add slug translation support for better handling of translated URLs.
+- Improvement: Add a new “dynamics” option in the admin interface to give more control over dynamic content behavior.
+- Improvement: Add reverse translation support for Craft’s search base to improve multilingual search handling.
+
