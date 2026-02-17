@@ -12,6 +12,7 @@ class Settings extends Model
     public bool $hasFirstSettings = false;
     public bool $showBoxFirstSettings = true;
     public bool $enableDynamics = false;
+    public bool $enableAlgolia = false;
 
     public string $dynamicsWhitelistSelectors = '';
 
@@ -34,6 +35,7 @@ class Settings extends Model
             ['languageFrom', 'string'],
             ['languages', 'each', 'rule' => ['string']],
             ['enableDynamics', 'boolean'],
+            ['enableAlgolia', 'boolean'],
             ['dynamicsWhitelistSelectors', 'string'],
             ['dynamicsAllowedUrls', 'string'],
         ];

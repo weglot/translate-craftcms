@@ -54,6 +54,9 @@ final class DynamicsService
             'whitelist' => $whitelist,
             'dynamics' => $dynamics,
         ]);
+
+        // Inject Algolia script if enabled
+        Plugin::getInstance()->getFrontEndScripts()->injectAlgoliaScript();
     }
 
     /**
