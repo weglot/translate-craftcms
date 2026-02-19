@@ -245,26 +245,25 @@ class TranslateService extends Component
      *
      * @return string the XPath query
      */
-    private function cssToXPath(string $selector): string
-    {
+    private function cssToXPath(string $selector): string {
         // Handle ID selector
-        if (str_starts_with($selector, '#')) {
-            $id = substr($selector, 1);
+        if ( str_starts_with( $selector, '#' ) ) {
+            $id = substr( $selector, 1 );
 
             return "//*[@id='$id']";
         }
 
         // Handle class selector
-        if (str_starts_with($selector, '.')) {
-            $class = substr($selector, 1);
+        if ( str_starts_with( $selector, '.' ) ) {
+            $class = substr( $selector, 1 );
 
             return "//*[contains(concat(' ', normalize-space(@class), ' '), ' $class ')]";
         }
 
         // Handle attribute selector
-        if (preg_match('/\[([^\]=]+)(?:=["\']?([^"\'\]]+)["\']?)?\]/', $selector, $matches)) {
+        if ( preg_match( '/\[([^\]=]+)(?:=["\']?([^"\'\]]+)["\']?)?\]/', $selector, $matches ) ) {
             $attr = $matches[1];
-            if (isset($matches[2])) {
+            if ( isset( $matches[2] ) ) {
                 $value = $matches[2];
 
                 return "//*[@$attr='$value']";
@@ -275,6 +274,8 @@ class TranslateService extends Component
 
         // Default: element selector
         return "//$selector";
+
+    }
 
     /**
      * Reverse translate a search query from current language to original language.
