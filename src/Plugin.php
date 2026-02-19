@@ -12,6 +12,7 @@ use craft\web\View;
 use weglot\craftweglot\helpers\DashboardHelper;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;
+use weglot\craftweglot\services\DynamicsService;
 use weglot\craftweglot\services\FrontEndScriptsService;
 use weglot\craftweglot\services\HrefLangService;
 use weglot\craftweglot\services\LanguageService;
@@ -23,6 +24,7 @@ use weglot\craftweglot\services\RegexCheckersService;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\ReplaceUrlService;
 use weglot\craftweglot\services\RequestUrlService;
+use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
 use weglot\craftweglot\web\WeglotVirtualRequest;
@@ -46,6 +48,9 @@ class Plugin extends BasePlugin
      *     components: array<string, array{'class': class-string}>
      * }
      */
+    public const EVENT_REGISTER_WHITELIST_SELECTORS = 'registerWhitelistSelectors';
+    public const EVENT_REGISTER_DYNAMICS_SELECTORS = 'registerDynamicsSelectors';
+
     public static function config(): array
     {
         return [
@@ -54,6 +59,7 @@ class Plugin extends BasePlugin
                 'frontEndScripts' => ['class' => FrontEndScriptsService::class],
                 'userApi' => ['class' => UserApiService::class],
                 'option' => ['class' => OptionService::class],
+                'slug' => ['class' => SlugService::class],
                 'language' => ['class' => LanguageService::class],
                 'translateService' => ['class' => TranslateService::class],
                 'parserService' => ['class' => ParserService::class],
@@ -65,6 +71,7 @@ class Plugin extends BasePlugin
                 'dashboardHelper' => ['class' => DashboardHelper::class],
                 'pageViews' => ['class' => PageViewsService::class],
                 'redirectService' => ['class' => RedirectService::class],
+                'dynamics' => ['class' => DynamicsService::class],
             ],
         ];
     }
@@ -88,6 +95,14 @@ class Plugin extends BasePlugin
 
         try {
             $settings = $this->getTypedSettings();
+
+            $dyn = trim($settings->dynamicsSelectors ?? '');
+            if ('' !== $dyn && $settings->dynamicsWhitelistSelectors !== $dyn) {
+                $settings->dynamicsWhitelistSelectors = $dyn;
+
+                \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
+            }
+
             $apiKey = trim($settings->apiKey);
             $languageFrom = $settings->languageFrom;
             $languages = $settings->languages;
@@ -181,9 +196,35 @@ class Plugin extends BasePlugin
                 }
                 $internalPath = implode('/', \array_slice($parts, 1));
 
+                try {
+                    $settings = Plugin::getInstance()->getTypedSettings();
+                    $apiKey = trim((string) $settings->apiKey);
+
+                    $langExternal = strtolower((string) $first);
+                    if (!\in_array('', [$apiKey, $langExternal, $internalPath], true)) {
+                        $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+                            $apiKey,
+                            [$langExternal],
+                            $langExternal,
+                            $internalPath
+                        );
+
+                        if (null !== $rewritten && $rewritten !== $internalPath) {
+                            $internalPath = $rewritten;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Craft::warning('VirtualRequest slug rewrite failed: '.$e->getMessage(), __METHOD__);
+                }
+
                 $this->weglotOriginalRequest = $req;
                 $virtual = new WeglotVirtualRequest($internalPath, $req);
                 $app->set('request', $virtual);
+
+                // Reverse translate des paramètres GET (sans toucher aux templates)
+                $this->injectReverseTranslatedQueryParams($virtual, [
+                    'query' => 'query',
+                ]);
             }
         );
 
@@ -232,6 +273,7 @@ class Plugin extends BasePlugin
             function () {
                 Plugin::getInstance()->getHrefLangService()->injectHrefLangTags();
                 Plugin::getInstance()->getOption()->generateWeglotData();
+                Plugin::getInstance()->getDynamics()->addDynamics();
                 $this->getFrontEndScripts()->injectSwitcherAssets();
                 $this->getPageViews()->injectPageViewsScript();
             }
@@ -284,17 +326,14 @@ class Plugin extends BasePlugin
                 return;
             }
 
-            // Ensure languages are initialized
             $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
             $currentLanguage = self::getInstance()->getRequestUrlService()->getCurrentLanguage();
             if (null === $originalLanguage || null === $currentLanguage) {
                 return;
             }
 
-            // Always process user choice parameter first
             $this->getRedirectService()->verifyNoRedirect();
 
-            // Check if auto redirect is enabled
             $autoRedirect = (bool) ($this->getOption()->getOption('auto_redirect') ?? $this->getOption()->getOption('auto_switch') ?? false);
             if (!$autoRedirect) {
                 return;
@@ -386,6 +425,68 @@ class Plugin extends BasePlugin
         }
     }
 
+    /**
+     * @param array<string,string> $map sourceParam => targetParam
+     */
+    private function injectReverseTranslatedQueryParams(Request $request, array $map): void
+    {
+        $originalLanguage = self::getInstance()->getLanguage()->getOriginalLanguage();
+        $currentLanguage = self::getInstance()->getRequestUrlService()->getCurrentLanguage();
+
+        if (
+            null === $originalLanguage
+            || null === $currentLanguage
+            || $originalLanguage->getInternalCode() === $currentLanguage->getInternalCode()
+        ) {
+            return;
+        }
+
+        $queryParams = $request->getQueryParams();
+
+        $hasChanged = false;
+
+        foreach ($map as $sourceParam => $targetParam) {
+            if (!isset($queryParams[$sourceParam])) {
+                continue;
+            }
+
+            $raw = trim((string) $queryParams[$sourceParam]);
+            if ('' === $raw) {
+                continue;
+            }
+
+            $userKey = $sourceParam.'_user';
+
+            if ($sourceParam === $targetParam && isset($queryParams[$userKey]) && '' !== trim((string) $queryParams[$userKey])) {
+                continue;
+            }
+
+            $translated = self::getInstance()->getTranslateService()->reverseTranslateSearchQuery(
+                $raw,
+                $currentLanguage,
+                $originalLanguage
+            );
+
+            if ($sourceParam === $targetParam) {
+                $queryParams[$userKey] = $raw;
+                $queryParams[$targetParam] = $translated;
+                $hasChanged = true;
+                continue;
+            }
+
+            if (isset($queryParams[$targetParam]) && '' !== trim((string) $queryParams[$targetParam])) {
+                continue;
+            }
+
+            $queryParams[$targetParam] = $translated;
+            $hasChanged = true;
+        }
+
+        if ($hasChanged) {
+            $request->setQueryParams($queryParams);
+        }
+    }
+
     public function getLanguage(): LanguageService
     {
         return $this->get('language');
@@ -404,6 +505,11 @@ class Plugin extends BasePlugin
     public function getOption(): OptionService
     {
         return $this->get('option');
+    }
+
+    public function getSlug(): SlugService
+    {
+        return $this->get('slug');
     }
 
     public function getReplaceUrlService(): ReplaceUrlService
@@ -454,5 +560,10 @@ class Plugin extends BasePlugin
     public function getRedirectService(): RedirectService
     {
         return $this->get('redirectService');
+    }
+
+    public function getDynamics(): DynamicsService
+    {
+        return $this->get('dynamics');
     }
 }

@@ -36,6 +36,43 @@ class RouterController extends Controller
             Plugin::getInstance()->handleExcludedUrlRedirects($currentLanguage);
         }
 
+        try {
+            if (null !== $currentLanguage) {
+                $internalPath = trim($rest, '/');
+                if ('' !== $internalPath) {
+                    $settings = Plugin::getInstance()->getTypedSettings();
+                    $apiKey = trim((string) $settings->apiKey);
+
+                    $destinationEntries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
+                    $destinationCodes = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($destinationEntries, true);
+
+                    if ('' !== $apiKey && [] !== $destinationCodes) {
+                        $corrected = Plugin::getInstance()->getSlug()->getRedirectPathIfUntranslated(
+                            $apiKey,
+                            $destinationCodes,
+                            $currentLanguage->getExternalCode(),
+                            $internalPath
+                        );
+
+                        if (null !== $corrected && $corrected !== $internalPath) {
+                            $target = '/'.trim($lang, '/').'/'.ltrim($corrected, '/');
+
+                            // Conserver la query string si présente
+                            $qs = \Craft::$app->getRequest()->getQueryString();
+                            if (\is_string($qs) && '' !== $qs) {
+                                $target .= '?'.$qs;
+                            }
+
+                            \Craft::$app->getResponse()->redirect($target, 301)->send();
+                            exit;
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Craft::warning('Slug canonical redirect failed: '.$e->getMessage(), __METHOD__);
+        }
+
         $this->requireSiteRequest();
 
         Event::on(
@@ -52,6 +89,32 @@ class RouterController extends Controller
 
         $siteId = \Craft::$app->getSites()->getPrimarySite()->id;
         $internalPath = trim($rest, '/');
+
+        try {
+            if (null !== $currentLanguage && '' !== $internalPath) {
+                $settings = Plugin::getInstance()->getTypedSettings();
+                $apiKey = trim((string) $settings->apiKey);
+
+                $langExternal = strtolower(trim((string) $currentLanguage->getExternalCode()));
+                $destinationCodes = ('' !== $langExternal) ? [$langExternal] : [];
+
+                if ('' !== $apiKey && [] !== $destinationCodes) {
+                    $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+                        $apiKey,
+                        $destinationCodes,
+                        $langExternal,
+                        $internalPath
+                    );
+
+                    if (null !== $rewritten && $rewritten !== $internalPath) {
+                        $internalPath = $rewritten;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            \Craft::warning('Slug internal rewrite failed: '.$e->getMessage(), __METHOD__);
+        }
+
         $candidates = ('' === $internalPath) ? ['', '__home__'] : [$internalPath];
 
         $originalRequest = \Craft::$app->getRequest();
@@ -61,7 +124,6 @@ class RouterController extends Controller
         \Craft::$app->set('request', $virtualRequest);
 
         try {
-            // Attempt "element" (Entry, Category, etc.)
             foreach ($candidates as $uri) {
                 $element = \Craft::$app->getElements()->getElementByUri($uri, $siteId, true);
 
@@ -93,6 +155,11 @@ class RouterController extends Controller
             $tpl = ('' === $internalPath) ? 'index' : $internalPath;
             if (\Craft::$app->getView()->doesTemplateExist($tpl)) {
                 return $this->renderTemplate($tpl);
+            }
+
+            $tplIndex = rtrim($tpl, '/').'/index';
+            if (\Craft::$app->getView()->doesTemplateExist($tplIndex)) {
+                return $this->renderTemplate($tplIndex);
             }
 
             throw new NotFoundHttpException();

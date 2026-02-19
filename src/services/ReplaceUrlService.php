@@ -8,6 +8,11 @@ use weglot\craftweglot\Plugin;
 
 class ReplaceUrlService extends Component
 {
+    /**
+     * @param string $dom the DOM content as a string to be modified
+     *
+     * @return string the modified DOM string with replaced links and updated attributes
+     */
     public function replaceLinkInDom(string $dom): string
     {
         $data = HelperReplaceUrl::getReplaceModifyLink();
@@ -50,6 +55,13 @@ class ReplaceUrlService extends Component
         return $dom;
     }
 
+    /**
+     * @param string $pattern        the regular expression pattern to find links in the translated page
+     * @param string $translatedPage the content of the page where links will be modified
+     * @param string $type           The type of link modification to be performed (e.g., 'a', 'datalink', 'form', etc.).
+     *
+     * @return string the modified translated page with links processed based on the specified type
+     */
     public function modifyLink(string $pattern, string $translatedPage, string $type): string
     {
         preg_match_all($pattern, $translatedPage, $out, \PREG_PATTERN_ORDER);
@@ -69,6 +81,10 @@ class ReplaceUrlService extends Component
             $sometags2 = $out[4][$i] ?? '';
 
             if (\strlen($currentUrl) >= 1500) { // Limit from WP plugin
+                continue;
+            }
+
+            if (preg_match('#^/?(?:index\.php/)?actions/#i', $currentUrl)) {
                 continue;
             }
 

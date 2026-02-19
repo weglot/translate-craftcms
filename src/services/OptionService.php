@@ -32,6 +32,11 @@ class OptionService extends Component
     public const NO_OPTIONS = 'OPTIONS_NOT_FOUND';
 
     /**
+     * @var int
+     */
+    private const PUBLIC_API_KEY_CACHE_TTL = 86400;
+
+    /**
      * @var array<string,mixed>
      */
     protected array $optionsDefault = [
@@ -353,6 +358,31 @@ class OptionService extends Component
         return $excludeUrls;
     }
 
+    /**
+     * @return string The public API key. Returns an empty string if no valid API key is found.
+     */
+    public function getPublicApiKey(): string
+    {
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $seed = (string) ($settings->apiKey ?? '');
+        $cacheKey = 'weglot_public_api_key_'.substr(sha1($seed), 0, 16);
+
+        $cache = \Craft::$app->getCache();
+        $cached = $cache->get($cacheKey);
+        if (\is_string($cached) && '' !== $cached) {
+            return $cached;
+        }
+
+        $value = $this->getOption('api_key');
+        $publicKey = \is_string($value) ? trim($value) : '';
+
+        if ('' !== $publicKey) {
+            $cache->set($cacheKey, $publicKey, self::PUBLIC_API_KEY_CACHE_TTL);
+        }
+
+        return $publicKey;
+    }
+
     public function generateWeglotData(): void
     {
         $pluginSettings = Plugin::getInstance()->getTypedSettings();
@@ -413,6 +443,8 @@ class OptionService extends Component
             $destinations = $languageService->getDestinationLanguages();
             $autoRedirect = (bool) ($this->getOption('auto_redirect') ?? $this->getOption('auto_switch') ?? false);
 
+            $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
+
             $allLanguages = [];
             if (null !== $original) {
                 $allLanguages[] = $original;
@@ -424,6 +456,54 @@ class OptionService extends Component
             foreach ($allLanguages as $lang) {
                 $link = $requestUrl->getForLanguage($lang, true);
                 if ('' !== $link) {
+                    try {
+                        if (
+                            null !== $original
+                            && null !== $currentLanguage
+                            && $lang->getInternalCode() === $original->getInternalCode()
+                            && $currentLanguage->getInternalCode() !== $original->getInternalCode()
+                        ) {
+                            $settingsModel = Plugin::getInstance()->getTypedSettings();
+                            $apiKey = trim((string) $settingsModel->apiKey);
+
+                            $fromExternal = strtolower(trim((string) $currentLanguage->getExternalCode())); // ex: fr
+                            if ('' !== $apiKey && '' !== $fromExternal) {
+                                $parsed = parse_url($link);
+                                $path = \is_array($parsed) ? ($parsed['path'] ?? '') : '';
+                                if (\is_string($path) && '' !== $path) {
+                                    $internalPath = ltrim($path, '/'); // ex: blog-fr
+                                    $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+                                        $apiKey,
+                                        [$fromExternal],
+                                        $fromExternal,
+                                        $internalPath
+                                    );
+
+                                    if (null !== $rewritten && $rewritten !== $internalPath) {
+                                        $newPath = '/'.ltrim($rewritten, '/');
+
+                                        $rebuilt = $newPath;
+                                        if (\is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
+                                            $rebuilt = $parsed['scheme'].'://'.$parsed['host']
+                                                       .(isset($parsed['port']) ? ':'.$parsed['port'] : '')
+                                                       .$newPath
+                                                       .(isset($parsed['query']) && '' !== $parsed['query'] ? '?'.$parsed['query'] : '')
+                                                       .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
+                                        } elseif (\is_array($parsed)) {
+                                            $rebuilt = $newPath
+                                                       .(isset($parsed['query']) && '' !== $parsed['query'] ? '?'.$parsed['query'] : '')
+                                                       .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
+                                        }
+
+                                        $link = $rebuilt;
+                                    }
+                                }
+                            }
+                        }
+                    } catch (\Throwable) {
+                        // silent
+                    }
+
                     if ($autoRedirect && null !== $original) {
                         $isOrig = ($lang->getInternalCode() === $original->getInternalCode()) ? 'true' : 'false';
                         if (str_contains($link, '?')) {
