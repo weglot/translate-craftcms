@@ -1,8 +1,21 @@
+// Cache for translations to avoid duplicate API calls
+const translationCache = new Map();
+// Pending requests queue with debounce
+const pendingRequests = new Map();
+const DEBOUNCE_DELAY = 600; // 600ms delay
+
 function parseAlgoliaQueryValue(queryValue, replaceFn) {
 	return () => {
-		reverseTranslate(weglotData.api_key, weglotData.current_language, weglotData.original_language, 'https://' + window.location.hostname, queryValue, 1)
+		// Check cache first
+		if (translationCache.has(queryValue)) {
+			replaceFn(translationCache.get(queryValue));
+			return Promise.resolve();
+		}
+
+		return reverseTranslate(weglotData.api_key, weglotData.current_language, weglotData.original_language, 'https://' + window.location.hostname, queryValue, 1)
 			.then(data => {
 				if (data && data.to_words[0] !== undefined) {
+					translationCache.set(queryValue, data.to_words[0]);
 					replaceFn(data.to_words[0]);
 				}
 			})
@@ -37,34 +50,55 @@ document.addEventListener('DOMContentLoaded', function () {
 			return callback();
 		}
 
-		const callbacks = [];
+		// Extract query for debouncing
+		let queryKey = '';
 		if (parsedBody.query) {
-			callbacks.push(parseAlgoliaQueryValue(parsedBody.query, reverseWord => {
-				parsedBody.query = reverseWord;
-			}));
+			queryKey = parsedBody.query;
+		} else if (parsedBody.requests && parsedBody.requests[0]?.params) {
+			const params = new URLSearchParams(parsedBody.requests[0].params);
+			queryKey = params.get("query") || '';
 		}
 
-		if (parsedBody.requests) {
-			for (const algoliaRequest of parsedBody.requests) {
-				callbacks.push(parseAlgoliaRequest(algoliaRequest));
+		// Clear previous pending request for this query
+		if (pendingRequests.has(queryKey)) {
+			clearTimeout(pendingRequests.get(queryKey));
+		}
+
+		// Debounce: wait before processing
+		const timeoutId = setTimeout(() => {
+			pendingRequests.delete(queryKey);
+
+			const callbacks = [];
+			if (parsedBody.query) {
+				callbacks.push(parseAlgoliaQueryValue(parsedBody.query, reverseWord => {
+					parsedBody.query = reverseWord;
+				}));
 			}
-		}
 
-		let promise = Promise.resolve();
-		for (const cb of callbacks) {
-			promise = promise.then(() => {
-				cb && cb();
-				return new Promise(resolve => setTimeout(resolve, 300));
+			if (parsedBody.requests) {
+				for (const algoliaRequest of parsedBody.requests) {
+					callbacks.push(parseAlgoliaRequest(algoliaRequest));
+				}
+			}
+
+			let promise = Promise.resolve();
+			for (const cb of callbacks) {
+				promise = promise.then(() => {
+					if (cb) return cb();
+				});
+			}
+
+			promise.then(() => {
+				request.body = JSON.stringify(parsedBody);
+				const apiKey = weglotData.api_key.replace('wg_', '');
+				const url = request.url.replace(/^https?:\/\//, '');
+				request.url = 'https://proxy.weglot.com/' + apiKey + '/' + weglotData.original_language + '/' + weglotData.current_language + '/' + url;
+
+				callback();
 			});
-		}
-		promise.then(() => {
-			request.body = JSON.stringify(parsedBody);
-			const apiKey = weglotData.api_key.replace('wg_', '');
-			const url = request.url.replace(/^https?:\/\//, '');
-			request.url = 'https://proxy.weglot.com/' + apiKey + '/' + weglotData.original_language + '/' + weglotData.current_language + '/' + url;
+		}, DEBOUNCE_DELAY);
 
-			callback();
-		});
+		pendingRequests.set(queryKey, timeoutId);
 	});
 
 	xhook.after(function (request, response) {
@@ -87,7 +121,7 @@ function reverseTranslate(apiKey, l_from, l_to, request_url, word, t) {
 		]
 	};
 
-	const apiUrl = `https://api.weglot.com/translate?api_key=${apiKey}`;
+	const apiUrl = `${weglotData.api_url}/translate?api_key=${apiKey}`;
 
 	return fetch(apiUrl, {
 		method: 'POST',

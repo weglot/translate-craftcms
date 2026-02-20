@@ -140,12 +140,13 @@ class FrontEndScriptsService extends Component
             'api_key' => $settings->apiKey,
             'original_language' => $originalLanguage->getInternalCode(),
             'current_language' => $currentLanguage->getInternalCode(),
+            'api_url' => HelperApi::getApiUrl(),
         ];
 
         $weglotDataJson = Json::htmlEncode($weglotData);
         $view->registerJs("window.weglotData = {$weglotDataJson};", View::POS_HEAD);
 
-        // Load xhook library first
+        // Load xhook library (user has explicitly enabled Algolia integration)
         $view->registerJsFile('https://unpkg.com/xhook@latest/dist/xhook.min.js', [
             'position' => View::POS_END,
         ]);
@@ -158,7 +159,6 @@ class FrontEndScriptsService extends Component
         if ('' !== $baseUrl) {
             $view->registerJsFile($baseUrl . '/js/algolia.js', [
                 'position' => View::POS_END,
-                'depends' => ['https://unpkg.com/xhook@latest/dist/xhook.min.js'],
             ]);
         }
 
