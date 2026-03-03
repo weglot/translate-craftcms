@@ -38,25 +38,16 @@ function parseAlgoliaRequest(algoliaRequest) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-	let lastRequestData = null;
-	let requestCounter = 0;
-
-	console.log('[Weglot Algolia] Integration loaded, debounce delay:', DEBOUNCE_DELAY, 'ms');
-
 	xhook.before(function (request, callback) {
 		if (!request.url || !request.url.includes('x-algolia-agent') || weglotData.original_language === weglotData.current_language) {
 			return callback();
 		}
 
-		requestCounter++;
-		const currentRequestId = requestCounter;
-		console.log(`[Weglot Algolia] 🔵 Request #${currentRequestId} intercepted`);
-
 		let parsedBody;
 		try {
 			parsedBody = JSON.parse(request.body);
 		} catch (error) {
-			console.error('[Weglot Algolia] Failed to parse request.body:', error);
+			console.error('Failed to parse request.body:', error);
 			return callback();
 		}
 
@@ -69,49 +60,36 @@ document.addEventListener('DOMContentLoaded', function () {
 			queryKey = params.get("query") || '';
 		}
 
-		console.log(`[Weglot Algolia] 📝 Request #${currentRequestId} query: "${queryKey}"`);
-
 		// Clear previous timer
 		if (debounceTimer) {
-			console.log(`[Weglot Algolia] ⏱️ Clearing previous timer, blocking request`);
 			clearTimeout(debounceTimer);
-			debounceTimer = null;
 		}
 
-		// Store the latest request data (overwrite previous)
-		lastRequestData = { request, callback, parsedBody, queryKey, requestId: currentRequestId };
-		console.log(`[Weglot Algolia] 💾 Stored request #${currentRequestId}, starting new timer`);
+		// Store this request
+		const requestId = Date.now() + Math.random();
+		pendingRequests.set(requestId, { request, callback, parsedBody, queryKey });
 
-		// Set new timer - only the LAST stored request will be processed
+		// Set new timer
 		debounceTimer = setTimeout(() => {
-			if (!lastRequestData) {
-				console.log('[Weglot Algolia] ⚠️ No request data to process');
-				return;
-			}
+			// Process only the last request
+			const lastEntry = Array.from(pendingRequests.entries()).pop();
+			if (!lastEntry) return;
 
-			const { request: finalRequest, callback: finalCallback, parsedBody: finalParsedBody, queryKey: finalQuery, requestId: finalId } = lastRequestData;
-			lastRequestData = null;
+			const [lastId, { request: lastRequest, callback: lastCallback, parsedBody: lastParsedBody }] = lastEntry;
 
-			console.log(`[Weglot Algolia] ✅ Timer fired! Processing request #${finalId} with query: "${finalQuery}"`);
+			// Clear all pending except the last one
+			pendingRequests.clear();
 
-			// Check cache
-			if (translationCache.has(finalQuery)) {
-				console.log(`[Weglot Algolia] 🎯 Cache HIT for "${finalQuery}"`);
-			} else {
-				console.log(`[Weglot Algolia] 🌐 Cache MISS for "${finalQuery}", will call Weglot API`);
-			}
-
-			// Process the request
+			// Process the last request
 			const callbacks = [];
-			if (finalParsedBody.query) {
-				callbacks.push(parseAlgoliaQueryValue(finalParsedBody.query, reverseWord => {
-					finalParsedBody.query = reverseWord;
-					console.log(`[Weglot Algolia] 🔄 Translated query: "${finalQuery}" → "${reverseWord}"`);
+			if (lastParsedBody.query) {
+				callbacks.push(parseAlgoliaQueryValue(lastParsedBody.query, reverseWord => {
+					lastParsedBody.query = reverseWord;
 				}));
 			}
 
-			if (finalParsedBody.requests) {
-				for (const algoliaRequest of finalParsedBody.requests) {
+			if (lastParsedBody.requests) {
+				for (const algoliaRequest of lastParsedBody.requests) {
 					callbacks.push(parseAlgoliaRequest(algoliaRequest));
 				}
 			}
@@ -124,19 +102,19 @@ document.addEventListener('DOMContentLoaded', function () {
 			}
 
 			promise.then(() => {
-				finalRequest.body = JSON.stringify(finalParsedBody);
+				lastRequest.body = JSON.stringify(lastParsedBody);
 				const apiKey = weglotData.api_key.replace('wg_', '');
-				const url = finalRequest.url.replace(/^https?:\/\//, '');
-				finalRequest.url = 'https://proxy.weglot.com/' + apiKey + '/' + weglotData.original_language + '/' + weglotData.current_language + '/' + url;
+				const url = lastRequest.url.replace(/^https?:\/\//, '');
+				lastRequest.url = 'https://proxy.weglot.com/' + apiKey + '/' + weglotData.original_language + '/' + weglotData.current_language + '/' + url;
 
-				console.log(`[Weglot Algolia] 🚀 Sending proxified request #${finalId} to Weglot proxy`);
-				finalCallback();
+				lastCallback();
 			});
 		}, DEBOUNCE_DELAY);
 
-		// Don't call callback immediately - wait for debounce timer
-		// This effectively blocks all requests until the timer fires
-		console.log(`[Weglot Algolia] ⏸️ Request #${currentRequestId} blocked, waiting for debounce`);
+		// Abort all requests except the one that will be processed
+		if (requestId !== Array.from(pendingRequests.keys()).pop()) {
+			return; // Don't call callback, effectively cancelling this request
+		}
 	});
 
 	xhook.after(function (request, response) {
