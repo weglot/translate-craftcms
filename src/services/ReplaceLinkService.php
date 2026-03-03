@@ -27,8 +27,8 @@ class ReplaceLinkService extends Component
      */
     public function replaceUrl(string $url, LanguageEntry $language, bool $evenExcluded = true): string
     {
-        $currentHost = parse_url($this->requestUrlService->getFullUrl(), PHP_URL_HOST);
-        $urlHost = parse_url($url, PHP_URL_HOST);
+        $currentHost = parse_url($this->requestUrlService->getFullUrl(), \PHP_URL_HOST);
+        $urlHost = parse_url($url, \PHP_URL_HOST);
 
         if ($urlHost && $currentHost && $urlHost !== $currentHost) {
             return $url;
