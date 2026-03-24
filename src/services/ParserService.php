@@ -63,7 +63,7 @@ class ParserService extends Component
         if ($editorSession) {
             $editorSession = preg_replace('/[^\w\-.]/', '', $editorSession);
             if (!empty($editorSession)) {
-                $client->getHttpClient()->addHeader('editor-session: ' . $editorSession);
+                $client->getHttpClient()->addHeader('editor-session: '.$editorSession);
             }
         }
         $client->getHttpClient()->addHeader('weglot-integration: Craft CMS Plugin');
