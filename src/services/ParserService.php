@@ -67,7 +67,6 @@ class ParserService extends Component
             }
         }
         $client->getHttpClient()->addHeader('weglot-integration: Craft CMS Plugin');
-        $client->getHttpClient()->addHeader('weglot-integration: Craft CMS Plugin');
 
         $safeCustomSwitchers = \is_array($customSwitchers) ? $customSwitchers : [];
 
