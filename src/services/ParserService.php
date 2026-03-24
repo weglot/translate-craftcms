@@ -59,7 +59,7 @@ class ParserService extends Component
         $config->loadFromServer();
 
         $client = $this->getClient();
-        $editorSession = $_SERVER['HTTP_WG_EDITOR_SESSION'] ?? null;
+        $editorSession = \Craft::$app->getRequest()->getHeaders()->get('wg-editor-session');
         if ($editorSession) {
             $editorSession = preg_replace('/[^\w\-.]/', '', $editorSession);
             if (!empty($editorSession)) {
