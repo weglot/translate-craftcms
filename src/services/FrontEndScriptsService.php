@@ -146,17 +146,17 @@ class FrontEndScriptsService extends Component
         $weglotDataJson = Json::htmlEncode($weglotData);
         $view->registerJs("window.weglotData = {$weglotDataJson};", View::POS_HEAD);
 
-        // Load xhook library (user has explicitly enabled Algolia integration)
-        $view->registerJsFile('https://unpkg.com/xhook@latest/dist/xhook.min.js', [
-            'position' => View::POS_END,
-        ]);
-
-        // Get the URL to the algolia.js file
+        // Get the URL to the xhook and algolia.js files
         $assetManager = $view->getAssetManager();
         $bundle = $assetManager->getBundle('weglot\\craftweglot\\resources\\AdminAsset');
         $baseUrl = $bundle->baseUrl ?? '';
 
         if ('' !== $baseUrl) {
+            // Load xhook library (user has explicitly enabled Algolia integration)
+            $view->registerJsFile($baseUrl . '/vendor/xhook.min.js', [
+                'position' => View::POS_END,
+            ]);
+
             $view->registerJsFile($baseUrl . '/js/algolia.js', [
                 'position' => View::POS_END,
             ]);

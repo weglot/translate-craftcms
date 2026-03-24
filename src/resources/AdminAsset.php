@@ -27,6 +27,7 @@ class AdminAsset extends AssetBundle
 
         $this->js = [
             'vendor/selectize/selectize.min.js',
+            'vendor/xhook.min.js',
             'js/admin.js',
         ];
 
