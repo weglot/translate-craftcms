@@ -157,7 +157,6 @@ class FrontEndScriptsService extends Component
             $view->registerJsFile($baseUrl.'/vendor/xhook.min.js', [
                 'position' => View::POS_END,
             ]);
-
             $view->registerJsFile($baseUrl.'/js/algolia.js', [
                 'position' => View::POS_END,
             ]);
