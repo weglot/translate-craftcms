@@ -154,11 +154,11 @@ class FrontEndScriptsService extends Component
 
         if ('' !== $baseUrl) {
             // Load xhook library (user has explicitly enabled Algolia integration)
-            $view->registerJsFile($baseUrl . '/vendor/xhook.min.js', [
+            $view->registerJsFile($baseUrl.'/vendor/xhook.min.js', [
                 'position' => View::POS_END,
             ]);
 
-            $view->registerJsFile($baseUrl . '/js/algolia.js', [
+            $view->registerJsFile($baseUrl.'/js/algolia.js', [
                 'position' => View::POS_END,
             ]);
         }
