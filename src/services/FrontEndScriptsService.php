@@ -136,8 +136,9 @@ class FrontEndScriptsService extends Component
         $view = \Craft::$app->getView();
 
         // Inject weglotData object for use in algolia.js
+        $apiKeyPublic = Plugin::getInstance()->getOption()->getPublicApiKey();
         $weglotData = [
-            'api_key' => $settings->apiKey,
+            'api_key' => $apiKeyPublic,
             'original_language' => $originalLanguage->getInternalCode(),
             'current_language' => $currentLanguage->getInternalCode(),
             'api_url' => HelperApi::getApiUrl(),
