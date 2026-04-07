@@ -139,14 +139,6 @@ document.addEventListener('DOMContentLoaded', function () {
 		console.log(`[Weglot Algolia] ⏸️ Request #${currentRequestId} blocked, waiting for debounce`);
 	});
 
-	xhook.after(function (request, response) {
-		if (request.url && request.url.includes('x-algolia-agent') && weglotData.original_language !== weglotData.current_language) {
-			let apiKey = weglotData.api_key.replace('wg_', '');
-			let url = request.url;
-			url = url.replace(/^https?:\/\//, '');
-			const proxifyUrl = 'https://proxy.weglot.com/' + apiKey + '/' + weglotData.original_language + '/' + weglotData.current_language + '/' + url;
-		}
-	});
 });
 
 function reverseTranslate(apiKey, l_from, l_to, request_url, word, t) {
