@@ -50,6 +50,8 @@ final class DynamicsService
         Plugin::getInstance()->trigger(Plugin::EVENT_REGISTER_DYNAMICS_SELECTORS, $dynamicsEvent);
         $dynamics = $dynamicsEvent->selectors;
 
+        $whitelist = $this->mergeSelectors($whitelist, $dynamics);
+
         Plugin::getInstance()->getFrontEndScripts()->injectWeglotScripts([
             'whitelist' => $whitelist,
             'dynamics' => $dynamics,
