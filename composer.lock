@@ -475,16 +475,16 @@
         },
         {
             "name": "craftcms/cms",
-            "version": "5.9.5",
+            "version": "5.9.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/craftcms/cms.git",
-                "reference": "a0f43797e571059945fb754ac22fae845a4ad05f"
+                "reference": "84d783586bf0abf619a9d1909d93fdfdcaaf73a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/cms/zipball/a0f43797e571059945fb754ac22fae845a4ad05f",
-                "reference": "a0f43797e571059945fb754ac22fae845a4ad05f",
+                "url": "https://api.github.com/repos/craftcms/cms/zipball/84d783586bf0abf619a9d1909d93fdfdcaaf73a4",
+                "reference": "84d783586bf0abf619a9d1909d93fdfdcaaf73a4",
                 "shasum": ""
             },
             "require": {
@@ -530,7 +530,6 @@
                 "symfony/serializer": "^6.4",
                 "symfony/var-dumper": "^5.0|^6.0|^7.0",
                 "symfony/yaml": "^5.2.3|^6.0|^7.0",
-                "thamtech/yii2-ratelimiter-advanced": "^0.5.0",
                 "theiconic/name-parser": "^1.2",
                 "twig/twig": "~3.21.1",
                 "voku/portable-ascii": "^2.0",
@@ -601,7 +600,7 @@
                 "rss": "https://github.com/craftcms/cms/releases.atom",
                 "source": "https://github.com/craftcms/cms"
             },
-            "time": "2026-01-31T18:05:38+00:00"
+            "time": "2026-03-09T19:10:16+00:00"
         },
         {
             "name": "craftcms/plugin-installer",
@@ -6705,56 +6704,6 @@
                 }
             ],
             "time": "2025-12-04T18:11:45+00:00"
-        },
-        {
-            "name": "thamtech/yii2-ratelimiter-advanced",
-            "version": "0.5",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/thamtech/yii2-ratelimiter-advanced.git",
-                "reference": "2fde10eaa1ec67e689d06babfc9c68d144d35433"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/thamtech/yii2-ratelimiter-advanced/zipball/2fde10eaa1ec67e689d06babfc9c68d144d35433",
-                "reference": "2fde10eaa1ec67e689d06babfc9c68d144d35433",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.6.0",
-                "yiisoft/yii2": ">=2.0.14 <2.1"
-            },
-            "require-dev": {
-                "codeception/codeception": "2.0.*",
-                "codeception/specify": "*",
-                "codeception/verify": "*",
-                "flow/jsonpath": "^0.3",
-                "yiisoft/yii2-codeception": "*",
-                "yiisoft/yii2-debug": "*",
-                "yiisoft/yii2-faker": "*"
-            },
-            "type": "yii2-extension",
-            "autoload": {
-                "psr-4": {
-                    "thamtech\\ratelimiter\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "authors": [
-                {
-                    "name": "Tyler Ham",
-                    "email": "tyler@thamtech.com"
-                }
-            ],
-            "description": "An advanced request rate limiter",
-            "support": {
-                "issues": "https://github.com/thamtech/yii2-ratelimiter-advanced/issues",
-                "source": "https://github.com/thamtech/yii2-ratelimiter-advanced/tree/master"
-            },
-            "time": "2020-08-05T04:29:29+00:00"
         },
         {
             "name": "theiconic/name-parser",

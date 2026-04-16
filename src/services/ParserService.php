@@ -59,6 +59,15 @@ class ParserService extends Component
         $config->loadFromServer();
 
         $client = $this->getClient();
+        $editorSession = \Craft::$app->getRequest()->getHeaders()->get('wg-editor-session');
+        if ($editorSession) {
+            $editorSession = preg_replace('/[^\w\-.]/', '', $editorSession);
+            if (!empty($editorSession)) {
+                $client->getHttpClient()->addHeader('editor-session: '.$editorSession);
+            }
+        }
+        $client->getHttpClient()->addHeader('weglot-integration: Craft CMS Plugin');
+
         $safeCustomSwitchers = \is_array($customSwitchers) ? $customSwitchers : [];
 
         $parser = new Parser($client, $config, $excludeBlocks, $safeCustomSwitchers, [], []);
