@@ -41,7 +41,7 @@ final class HrefLangServiceTest extends TestCase
      * by generateHrefLangTags():
      *   - isEligibleUrl() → $eligible (non-empty = eligible)
      *   - getCurrentLanguage() → $currentLang
-     *   - getWeglotUrl()->getAllUrls() → $allUrls
+     *   - getWeglotUrl()->getAllUrls() → $allUrls.
      *
      * @param array<int, array{url: string, excluded: bool, language: LanguageEntry}> $allUrls
      */
@@ -56,15 +56,11 @@ final class HrefLangServiceTest extends TestCase
         $originalLang = new LanguageEntry('en', 'en', 'English', 'English', false);
 
         $urlStub = new class($allUrls, $originalLang) extends Url {
-            /** @var array<int, array{url: string, excluded: bool, language: LanguageEntry}> */
-            private readonly array $mockedUrls;
-
             /**
-             * @param array<int, array{url: string, excluded: bool, language: LanguageEntry}> $urls
+             * @param array<int, array{url: string, excluded: bool, language: LanguageEntry}> $mockedUrls
              */
-            public function __construct(array $urls, LanguageEntry $originalLang)
+            public function __construct(private readonly array $mockedUrls, LanguageEntry $originalLang)
             {
-                $this->mockedUrls = $urls;
                 // Provide minimal valid args so parent initialises its properties
                 // without touching any live service (no API key, no excluded URLs).
                 parent::__construct('https://example.com', $originalLang, [], '', [], []);
@@ -110,7 +106,7 @@ final class HrefLangServiceTest extends TestCase
         Plugin::getInstance()->set('requestUrlService', $stub);
     }
 
-    private static function langEntry(string $internal, string $external): LanguageEntry
+    private function langEntry(string $internal, string $external): LanguageEntry
     {
         return new LanguageEntry($internal, $external, $internal, $internal, false);
     }
@@ -136,8 +132,8 @@ final class HrefLangServiceTest extends TestCase
     public function testGenerateSkipsExcludedUrls(): void
     {
         $this->injectRequestUrlStub(eligible: true, currentLang: null, allUrls: [
-            ['url' => 'https://example.com/en', 'language' => self::langEntry('en', 'en'), 'excluded' => false],
-            ['url' => 'https://example.com/fr', 'language' => self::langEntry('fr', 'fr'), 'excluded' => true],
+            ['url' => 'https://example.com/en', 'language' => $this->langEntry('en', 'en'), 'excluded' => false],
+            ['url' => 'https://example.com/fr', 'language' => $this->langEntry('fr', 'fr'), 'excluded' => true],
         ]);
 
         $output = $this->service->generateHrefLangTags();
@@ -149,9 +145,9 @@ final class HrefLangServiceTest extends TestCase
     public function testGenerateProducesOneLinkTagPerNonExcludedLanguage(): void
     {
         $this->injectRequestUrlStub(eligible: true, currentLang: null, allUrls: [
-            ['url' => 'https://example.com/en', 'language' => self::langEntry('en', 'en'), 'excluded' => false],
-            ['url' => 'https://example.com/fr', 'language' => self::langEntry('fr', 'fr'), 'excluded' => false],
-            ['url' => 'https://example.com/de', 'language' => self::langEntry('de', 'de'), 'excluded' => false],
+            ['url' => 'https://example.com/en', 'language' => $this->langEntry('en', 'en'), 'excluded' => false],
+            ['url' => 'https://example.com/fr', 'language' => $this->langEntry('fr', 'fr'), 'excluded' => false],
+            ['url' => 'https://example.com/de', 'language' => $this->langEntry('de', 'de'), 'excluded' => false],
         ]);
 
         $output = $this->service->generateHrefLangTags();
@@ -164,7 +160,7 @@ final class HrefLangServiceTest extends TestCase
         // Internal code is 'zh', external (BCP-47) code is 'zh-TW' — the tag
         // must expose the external code, not the internal one.
         $this->injectRequestUrlStub(eligible: true, currentLang: null, allUrls: [
-            ['url' => 'https://example.com/zh-tw', 'language' => self::langEntry('zh', 'zh-TW'), 'excluded' => false],
+            ['url' => 'https://example.com/zh-tw', 'language' => $this->langEntry('zh', 'zh-TW'), 'excluded' => false],
         ]);
 
         $output = $this->service->generateHrefLangTags();
@@ -176,7 +172,7 @@ final class HrefLangServiceTest extends TestCase
     public function testGenerateEscapesSpecialCharactersInHref(): void
     {
         $this->injectRequestUrlStub(eligible: true, currentLang: null, allUrls: [
-            ['url' => 'https://example.com/page?a=1&b=2', 'language' => self::langEntry('fr', 'fr'), 'excluded' => false],
+            ['url' => 'https://example.com/page?a=1&b=2', 'language' => $this->langEntry('fr', 'fr'), 'excluded' => false],
         ]);
 
         $output = $this->service->generateHrefLangTags();
@@ -189,7 +185,7 @@ final class HrefLangServiceTest extends TestCase
     public function testGenerateLinkTagHasCorrectStructure(): void
     {
         $this->injectRequestUrlStub(eligible: true, currentLang: null, allUrls: [
-            ['url' => 'https://example.com/fr', 'language' => self::langEntry('fr', 'fr'), 'excluded' => false],
+            ['url' => 'https://example.com/fr', 'language' => $this->langEntry('fr', 'fr'), 'excluded' => false],
         ]);
 
         $output = $this->service->generateHrefLangTags();

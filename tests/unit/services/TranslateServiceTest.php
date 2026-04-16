@@ -131,11 +131,8 @@ final class TranslateServiceTest extends TestCase
         $mock = $parserMock;
 
         return new class($mock) extends ParserService {
-            private readonly Parser $mockParser;
-
-            public function __construct(Parser $parser)
+            public function __construct(private readonly Parser $mockParser)
             {
-                $this->mockParser = $parser;
                 // ParserService constructor requires these three; they have no
                 // constructor injection of their own so new() is safe here.
                 parent::__construct(new OptionService(), new DomCheckersService(), new RegexCheckersService());
