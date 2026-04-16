@@ -201,6 +201,16 @@
         on: settings.enableDynamics ?? false
     }) }}
 
+    <h2>Integrations</h2>
+
+    {{ forms.lightswitchField({
+        label: 'Enable Algolia Integration'|t('weglot'),
+        instructions: 'Intercepts and translates Algolia search requests through Weglot proxy.'|t('weglot'),
+        id: 'enableAlgolia',
+        name: 'enableAlgolia',
+        on: settings.enableAlgolia ?? false
+    }) }}
+
 {% endif %}
 {% if showFirstSettingsPopup is defined and showFirstSettingsPopup %}
     <div id="weglot-box-first-settings" class="weglot-box-overlay" data-weglot-show-popup="true">

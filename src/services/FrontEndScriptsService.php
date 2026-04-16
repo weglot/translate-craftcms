@@ -13,6 +13,7 @@ class FrontEndScriptsService extends Component
 {
     private bool $switcherAssetsInjected = false;
     private bool $weglotScriptsInjected = false;
+    private bool $algoliaScriptInjected = false;
 
     /**
      * @param array<string, mixed> $extraConfig
@@ -102,6 +103,66 @@ class FrontEndScriptsService extends Component
         }
 
         $this->switcherAssetsInjected = true;
+    }
+
+    /**
+     * Injects Algolia integration script if enabled and on a translated language.
+     */
+    public function injectAlgoliaScript(): void
+    {
+        if ($this->algoliaScriptInjected) {
+            return;
+        }
+
+        $settings = Plugin::getInstance()->getTypedSettings();
+
+        // Only inject if Algolia integration is enabled
+        if (!$settings->enableAlgolia) {
+            return;
+        }
+
+        // Only inject on translated languages (not on original language)
+        $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
+        $originalLanguage = Plugin::getInstance()->getLanguage()->getOriginalLanguage();
+
+        if (null === $currentLanguage || null === $originalLanguage) {
+            return;
+        }
+
+        if ($currentLanguage->getInternalCode() === $originalLanguage->getInternalCode()) {
+            return;
+        }
+
+        $view = \Craft::$app->getView();
+
+        // Inject weglotData object for use in algolia.js
+        $apiKeyPublic = Plugin::getInstance()->getOption()->getPublicApiKey();
+        $weglotData = [
+            'api_key' => $apiKeyPublic,
+            'original_language' => $originalLanguage->getInternalCode(),
+            'current_language' => $currentLanguage->getInternalCode(),
+            'api_url' => HelperApi::getApiUrl(),
+        ];
+
+        $weglotDataJson = Json::htmlEncode($weglotData);
+        $view->registerJs("window.weglotData = {$weglotDataJson};", View::POS_HEAD);
+
+        // Get the URL to the xhook and algolia.js files
+        $assetManager = $view->getAssetManager();
+        $bundle = $assetManager->getBundle('weglot\\craftweglot\\resources\\AdminAsset');
+        $baseUrl = $bundle->baseUrl ?? '';
+
+        if ('' !== $baseUrl) {
+            // Load xhook library (user has explicitly enabled Algolia integration)
+            $view->registerJsFile($baseUrl.'/vendor/xhook.min.js', [
+                'position' => View::POS_END,
+            ]);
+            $view->registerJsFile($baseUrl.'/js/algolia.js', [
+                'position' => View::POS_END,
+            ]);
+        }
+
+        $this->algoliaScriptInjected = true;
     }
 
     private function appendVersion(string $url, string $version): string
