@@ -5,65 +5,107 @@ declare(strict_types=1);
 namespace weglot\craftweglot\tests\unit\services;
 
 use PHPUnit\Framework\TestCase;
-use Weglot\Client\Api\LanguageCollection;
-use Weglot\Client\Api\LanguageEntry;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\LanguageService;
 use weglot\craftweglot\services\OptionService;
+use Weglot\Vendor\Weglot\Client\Api\LanguageCollection;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 
 final class LanguageServiceLegacyFallbackTest extends TestCase
 {
-    private Plugin $plugin;
+    // -------------------------------------------------------------------------
+    // Fixtures & factories
+    // -------------------------------------------------------------------------
 
-    protected function setUp(): void
+    /**
+     * Inject an OptionService stub returning pipe-separated legacy languages
+     * and no destination_language (modern format).
+     */
+    private function injectLegacyOptionStub(string $languages, string $languageFrom = 'en'): void
     {
-        parent::setUp();
-        $this->plugin = Plugin::getInstance();
+        $stub = new class($languages, $languageFrom) extends OptionService {
+            public function __construct(
+                private readonly string $languages,
+                private readonly string $languageFrom,
+            ) {
+                parent::__construct();
+            }
 
-        try {
-            \Craft::$app->getCache()->flush();
-        } catch (\Throwable) {
-        }
+            public function getOption(string $key): ?string
+            {
+                return match ($key) {
+                    'destination_language' => null,
+                    'languages' => $this->languages,
+                    'language_from' => $this->languageFrom,
+                    default => null,
+                };
+            }
+        };
+        Plugin::getInstance()->set('option', $stub);
     }
 
-    public function testLegacyLanguagesPipeSeparated(): void
+    /**
+     * Inject a LanguageService stub with a fixed in-memory catalog, bypassing
+     * the Weglot API entirely.
+     *
+     * @param string[] $codes
+     */
+    private function injectLangCatalog(array $codes): void
     {
-        // Fake options: destination_language vide, legacy "fr|es|it", et language_from "en"
-        $fakeOption = new class extends OptionService {
-            public function getOption(string $key)
+        $stub = new class($codes) extends LanguageService {
+            /** @param string[] $codes */
+            public function __construct(private readonly array $codes)
             {
-                $data = [
-                    'destination_language' => null,
-                    'languages' => 'fr|es|it',
-                    'language_from' => 'en',
-                ];
+                parent::__construct();
+            }
 
-                return $data[$key] ?? null;
+            /** @throws \Exception */
+            public function getAllLanguages(): LanguageCollection
+            {
+                $collection = new LanguageCollection();
+                foreach ($this->codes as $code) {
+                    $collection->addOne(new LanguageEntry($code, $code, $code, $code, false));
+                }
+
+                return $collection;
             }
         };
-        $this->plugin->set('option', $fakeOption);
+        Plugin::getInstance()->set('language', $stub);
+    }
 
-        // LanguageService fake: évite l’appel API et expose un catalogue réduit
-        $fakeLanguage = new class extends LanguageService {
-            protected function fetchLanguagesFromApi(): LanguageCollection
-            {
-                $c = new LanguageCollection();
-                $c->addOne(new LanguageEntry('en', 'en', 'English', 'English', false));
-                $c->addOne(new LanguageEntry('fr', 'fr', 'French', 'Français', false));
-                $c->addOne(new LanguageEntry('es', 'es', 'Spanish', 'Español', false));
-                $c->addOne(new LanguageEntry('it', 'it', 'Italian', 'Italiano', false));
+    // -------------------------------------------------------------------------
+    // getDestinationLanguages — legacy pipe-separated format
+    // -------------------------------------------------------------------------
 
-                return $c;
-            }
-        };
-        $this->plugin->set('language', $fakeLanguage);
+    public function testLegacyPipeSeparatedLanguagesAreResolvedCorrectly(): void
+    {
+        $this->injectLegacyOptionStub('fr|es|it');
+        $this->injectLangCatalog(['en', 'fr', 'es', 'it']);
 
-        $entries = $this->plugin->getLanguage()->getDestinationLanguages();
+        $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
+
         self::assertCount(3, $entries);
+    }
 
-        // Codes normalisés pour le routage (en excluant la source "en")
-        $codes = $this->plugin->getLanguage()->codesFromDestinationEntries($entries, true);
+    public function testLegacyPipeSeparatedCodesExcludeSourceAfterNormalisation(): void
+    {
+        $this->injectLegacyOptionStub('fr|es|it', 'en');
+        $this->injectLangCatalog(['en', 'fr', 'es', 'it']);
+
+        $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
+        $codes = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($entries, true);
         sort($codes);
+
         self::assertSame(['es', 'fr', 'it'], $codes);
+    }
+
+    public function testLegacyCommaSeparatedLanguagesAreResolvedCorrectly(): void
+    {
+        $this->injectLegacyOptionStub('fr,de');
+        $this->injectLangCatalog(['en', 'fr', 'de']);
+
+        $entries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
+
+        self::assertCount(2, $entries);
     }
 }
