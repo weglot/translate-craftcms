@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace weglot\craftweglot\checkers\dom;
 
 use Weglot\Vendor\Weglot\Parser\Check\Dom\LinkHref;
