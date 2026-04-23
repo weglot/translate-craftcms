@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Formatter;
 
 if (!\function_exists('array_column')) {
@@ -41,7 +43,7 @@ if (!\function_exists('array_column')) {
 
 class DomFormatter extends AbstractFormatter
 {
-    public function handle(array $nodes, &$index)
+    public function handle(array $nodes, &$index): void
     {
         $translatable_attributes = $this->getTranslatableAttributes();
 
@@ -66,10 +68,8 @@ class DomFormatter extends AbstractFormatter
      * @param array  $translatable_attributes
      * @param array  $original_words
      * @param array  $translated_words
-     *
-     * @return void
      */
-    protected function metaContent(array $details, $translated, $translatable_attributes, $original_words, $translated_words)
+    protected function metaContent(array $details, $translated, $translatable_attributes, $original_words, $translated_words): void
     {
         $property = $details['property'];
 
@@ -101,10 +101,8 @@ class DomFormatter extends AbstractFormatter
     /**
      * @param string $translated
      * @param int    $index
-     *
-     * @return void
      */
-    protected function imageSource(array $details, $translated, $index)
+    protected function imageSource(array $details, $translated, $index): void
     {
         $words = $this->getTranslated()->getInputWords();
 

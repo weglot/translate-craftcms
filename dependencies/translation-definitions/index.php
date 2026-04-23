@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot;
 
 class index
@@ -24,7 +26,7 @@ class index
         return $array;
     }
 
-    public static function init()
+    public static function init(): void
     {
         self::$languages = array_map(static function ($language) {
             return [

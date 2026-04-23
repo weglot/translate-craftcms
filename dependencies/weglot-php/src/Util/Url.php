@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Util;
 
 use Weglot\Client\Api\LanguageEntry;
@@ -106,10 +108,8 @@ class Url
      * Sets the full URL.
      *
      * @param string $url
-     *
-     * @return void
      */
-    public function setUrl($url)
+    public function setUrl($url): void
     {
         $this->url = $url;
         $this->detectUrlDetails();

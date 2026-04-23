@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Client\Api\Shared;
 
 trait AbstractCollectionIterator
@@ -11,7 +13,7 @@ trait AbstractCollectionIterator
     }
 
     #[\ReturnTypeWillChange]
-    public function next()
+    public function next(): void
     {
         next($this->collection);
     }
@@ -29,7 +31,7 @@ trait AbstractCollectionIterator
     }
 
     #[\ReturnTypeWillChange]
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->collection);
     }

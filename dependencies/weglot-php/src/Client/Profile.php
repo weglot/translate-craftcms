@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Client;
 
 class Profile
@@ -26,10 +28,8 @@ class Profile
     /**
      * @param string $apiKey
      * @param int    $translationEngine
-     *
-     * @return void
      */
-    protected function setup($apiKey, $translationEngine)
+    protected function setup($apiKey, $translationEngine): void
     {
         $apiKeyLength = \strlen($apiKey);
 
