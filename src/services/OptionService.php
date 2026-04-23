@@ -245,7 +245,7 @@ class OptionService extends Component
     /**
      * @return array<mixed>|null
      */
-    public function getOption(string $key): string|array|null
+    public function getOption(string $key): string|array|int|bool|null
     {
         $options = $this->getOptions();
 
