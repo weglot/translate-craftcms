@@ -121,7 +121,7 @@ class ExcludeBlocksFormatter
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         if (!empty($this->whiteList)) {
             foreach ($this->whiteList as $exception) {

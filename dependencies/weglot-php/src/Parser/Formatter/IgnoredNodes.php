@@ -80,7 +80,7 @@ class IgnoredNodes
      *
      * @return void
      */
-    protected function replaceContent($matches)
+    protected function replaceContent($matches): void
     {
         $this->setSource(
             str_replace(
@@ -97,7 +97,7 @@ class IgnoredNodes
      *
      * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         // time for the BIG regex ...
         $pattern = '#<(?<tag>'.implode('|', $this->ignoredNodes).')(?<more>\s.*?)?\>(?<content>[^>]*?)\<\/(?<tagclosed>'.implode('|', $this->ignoredNodes).')>#i';

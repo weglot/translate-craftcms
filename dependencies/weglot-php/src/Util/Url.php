@@ -109,7 +109,7 @@ class Url
      *
      * @return void
      */
-    public function setUrl($url)
+    public function setUrl($url): void
     {
         $this->url = $url;
         $this->detectUrlDetails();

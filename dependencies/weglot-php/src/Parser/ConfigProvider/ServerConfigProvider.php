@@ -22,7 +22,7 @@ class ServerConfigProvider extends AbstractConfigProvider
      *
      * @return void
      */
-    public function loadFromServer($canonical = '')
+    public function loadFromServer($canonical = ''): void
     {
         if (!empty($canonical)) {
             $url = $canonical;

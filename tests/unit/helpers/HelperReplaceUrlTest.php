@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace weglot\craftweglot\tests\unit\helpers;
 
 use PHPUnit\Framework\TestCase;

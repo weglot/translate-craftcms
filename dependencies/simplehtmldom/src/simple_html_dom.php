@@ -102,7 +102,7 @@ function str_get_html($str, $lowercase = true, $forceTagsClosed = true, $target_
 }
 
 // dump html dom tree
-function dump_html_tree($node, $show_attr = true, $deep = 0)
+function dump_html_tree($node, $show_attr = true, $deep = 0): void
 {
     $node->dump($node);
 }
@@ -142,7 +142,7 @@ class simple_html_dom_node
     }
 
     // clean up memory due to php5 circular references memory leak...
-    public function clear()
+    public function clear(): void
     {
         $this->dom = null;
         $this->nodes = null;
@@ -151,7 +151,7 @@ class simple_html_dom_node
     }
 
     // dump node's tree
-    public function dump($show_attr = true, $deep = 0)
+    public function dump($show_attr = true, $deep = 0): void
     {
         $lead = str_repeat('    ', $deep);
 
@@ -571,7 +571,7 @@ class simple_html_dom_node
 
     // seek for given conditions
     // PaperG - added parameter to allow for case insensitive testing of the value of a selector.
-    protected function seek($selector, &$ret, $lowercase = false, $direct = false)
+    protected function seek($selector, &$ret, $lowercase = false, $direct = false): void
     {
         global $debugObject;
         if (\is_object($debugObject)) {
@@ -849,7 +849,7 @@ class simple_html_dom_node
         return (\array_key_exists($name, $this->attr)) ? true : isset($this->attr[$name]);
     }
 
-    public function __unset($name)
+    public function __unset($name): void
     {
         if (isset($this->attr[$name])) {
             unset($this->attr[$name]);
@@ -1045,7 +1045,7 @@ class simple_html_dom_node
         return $this->__get($name);
     }
 
-    public function setAttribute($name, $value)
+    public function setAttribute($name, $value): void
     {
         $this->__set($name, $value);
     }
@@ -1055,7 +1055,7 @@ class simple_html_dom_node
         return $this->__isset($name);
     }
 
-    public function removeAttribute($name)
+    public function removeAttribute($name): void
     {
         $this->__set($name, null);
     }
@@ -1270,13 +1270,13 @@ class simple_html_dom
     }
 
     // set callback function
-    public function set_callback($function_name)
+    public function set_callback($function_name): void
     {
         $this->callback = $function_name;
     }
 
     // remove callback function
-    public function remove_callback()
+    public function remove_callback(): void
     {
         $this->callback = null;
     }
@@ -1304,7 +1304,7 @@ class simple_html_dom
     }
 
     // clean up memory due to php5 circular references memory leak...
-    public function clear()
+    public function clear(): void
     {
         foreach ($this->nodes as $n) {
             $n->clear();
@@ -1329,13 +1329,13 @@ class simple_html_dom
         unset($this->noise);
     }
 
-    public function dump($show_attr = true)
+    public function dump($show_attr = true): void
     {
         $this->root->dump($show_attr);
     }
 
     // prepare HTML data and init everything
-    protected function prepare($str, $lowercase = true, $stripRN = true, $defaultBRText = WG_DEFAULT_BR_TEXT, $defaultSpanText = WG_DEFAULT_SPAN_TEXT)
+    protected function prepare($str, $lowercase = true, $stripRN = true, $defaultBRText = WG_DEFAULT_BR_TEXT, $defaultSpanText = WG_DEFAULT_SPAN_TEXT): void
     {
         $this->clear();
 
@@ -1698,7 +1698,7 @@ class simple_html_dom
     }
 
     // parse attributes
-    protected function parse_attr($node, $name, &$space)
+    protected function parse_attr($node, $name, &$space): void
     {
         // Per sourceforge: http://sourceforge.net/tracker/?func=detail&aid=3061408&group_id=218559&atid=1044037
         // If the attribute is already defined inside a tag, only pay atetntion to the first one as opposed to the last one.
@@ -1734,7 +1734,7 @@ class simple_html_dom
     }
 
     // link node's parent
-    protected function link_nodes(&$node, $is_child)
+    protected function link_nodes(&$node, $is_child): void
     {
         $node->parent = $this->parent;
         $this->parent->nodes[] = $node;
@@ -1755,7 +1755,7 @@ class simple_html_dom
         return true;
     }
 
-    protected function skip($chars)
+    protected function skip($chars): void
     {
         $this->pos += strspn($this->doc, $chars, $this->pos);
         $this->char = ($this->pos < $this->size) ? $this->doc[$this->pos] : null; // next
@@ -1843,7 +1843,7 @@ class simple_html_dom
 
     // remove noise from html content
     // save the noise in the $this->noise array.
-    protected function remove_noise($pattern, $remove_tag = false)
+    protected function remove_noise($pattern, $remove_tag = false): void
     {
         global $debugObject;
         if (\is_object($debugObject)) {
@@ -1982,7 +1982,7 @@ class simple_html_dom
         return $this->find($name, $idx);
     }
 
-    public function loadFile()
+    public function loadFile(): void
     {
         $args = \func_get_args();
         $this->load_file($args);

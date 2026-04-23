@@ -131,7 +131,7 @@ class JsonChecker
      *
      * @throws InvalidWordTypeException
      */
-    public function findWords($json, $currentKey, &$paths)
+    public function findWords($json, $currentKey, &$paths): void
     {
         foreach ($json as $key => $value) {
             if (!\is_string($value)) {

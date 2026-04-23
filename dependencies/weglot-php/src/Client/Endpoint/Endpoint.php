@@ -24,7 +24,7 @@ abstract class Endpoint
     /**
      * @return void
      */
-    public function setClient(Client $client)
+    public function setClient(Client $client): void
     {
         $this->client = $client;
     }

@@ -79,7 +79,7 @@ class Client
      *
      * @return void
      */
-    protected function setupConnector()
+    protected function setupConnector(): void
     {
         $this->httpClient = new CurlClient();
     }

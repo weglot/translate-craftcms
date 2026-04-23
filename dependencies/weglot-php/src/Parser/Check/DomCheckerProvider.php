@@ -203,7 +203,7 @@ class DomCheckerProvider
      *
      * @return void
      */
-    protected function loadDefaultCheckers()
+    protected function loadDefaultCheckers(): void
     {
         $files = array_diff(scandir(__DIR__.'/Dom'), ['AbstractDomChecker.php', '..', '.']);
         $checkers = array_map(static function ($filename) {
@@ -325,7 +325,7 @@ class DomCheckerProvider
      *
      * @throws InvalidWordTypeException
      */
-    public function handleOldEngine($discoveringNodes, &$nodes, $class, $property, $wordType)
+    public function handleOldEngine($discoveringNodes, &$nodes, $class, $property, $wordType): void
     {
         foreach ($discoveringNodes as $node) {
             $instance = new $class($node, $property);

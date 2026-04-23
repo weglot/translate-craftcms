@@ -73,7 +73,7 @@ class CurlClient implements ClientInterface
      *
      * @return void
      */
-    public function initUserAgentInfo()
+    public function initUserAgentInfo(): void
     {
         $curlVersion = curl_version();
         $this->userAgentInfo = [
@@ -95,7 +95,7 @@ class CurlClient implements ClientInterface
      *
      * @return void
      */
-    public function addHeader($header)
+    public function addHeader($header): void
     {
         $this->defaultHeaders[] = $header;
     }
@@ -114,7 +114,7 @@ class CurlClient implements ClientInterface
      *
      * @return void
      */
-    public function addUserAgentInfo($service, $value)
+    public function addUserAgentInfo($service, $value): void
     {
         $this->userAgentInfo[$service] = $value;
     }

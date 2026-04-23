@@ -11,7 +11,7 @@ trait AbstractCollectionIterator
     }
 
     #[\ReturnTypeWillChange]
-    public function next()
+    public function next(): void
     {
         next($this->collection);
     }
@@ -29,7 +29,7 @@ trait AbstractCollectionIterator
     }
 
     #[\ReturnTypeWillChange]
-    public function rewind()
+    public function rewind(): void
     {
         reset($this->collection);
     }

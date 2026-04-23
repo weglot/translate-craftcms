@@ -29,7 +29,7 @@ class Profile
      *
      * @return void
      */
-    protected function setup($apiKey, $translationEngine)
+    protected function setup($apiKey, $translationEngine): void
     {
         $apiKeyLength = \strlen($apiKey);
 
