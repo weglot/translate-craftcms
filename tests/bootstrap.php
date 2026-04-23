@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use craft\i18n\PhpMessageSource;
 use weglot\craftweglot\Plugin;
 

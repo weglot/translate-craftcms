@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Client;
 
 use Psr\Cache\CacheItemPoolInterface;

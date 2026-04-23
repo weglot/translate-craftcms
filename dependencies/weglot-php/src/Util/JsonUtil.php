@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Util;
 
 use Weglot\Client\Api\Enum\WordType;
