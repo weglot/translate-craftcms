@@ -62,8 +62,6 @@ abstract class AbstractFormatter
 
     /**
      * @param int $index
-     *
-     * @return void
      */
     abstract public function handle(array $array, &$index): void;
 }

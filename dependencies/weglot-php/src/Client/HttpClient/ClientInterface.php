@@ -7,8 +7,6 @@ interface ClientInterface
     /**
      * @param string $service
      * @param string $value
-     *
-     * @return void
      */
     public function addUserAgentInfo($service, $value): void;
 
@@ -19,8 +17,6 @@ interface ClientInterface
 
     /**
      * @param string $header
-     *
-     * @return void
      */
     public function addHeader($header): void;
 

@@ -127,8 +127,6 @@ class JsonChecker
      * @param string                                       $currentKey
      * @param array<array{key: int|string, parsed: array}> $paths
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
     public function findWords($json, $currentKey, &$paths): void

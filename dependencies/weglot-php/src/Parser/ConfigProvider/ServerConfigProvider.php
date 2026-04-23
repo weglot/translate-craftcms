@@ -19,8 +19,6 @@ class ServerConfigProvider extends AbstractConfigProvider
      * Is used to load server data, you have to run it manually !
      *
      * @param string $canonical
-     *
-     * @return void
      */
     public function loadFromServer($canonical = ''): void
     {

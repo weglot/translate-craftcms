@@ -26,8 +26,6 @@ class Profile
     /**
      * @param string $apiKey
      * @param int    $translationEngine
-     *
-     * @return void
      */
     protected function setup($apiKey, $translationEngine): void
     {

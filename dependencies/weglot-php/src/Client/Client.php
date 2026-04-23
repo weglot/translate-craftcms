@@ -76,8 +76,6 @@ class Client
 
     /**
      * Creating Guzzle HTTP connector based on $options.
-     *
-     * @return void
      */
     protected function setupConnector(): void
     {

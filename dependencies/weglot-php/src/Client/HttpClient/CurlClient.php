@@ -70,8 +70,6 @@ class CurlClient implements ClientInterface
 
     /**
      * Initializing default user-agent.
-     *
-     * @return void
      */
     public function initUserAgentInfo(): void
     {
@@ -92,8 +90,6 @@ class CurlClient implements ClientInterface
 
     /**
      * @param string $header
-     *
-     * @return void
      */
     public function addHeader($header): void
     {
@@ -111,8 +107,6 @@ class CurlClient implements ClientInterface
     /**
      * @param string $service
      * @param string $value
-     *
-     * @return void
      */
     public function addUserAgentInfo($service, $value): void
     {

@@ -82,8 +82,6 @@ class RegexCheckerProvider
 
     /**
      * Load default checkers.
-     *
-     * @return void
      */
     protected function loadDefaultCheckers(): void
     {

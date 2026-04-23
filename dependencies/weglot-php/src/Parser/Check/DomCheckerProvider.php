@@ -200,8 +200,6 @@ class DomCheckerProvider
 
     /**
      * Load default checkers.
-     *
-     * @return void
      */
     protected function loadDefaultCheckers(): void
     {
@@ -320,8 +318,6 @@ class DomCheckerProvider
      * @param class-string $class
      * @param string       $property
      * @param int          $wordType
-     *
-     * @return void
      *
      * @throws InvalidWordTypeException
      */

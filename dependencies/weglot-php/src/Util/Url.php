@@ -106,8 +106,6 @@ class Url
      * Sets the full URL.
      *
      * @param string $url
-     *
-     * @return void
      */
     public function setUrl($url): void
     {

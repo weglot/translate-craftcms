@@ -77,8 +77,6 @@ class IgnoredNodes
 
     /**
      * @param array $matches
-     *
-     * @return void
      */
     protected function replaceContent($matches): void
     {
@@ -94,8 +92,6 @@ class IgnoredNodes
     /**
      * Convert < & > for some dom tags to let them able
      * to go through API calls.
-     *
-     * @return void
      */
     public function handle(): void
     {
