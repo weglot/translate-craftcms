@@ -75,7 +75,7 @@ class RequestUrlService extends Component
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<int, LanguageEntry>
      */
     public function isEligibleUrl(string $url): array
     {
