@@ -82,7 +82,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/brick/math/zipball/6aef71a9fbbd1ee7be0e313cd627f8e6f7125a5b",
                 "reference": "6aef71a9fbbd1ee7be0e313cd627f8e6f7125a5b",
->>>>>>> master
                 "shasum": ""
             },
             "require": {
@@ -120,11 +119,7 @@
             ],
             "support": {
                 "issues": "https://github.com/brick/math/issues",
-<<<<<<< improvement/ad-all-missing-test
-                "source": "https://github.com/brick/math/tree/0.17.0"
-=======
                 "source": "https://github.com/brick/math/tree/0.17.1"
->>>>>>> master
             },
             "funding": [
                 {
@@ -132,11 +127,7 @@
                     "type": "github"
                 }
             ],
-<<<<<<< improvement/ad-all-missing-test
-            "time": "2026-03-17T12:54:54+00:00"
-=======
             "time": "2026-04-19T20:55:20+00:00"
->>>>>>> master
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -2944,18 +2935,6 @@
         },
         {
             "name": "phpoffice/phpspreadsheet",
-<<<<<<< improvement/ad-all-missing-test
-            "version": "5.6.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/PHPOffice/PhpSpreadsheet.git",
-                "reference": "9b90dee03deb0d28761479c4a3a06fba5f7e012e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/9b90dee03deb0d28761479c4a3a06fba5f7e012e",
-                "reference": "9b90dee03deb0d28761479c4a3a06fba5f7e012e",
-=======
             "version": "5.7.0",
             "source": {
                 "type": "git",
@@ -2966,7 +2945,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/PHPOffice/PhpSpreadsheet/zipball/9f55d3b9b7bcb1084fda8340e4b7ce4ed10cd0c8",
                 "reference": "9f55d3b9b7bcb1084fda8340e4b7ce4ed10cd0c8",
->>>>>>> master
                 "shasum": ""
             },
             "require": {
@@ -3060,15 +3038,9 @@
             ],
             "support": {
                 "issues": "https://github.com/PHPOffice/PhpSpreadsheet/issues",
-<<<<<<< improvement/ad-all-missing-test
-                "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/5.6.0"
-            },
-            "time": "2026-04-10T03:00:03+00:00"
-=======
                 "source": "https://github.com/PHPOffice/PhpSpreadsheet/tree/5.7.0"
             },
             "time": "2026-04-20T02:42:17+00:00"
->>>>>>> master
         },
         {
             "name": "phpstan/phpdoc-parser",
