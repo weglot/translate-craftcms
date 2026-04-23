@@ -62,7 +62,6 @@
         },
         {
             "name": "brick/math",
-<<<<<<< improvement/ad-all-missing-test
             "version": "0.17.0",
             "source": {
                 "type": "git",
@@ -73,7 +72,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/brick/math/zipball/a62af7ab2e3cee9f9bf4cf77a5d1e6ba408a44ee",
                 "reference": "a62af7ab2e3cee9f9bf4cf77a5d1e6ba408a44ee",
-=======
             "version": "0.17.1",
             "source": {
                 "type": "git",
