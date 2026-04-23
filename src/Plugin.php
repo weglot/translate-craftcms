@@ -275,6 +275,7 @@ class Plugin extends BasePlugin
                 Plugin::getInstance()->getOption()->generateWeglotData();
                 Plugin::getInstance()->getDynamics()->addDynamics();
                 $this->getFrontEndScripts()->injectSwitcherAssets();
+                $this->getFrontEndScripts()->injectAlgoliaScript();
                 $this->getPageViews()->injectPageViewsScript();
             }
         );
