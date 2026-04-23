@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Formatter;
 
 use WGSimpleHtmlDom\simple_html_dom;

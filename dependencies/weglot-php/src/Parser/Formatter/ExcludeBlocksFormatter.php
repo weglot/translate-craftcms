@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Formatter;
 
 use Weglot\Parser\Parser;
@@ -118,10 +120,8 @@ class ExcludeBlocksFormatter
      * Add ATTRIBUTE_NO_TRANSLATE to dom elements that don't
      * want to be translated or ATTRIBUTE_TRANSLATE if on mode
      * wg-mode-whitelist.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         if (!empty($this->whiteList)) {
             foreach ($this->whiteList as $exception) {

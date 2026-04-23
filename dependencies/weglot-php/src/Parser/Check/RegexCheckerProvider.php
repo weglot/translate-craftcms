@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Check;
 
 use Weglot\Client\Api\Exception\InvalidWordTypeException;
@@ -82,10 +84,8 @@ class RegexCheckerProvider
 
     /**
      * Load default checkers.
-     *
-     * @return void
      */
-    protected function loadDefaultCheckers()
+    protected function loadDefaultCheckers(): void
     {
         $jsonKeys = ['description', 'name', 'headline', 'articleSection', 'text'];
 

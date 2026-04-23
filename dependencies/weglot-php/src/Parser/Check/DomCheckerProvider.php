@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Check;
 
 use Weglot\Client\Api\Enum\WordType;
@@ -200,10 +202,8 @@ class DomCheckerProvider
 
     /**
      * Load default checkers.
-     *
-     * @return void
      */
-    protected function loadDefaultCheckers()
+    protected function loadDefaultCheckers(): void
     {
         $files = array_diff(scandir(__DIR__.'/Dom'), ['AbstractDomChecker.php', '..', '.']);
         $checkers = array_map(static function ($filename) {
@@ -321,11 +321,9 @@ class DomCheckerProvider
      * @param string       $property
      * @param int          $wordType
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
-    public function handleOldEngine($discoveringNodes, &$nodes, $class, $property, $wordType)
+    public function handleOldEngine($discoveringNodes, &$nodes, $class, $property, $wordType): void
     {
         foreach ($discoveringNodes as $node) {
             $instance = new $class($node, $property);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\ConfigProvider;
 
 interface ConfigProviderInterface

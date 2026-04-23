@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Client\HttpClient;
 
 // @codingStandardsIgnoreStart
@@ -70,10 +72,8 @@ class CurlClient implements ClientInterface
 
     /**
      * Initializing default user-agent.
-     *
-     * @return void
      */
-    public function initUserAgentInfo()
+    public function initUserAgentInfo(): void
     {
         $curlVersion = curl_version();
         $this->userAgentInfo = [
@@ -92,10 +92,8 @@ class CurlClient implements ClientInterface
 
     /**
      * @param string $header
-     *
-     * @return void
      */
-    public function addHeader($header)
+    public function addHeader($header): void
     {
         $this->defaultHeaders[] = $header;
     }
@@ -111,10 +109,8 @@ class CurlClient implements ClientInterface
     /**
      * @param string $service
      * @param string $value
-     *
-     * @return void
      */
-    public function addUserAgentInfo($service, $value)
+    public function addUserAgentInfo($service, $value): void
     {
         $this->userAgentInfo[$service] = $value;
     }

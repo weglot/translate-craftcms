@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Formatter;
 
 use Weglot\Client\Api\TranslateEntry;
@@ -62,8 +64,6 @@ abstract class AbstractFormatter
 
     /**
      * @param int $index
-     *
-     * @return void
      */
-    abstract public function handle(array $array, &$index);
+    abstract public function handle(array $array, &$index): void;
 }

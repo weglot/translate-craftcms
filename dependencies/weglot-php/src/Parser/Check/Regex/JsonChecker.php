@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Weglot\Parser\Check\Regex;
 
 use Weglot\Client\Api\Exception\InvalidWordTypeException;
@@ -127,11 +129,9 @@ class JsonChecker
      * @param string                                       $currentKey
      * @param array<array{key: int|string, parsed: array}> $paths
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
-    public function findWords($json, $currentKey, &$paths)
+    public function findWords($json, $currentKey, &$paths): void
     {
         foreach ($json as $key => $value) {
             if (!\is_string($value)) {

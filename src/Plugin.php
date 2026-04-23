@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace weglot\craftweglot;
 
 use craft\base\Model;
@@ -275,6 +277,7 @@ class Plugin extends BasePlugin
                 Plugin::getInstance()->getOption()->generateWeglotData();
                 Plugin::getInstance()->getDynamics()->addDynamics();
                 $this->getFrontEndScripts()->injectSwitcherAssets();
+                $this->getFrontEndScripts()->injectAlgoliaScript();
                 $this->getPageViews()->injectPageViewsScript();
             }
         );
