@@ -30,3 +30,10 @@
 - Improvement: Add reverse translation support for Craft’s search base to improve multilingual search handling.
 ## 1.2.1
 - Improvement: merge all dynamic selectors into the whitelist before injecting Weglot scripts in the DynamicsService.
+## 1.2.3
+- Improvement: ReplaceLinkService::replaceUrl() now detects when an input URL points to a different host than the current request and returns it unchanged, preventing Weglot language rewriting/slug translation from affecting external links.
+## 1.2.4
+- Improvement: Adds an opt-in Algolia integration (enableAlgolia) that injects a new frontend script to intercept Algolia search requests via xhook, reverse-translate the query parameter through the Weglot API (with caching/debouncing), and route the request through the Weglot proxy.
+- Improvement: Upgrades craftcms/cms from 5.9.5 to 5.9.15 and removes the thamtech/yii2-ratelimiter-advanced dependency from composer.lock.
+- Improvement: Updates ParserService::getParser() to propagate a sanitized incoming wg-editor-session request header as an outbound editor-session header (when present) and to always include a weglot-integration: Craft CMS Plugin header on Weglot HTTP requests.
+- Improvement: Introduces a large set of new unit tests covering helpers, settings validation, URL eligibility/path rewriting, link replacement, hreflang generation, redirect language selection, slug translation, option parsing/excludes, and translation rendering/error handling; older targeted tests are removed/reworked into broader suites.
