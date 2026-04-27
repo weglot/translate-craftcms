@@ -1,26 +1,21 @@
-# Creates a new GitHub Release whenever the Craft Plugin Store
-# is notified of a new version tag.
-
 name: Create Release
 run-name: Create release for ${{ github.event.client_payload.version }}
 
 on:
-  push:
-    tags:
-      - '*'
+  repository_dispatch:
+    types:
+      - craftcms/new-release
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
-      - name: Create release
-        uses: ncipollo/release-action@v1
+      - uses: ncipollo/release-action@v1
         with:
-          tag: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          body: Automated release for ${{ github.ref_name }}
-          prerelease: false
-          makeLatest: true
+          body: ${{ github.event.client_payload.notes }}
+          makeLatest: ${{ github.event.client_payload.latest }}
+          name: ${{ github.event.client_payload.version }}
+          prerelease: ${{ github.event.client_payload.prerelease }}
+          tag: ${{ github.event.client_payload.tag }}
