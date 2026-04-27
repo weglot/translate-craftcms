@@ -54,6 +54,7 @@
     ? settings.languages
     : defaultDestCodes %}
 
+<div data-weglot-v1-fields{% if not showV1Fields %} style="display:none"{% endif %}>
 {{ forms.selectField({
     label: 'Original Language'|t('weglot'),
     instructions: 'Choose the original language of the site.'|t('weglot'),
@@ -71,6 +72,7 @@
     placeholder: 'fr|en|es',
     inputAttributes: { class: 'weglot-select-destination' }
 }) }}
+</div>
 
 
 
@@ -211,7 +213,36 @@
         on: settings.enableAlgolia ?? false
     }) }}
 
+    <hr class="weglot-section-separator">
+
+    <div class="weglot-reset-section">
+        <p class="weglot-reset-description">
+            {{ "Need to start over? You can reset your Weglot configuration and reconnect with a different API key."|t('weglot') }}
+        </p>
+        <button type="button" data-weglot-reset-btn class="btn">
+            {{ "Reset configuration"|t('weglot') }}
+        </button>
+    </div>
+
 {% endif %}
+
+<div data-weglot-reset-modal class="weglot-box-overlay weglot-reset-modal--hidden">
+    <div class="weglot-box">
+        <h3 class="weglot-box--title">{{ "Are you sure?"|t('weglot') }}</h3>
+        <p class="weglot-box--text">
+            {{ "This will clear your API key and all cached Weglot settings. You will need to reconfigure the plugin from scratch."|t('weglot') }}
+        </p>
+        <div class="weglot-modal-actions">
+            <button type="button" data-weglot-reset-confirm class="btn submit">
+                {{ "Yes, reset"|t('weglot') }}
+            </button>
+            <button type="button" data-weglot-reset-cancel class="btn">
+                {{ "Cancel"|t('weglot') }}
+            </button>
+        </div>
+        <p data-weglot-reset-error class="weglot-modal-error weglot-reset-modal--hidden"></p>
+    </div>
+</div>
 {% if showFirstSettingsPopup is defined and showFirstSettingsPopup %}
     <div id="weglot-box-first-settings" class="weglot-box-overlay" data-weglot-show-popup="true">
         <div class="weglot-box">

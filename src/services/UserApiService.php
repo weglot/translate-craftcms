@@ -19,45 +19,53 @@ class UserApiService extends Component
             return ['error' => true, 'message' => 'API key cannot be empty.'];
         }
 
-        $client = \Craft::createGuzzleClient();
-        $url = \sprintf('%s/projects/owner', HelperApi::getApiUrl());
+        $url = \sprintf('%s/project-settings', HelperApi::getApiUrl());
 
         $requestOptions = [
-            'query' => [
-                'api_key' => $apiKey,
-            ],
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
+            'query' => ['api_key' => $apiKey],
+            'headers' => ['Accept' => 'application/json'],
             'timeout' => 5,
         ];
+
         try {
-            $response = $client->request('GET', $url, $requestOptions);
-            $contents = $response->getBody()->getContents();
+            $response = \Craft::createGuzzleClient()->request('GET', $url, $requestOptions);
 
-            $decoded = json_decode($contents, true);
-
-            if (\JSON_ERROR_NONE !== json_last_error()) {
-                return ['error' => true, 'message' => 'Invalid JSON response from API.'];
-            }
-
-            if (isset($decoded['succeeded']) && 1 !== $decoded['succeeded']) {
-                $errorMessage = $decoded['error'] ?? 'Invalid API Key.';
-
-                return ['error' => true, 'message' => $errorMessage];
-            }
-
-            return $decoded;
+            return $this->decodeResponse($response->getBody()->getContents());
         } catch (RequestException $e) {
-            $message = 'API request failed.';
-
-            if ($e->hasResponse()) {
-                $statusCode = $e->getResponse()->getStatusCode();
-                $reason = $e->getResponse()->getReasonPhrase();
-                $message = \sprintf('API request failed with status %d: %s', $statusCode, $reason);
-            }
-
-            return ['error' => true, 'message' => $message];
+            return $this->requestError($e);
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function decodeResponse(string $contents): array
+    {
+        $decoded = json_decode($contents, true);
+
+        if (\JSON_ERROR_NONE !== json_last_error() || !\is_array($decoded)) {
+            return ['error' => true, 'message' => 'Invalid JSON response from API.'];
+        }
+
+        if (isset($decoded['succeeded']) && 1 !== $decoded['succeeded']) {
+            return ['error' => true, 'message' => $decoded['error'] ?? 'Invalid API Key.'];
+        }
+
+        return $decoded;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestError(RequestException $e): array
+    {
+        if ($e->hasResponse()) {
+            $statusCode = $e->getResponse()->getStatusCode();
+            $reason = $e->getResponse()->getReasonPhrase();
+
+            return ['error' => true, 'message' => \sprintf('API request failed with status %d: %s', $statusCode, $reason)];
+        }
+
+        return ['error' => true, 'message' => 'API request failed.'];
     }
 }

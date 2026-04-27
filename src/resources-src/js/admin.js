@@ -57,6 +57,8 @@
                     }
                     const ok = !(response.error || (response.succeeded && parseInt(response.succeeded) !== 1));
                     if (ok) {
+                        var product = response.product != null ? String(response.product) : '';
+                        setV1FieldsVisible(product.startsWith('1'));
                         setStatus(true, Craft.t('weglot', 'Success! The API key is valid.'));
                         if (apiKeyField) {
                             apiKeyField.classList.add('is-valid');
@@ -82,9 +84,16 @@
             );
         });
     }
+    function setV1FieldsVisible(show) {
+        var container = document.querySelector('[data-weglot-v1-fields]');
+        if (!container) return;
+        container.style.display = show ? '' : 'none';
+    }
+
     if (apiKeyInput) {
         apiKeyInput.addEventListener('input', function() {
             isValid = null; clearStatus(); updateSaveDisabled();
+            setV1FieldsVisible(false);
         });
     }
     document.addEventListener('focusout', function(e) {
@@ -232,11 +241,56 @@
         document.addEventListener('keydown', escapeHandler);
     }
 
+    function initResetModal() {
+        var btn = document.querySelector('[data-weglot-reset-btn]');
+        var modal = document.querySelector('[data-weglot-reset-modal]');
+        if (!btn || !modal) { return; }
+
+        var confirmBtn = modal.querySelector('[data-weglot-reset-confirm]');
+        var cancelBtn = modal.querySelector('[data-weglot-reset-cancel]');
+        var errorEl = modal.querySelector('[data-weglot-reset-error]');
+
+        function openModal() {
+            modal.classList.remove('weglot-reset-modal--hidden');
+            if (errorEl) { errorEl.classList.add('weglot-reset-modal--hidden'); }
+        }
+        function closeModal() {
+            modal.classList.add('weglot-reset-modal--hidden');
+        }
+
+        btn.addEventListener('click', openModal);
+        if (cancelBtn) { cancelBtn.addEventListener('click', closeModal); }
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) { closeModal(); }
+        });
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = Craft.t('weglot', 'Resetting…');
+
+                Craft.postActionRequest('weglot/api/reset-settings', {}, function(response, textStatus) {
+                    if (textStatus === 'success' && response.success) {
+                        window.location.reload();
+                    } else {
+                        if (errorEl) {
+                            errorEl.textContent = Craft.t('weglot', 'An error occurred. Please try again.');
+                            errorEl.classList.remove('weglot-reset-modal--hidden');
+                        }
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = Craft.t('weglot', 'Yes, reset');
+                    }
+                });
+            });
+        }
+    }
+
     function init() {
         initDestinationSelectize();
 
         setTimeout(function() {
             initFirstSettingsPopup();
+            initResetModal();
         }, 100);
     }
 
