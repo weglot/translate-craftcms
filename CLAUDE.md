@@ -315,3 +315,10 @@ Files follow PSR-4: namespace hierarchy maps directly to directory structure und
 Vite entry points in `src/resources-src/js/` and `src/resources-src/scss/`. Compiled output in `src/resources/`. The `AdminAsset` class (extends `\craft\web\AssetBundle`) registers compiled files with the Craft control panel.
 
 Language switcher and Weglot JS are loaded from the Weglot CDN at runtime — they are not part of the Vite build.
+
+### Rules
+
+- **No inline JS or CSS in Twig templates** — all JavaScript goes in `admin.js`, all styles go in `admin.scss`. Twig templates must contain only HTML markup.
+- Pass server-side values (action URLs, CSRF tokens, translated strings) to JS via `data-*` attributes on HTML elements — never embed them in `<script>` blocks or inline `style=""` attributes.
+- Use `Craft.postActionRequest()` for admin API calls — it handles CSRF automatically.
+- Use `Craft.t('weglot', '...')` for translated strings in JS — never hardcode UI text.
