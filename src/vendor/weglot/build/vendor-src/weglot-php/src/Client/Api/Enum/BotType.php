@@ -9,12 +9,12 @@ namespace Weglot\Vendor\Weglot\Client\Api\Enum;
  */
 abstract class BotType
 {
-    const HUMAN = 0;
-    const OTHER = 1;
-    const GOOGLE = 2;
-    const BING = 3;
-    const YAHOO = 4;
-    const BAIDU = 5;
-    const YANDEX = 6;
-    const WGVE = 7;
+    public const HUMAN = 0;
+    public const OTHER = 1;
+    public const GOOGLE = 2;
+    public const BING = 3;
+    public const YAHOO = 4;
+    public const BAIDU = 5;
+    public const YANDEX = 6;
+    public const WGVE = 7;
 }

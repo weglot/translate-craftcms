@@ -8,7 +8,7 @@ namespace Weglot\Vendor\Weglot\Util;
  */
 abstract class SourceType
 {
-    const SOURCE_HTML = 'HTML';
-    const SOURCE_JSON = 'JSON';
-    const SOURCE_TEXT = 'TEXT';
+    public const SOURCE_HTML = 'HTML';
+    public const SOURCE_JSON = 'JSON';
+    public const SOURCE_TEXT = 'TEXT';
 }

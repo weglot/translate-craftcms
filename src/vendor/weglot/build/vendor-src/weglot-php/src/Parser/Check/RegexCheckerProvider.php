@@ -8,7 +8,7 @@ use Weglot\Vendor\Weglot\Parser\Parser;
 use Weglot\Vendor\Weglot\Util\SourceType;
 class RegexCheckerProvider
 {
-    const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Parser\Check\Regex\\';
+    public const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Parser\Check\Regex\\';
     /**
      * @var Parser
      */
@@ -68,10 +68,8 @@ class RegexCheckerProvider
     }
     /**
      * Load default checkers.
-     *
-     * @return void
      */
-    protected function loadDefaultCheckers()
+    protected function loadDefaultCheckers(): void
     {
         $jsonKeys = ['description', 'name', 'headline', 'articleSection', 'text'];
         // Dynamically extend keys for WordPress

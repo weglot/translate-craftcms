@@ -5,9 +5,9 @@ namespace Weglot\Vendor\Weglot\Parser\Check\Dom;
 use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 class IframeSrc extends AbstractDomChecker
 {
-    const DOM = 'iframe';
-    const PROPERTY = 'src';
-    const WORD_TYPE = WordType::EXTERNAL_LINK;
+    public const DOM = 'iframe';
+    public const PROPERTY = 'src';
+    public const WORD_TYPE = WordType::EXTERNAL_LINK;
     protected function check()
     {
         $boolean = \false;
@@ -16,8 +16,7 @@ class IframeSrc extends AbstractDomChecker
         $server_host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : null;
         if (isset($server_host) && isset($parsed_url['host']) && str_replace('www.', '', $parsed_url['host']) !== str_replace('www.', '', $server_host)) {
             return \true;
-        } else {
-            return \false;
         }
+        return \false;
     }
 }

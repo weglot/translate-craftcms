@@ -42,10 +42,7 @@ class ParserTest extends TestCase
         $this->client = new Client($_ENV['WG_API_KEY'], 1, 1);
         $this->client->setOptions(['host' => 'https://api.weglot.dev']);
     }
-    /**
-     * @return void
-     */
-    public function testTranslateManual()
+    public function testTranslateManual(): void
     {
         // Parser
         $this->parser = new Parser($this->client, $this->config['manual']);
@@ -53,10 +50,7 @@ class ParserTest extends TestCase
         $translatedContent = $this->parser->translate($this->_getContent($this->url), 'en', 'de');
         $this->assertIsString($translatedContent);
     }
-    /**
-     * @return void
-     */
-    public function testTranslateServer()
+    public function testTranslateServer(): void
     {
         // Parser
         $this->parser = new Parser($this->client, $this->config['server']);
@@ -64,34 +58,23 @@ class ParserTest extends TestCase
         $translatedContent = $this->parser->translate($this->_getContent($this->url), 'en', 'de');
         $this->assertTrue(\is_string($translatedContent));
     }
-    /**
-     * @return void
-     */
-    public function testParserEngine1NodeSplit()
+    public function testParserEngine1NodeSplit(): void
     {
         $this->_parserEngineNodeSplit('cases-v1', 1);
     }
-    /**
-     * @return void
-     */
-    public function testParserEngine2NodeSplit()
+    public function testParserEngine2NodeSplit(): void
     {
         $this->_parserEngineNodeSplit('cases-v2-php', 2);
     }
-    /**
-     * @return void
-     */
-    public function testParserEngine3NodeSplit()
+    public function testParserEngine3NodeSplit(): void
     {
         $this->_parserEngineNodeSplit('cases-v3', 3);
     }
     /**
      * @param string $case
      * @param int    $version
-     *
-     * @return void
      */
-    public function _parserEngineNodeSplit($case, $version)
+    public function _parserEngineNodeSplit($case, $version): void
     {
         $cases = $this->loadJSON($case);
         foreach ($cases as $test) {

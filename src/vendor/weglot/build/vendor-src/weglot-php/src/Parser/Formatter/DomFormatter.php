@@ -36,16 +36,34 @@ if (!\function_exists('array_column') && !\function_exists('Weglot\Vendor\array_
 }
 class DomFormatter extends AbstractFormatter
 {
-    public function handle(array $nodes, &$index)
+    private ?array $originalWords = null;
+    private ?array $translatedWords = null;
+    /**
+     * @return $this
+     */
+    public function setTranslated(\Weglot\Vendor\Weglot\Client\Api\TranslateEntry $translated)
+    {
+        $this->translated = $translated;
+        $this->originalWords = null;
+        $this->translatedWords = null;
+        return $this;
+    }
+    public function handle(array $nodes, &$index): void
     {
         $translatable_attributes = $this->getTranslatableAttributes();
-        $original_words = array_column($this->getTranslated()->getInputWords()->jsonSerialize(), 'w');
-        $translated_words = array_column($this->getTranslated()->getOutputWords()->jsonSerialize(), 'w');
+        if (null === $this->originalWords) {
+            $this->originalWords = array_column($this->getTranslated()->getInputWords()->jsonSerialize(), 'w');
+        }
+        if (null === $this->translatedWords) {
+            $this->translatedWords = array_column($this->getTranslated()->getOutputWords()->jsonSerialize(), 'w');
+        }
+        $originalWords = $this->originalWords;
+        $translatedWords = $this->translatedWords;
         for ($i = 0; $i < \count($nodes); ++$i) {
             $currentNode = $nodes[$i];
-            if (null !== $translated_words[$i + $index]) {
-                $currentTranslated = $translated_words[$i + $index];
-                $this->metaContent($currentNode, $currentTranslated, $translatable_attributes, $original_words, $translated_words);
+            $currentTranslated = $translatedWords[$i + $index] ?? null;
+            if (null !== $currentTranslated) {
+                $this->metaContent($currentNode, $currentTranslated, $translatable_attributes, $originalWords, $translatedWords);
                 $this->imageSource($currentNode, $currentTranslated, $i);
             }
         }
@@ -54,12 +72,10 @@ class DomFormatter extends AbstractFormatter
     /**
      * @param string $translated
      * @param array  $translatable_attributes
-     * @param array  $original_words
-     * @param array  $translated_words
-     *
-     * @return void
+     * @param array  $originalWords
+     * @param array  $translatedWords
      */
-    protected function metaContent(array $details, $translated, $translatable_attributes, $original_words, $translated_words)
+    protected function metaContent(array $details, $translated, $translatable_attributes, $originalWords, $translatedWords): void
     {
         $property = $details['property'];
         if ($details['class']::ESCAPE_SPECIAL_CHAR) {
@@ -72,9 +88,9 @@ class DomFormatter extends AbstractFormatter
                 $attributeString = '';
                 foreach ($attributes as $key => $attribute) {
                     if (\in_array($key, $translatable_attributes)) {
-                        $pos = array_search($attribute, $original_words);
+                        $pos = array_search($attribute, $originalWords);
                         if (\false !== $pos) {
-                            $attribute = $translated_words[$pos];
+                            $attribute = $translatedWords[$pos];
                         }
                     }
                     $attributeString .= $key . '="' . $attribute . '" ';
@@ -88,20 +104,19 @@ class DomFormatter extends AbstractFormatter
     /**
      * @param string $translated
      * @param int    $index
-     *
-     * @return void
      */
-    protected function imageSource(array $details, $translated, $index)
+    protected function imageSource(array $details, $translated, $index): void
     {
         $words = $this->getTranslated()->getInputWords();
+        $word = $words[$index] ?? null;
         if ('\Weglot\Parser\Check\Dom\ImageSource' === $details['class']) {
-            if ($details['node']->hasAttribute('srcset') && '' != $details['node']->srcset && $translated != $words[$index]->getWord()) {
+            if ($details['node']->hasAttribute('srcset') && '' != $details['node']->srcset && null !== $word && $translated != $word->getWord()) {
                 $details['node']->srcset = '';
             }
         }
         if ('\Weglot\Parser\Check\Dom\ImageDataSource' === $details['class']) {
             $dataSrcSet = 'data-srcset';
-            if ($details['node']->hasAttribute('data-srcset') && $details['node']->{$dataSrcSet} != '' && $translated != $words[$index]->getWord()) {
+            if ($details['node']->hasAttribute('data-srcset') && $details['node']->{$dataSrcSet} != '' && null !== $word && $translated != $word->getWord()) {
                 $details['node']->{$dataSrcSet} = '';
             }
         }

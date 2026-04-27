@@ -7,6 +7,9 @@ use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use Weglot\Vendor\Weglot\Util\Regex;
 use Weglot\Vendor\Weglot\Util\Regex\RegexEnum;
 use Weglot\Vendor\Weglot\Util\Url;
+/**
+ * @phpstan-import-type ExcludedUrl from Url
+ */
 class UrlTest extends TestCase
 {
     /**
@@ -17,82 +20,55 @@ class UrlTest extends TestCase
     {
         $this->languages = ['en' => new LanguageEntry('en', 'en', 'English', 'English', \false), 'fr' => new LanguageEntry('fr', 'fr', 'French', 'Français', \false), 'es' => new LanguageEntry('es', 'es', 'Spanish', 'Espanol', \false), 'de' => new LanguageEntry('de', 'de', 'German', 'Deutsch', \false), 'kr' => new LanguageEntry('kr', 'kr', 'unknown', 'unknown', \false)];
     }
-    /**
-     * @return void
-     */
-    public function testSimpleUrlDefaultEnWithEsUrl()
+    public function testSimpleUrlDefaultEnWithEsUrl(): void
     {
         $profile = ['url' => 'https://weglot.com/es/pricing', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['de'], $this->languages['es']], 'prefix' => '', 'exclude' => [], 'results' => ['getHost' => 'https://weglot.com', 'getPathPrefix' => '', 'getPath' => '/pricing', 'getCurrentLanguage' => $this->languages['es'], 'detectBaseUrl' => 'https://weglot.com/pricing', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com/fr/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['de'], 'url' => 'https://weglot.com/de/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['es'], 'url' => 'https://weglot.com/es/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testSimpleUrlDefaultFrWithEnUrl()
+    public function testSimpleUrlDefaultFrWithEnUrl(): void
     {
         $profile = ['url' => 'https://www.ratp.fr/en/horaires', 'default' => $this->languages['fr'], 'languages' => [$this->languages['en']], 'prefix' => '', 'exclude' => [], 'results' => ['getHost' => 'https://www.ratp.fr', 'getPathPrefix' => '', 'detectBaseUrl' => 'https://www.ratp.fr/horaires', 'getPath' => '/horaires', 'getCurrentLanguage' => $this->languages['en'], 'getAllUrls' => [['language' => $this->languages['fr'], 'url' => 'https://www.ratp.fr/horaires', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['en'], 'url' => 'https://www.ratp.fr/en/horaires', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testSimpleUrlDefaultFrWithEnUrlAndCustomPort()
+    public function testSimpleUrlDefaultFrWithEnUrlAndCustomPort(): void
     {
         $profile = ['url' => 'https://www.ratp.fr:3000/en/horaires', 'default' => $this->languages['fr'], 'languages' => [$this->languages['en']], 'prefix' => '', 'exclude' => [], 'results' => ['getHost' => 'https://www.ratp.fr:3000', 'getPathPrefix' => '', 'detectBaseUrl' => 'https://www.ratp.fr:3000/horaires', 'getPath' => '/horaires', 'getCurrentLanguage' => $this->languages['en'], 'getAllUrls' => [['language' => $this->languages['fr'], 'url' => 'https://www.ratp.fr:3000/horaires', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['en'], 'url' => 'https://www.ratp.fr:3000/en/horaires', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testSimpleUrlDefaultFrWithFrUrl()
+    public function testSimpleUrlDefaultFrWithFrUrl(): void
     {
         $profile = ['url' => 'https://www.ratp.fr/horaires', 'default' => $this->languages['fr'], 'languages' => [$this->languages['en']], 'prefix' => '', 'exclude' => [], 'results' => ['getHost' => 'https://www.ratp.fr', 'getPathPrefix' => '', 'detectBaseUrl' => 'https://www.ratp.fr/horaires', 'getPath' => '/horaires', 'getCurrentLanguage' => $this->languages['fr'], 'getAllUrls' => [['language' => $this->languages['fr'], 'url' => 'https://www.ratp.fr/horaires', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['en'], 'url' => 'https://www.ratp.fr/en/horaires', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithEsUrlAndPrefix()
+    public function testUrlDefaultEnWithEsUrlAndPrefix(): void
     {
         $profile = ['url' => 'https://weglot.com/web/es/pricing', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['de'], $this->languages['es']], 'prefix' => '/web', 'exclude' => [], 'results' => ['getHost' => 'https://weglot.com', 'getPathPrefix' => '/web', 'getPath' => '/pricing', 'getCurrentLanguage' => $this->languages['es'], 'detectBaseUrl' => 'https://weglot.com/web/pricing', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com/web/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com/web/fr/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['de'], 'url' => 'https://weglot.com/web/de/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['es'], 'url' => 'https://weglot.com/web/es/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithEsUrlAndTrailingSlashAndPrefix()
+    public function testUrlDefaultEnWithEsUrlAndTrailingSlashAndPrefix(): void
     {
         $profile = ['url' => 'http://weglotmultiv2.local/othersite/', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['de'], $this->languages['es']], 'prefix' => '/othersite', 'exclude' => [], 'results' => ['getHost' => 'http://weglotmultiv2.local', 'getPathPrefix' => '/othersite', 'getPath' => '/', 'getCurrentLanguage' => $this->languages['en'], 'detectBaseUrl' => 'http://weglotmultiv2.local/othersite/', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'http://weglotmultiv2.local/othersite/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'http://weglotmultiv2.local/othersite/fr/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['de'], 'url' => 'http://weglotmultiv2.local/othersite/de/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['es'], 'url' => 'http://weglotmultiv2.local/othersite/es/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithEnUrlAndPrefixAsUrl()
+    public function testUrlDefaultEnWithEnUrlAndPrefixAsUrl(): void
     {
         $profile = ['url' => 'https://weglot.com/web', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['de'], $this->languages['es']], 'prefix' => '/web', 'exclude' => [], 'results' => ['getHost' => 'https://weglot.com', 'getPathPrefix' => '/web', 'getPath' => '/', 'getCurrentLanguage' => $this->languages['en'], 'detectBaseUrl' => 'https://weglot.com/web/', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com/web/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com/web/fr/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['de'], 'url' => 'https://weglot.com/web/de/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['es'], 'url' => 'https://weglot.com/web/es/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithEnUrlAndPrefixAsUrlAndCustomPort()
+    public function testUrlDefaultEnWithEnUrlAndPrefixAsUrlAndCustomPort(): void
     {
         $profile = ['url' => 'https://weglot.com:8080/web/es/', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['de'], $this->languages['es']], 'prefix' => '/web', 'exclude' => [], 'results' => ['getHost' => 'https://weglot.com:8080', 'getPathPrefix' => '/web', 'getPath' => '/', 'getCurrentLanguage' => $this->languages['es'], 'detectBaseUrl' => 'https://weglot.com:8080/web/', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com:8080/web/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com:8080/web/fr/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['de'], 'url' => 'https://weglot.com:8080/web/de/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['es'], 'url' => 'https://weglot.com:8080/web/es/', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithFrAndExclude()
+    public function testUrlDefaultEnWithFrAndExclude(): void
     {
         $profile = ['url' => 'https://weglot.com/fr/pricing', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['kr']], 'prefix' => '', 'exclude' => [[new Regex(RegexEnum::MATCH_REGEX, '\/admin\/.*'), null]], 'results' => ['getHost' => 'https://weglot.com', 'getPathPrefix' => '', 'getPath' => '/pricing', 'getCurrentLanguage' => $this->languages['fr'], 'detectBaseUrl' => 'https://weglot.com/pricing', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com/fr/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['kr'], 'url' => 'https://weglot.com/kr/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
@@ -104,10 +80,7 @@ class UrlTest extends TestCase
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithKrAndInverseExclude()
+    public function testUrlDefaultEnWithKrAndInverseExclude(): void
     {
         $profile = ['url' => 'https://weglot.com/kr/pricing', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['kr']], 'prefix' => '', 'exclude' => [[new Regex(RegexEnum::MATCH_REGEX, '^(?!/rgpd-wordpress/?|/optimiser-wordpress/?).*$'), null]], 'results' => ['getHost' => 'https://weglot.com', 'getPathPrefix' => '', 'getPath' => '/pricing', 'getCurrentLanguage' => $this->languages['kr'], 'detectBaseUrl' => 'https://weglot.com/pricing', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com/pricing', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com/fr/pricing', 'excluded' => \true, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['kr'], 'url' => 'https://weglot.com/kr/pricing', 'excluded' => \true, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
@@ -119,10 +92,7 @@ class UrlTest extends TestCase
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testUrlDefaultEnWithFrAndPrefixAndExclude()
+    public function testUrlDefaultEnWithFrAndPrefixAndExclude(): void
     {
         $profile = ['url' => 'https://weglot.com/landing/fr/how-to-manage-your-translations', 'default' => $this->languages['en'], 'languages' => [$this->languages['fr'], $this->languages['kr']], 'prefix' => '/landing', 'exclude' => [[new Regex(RegexEnum::MATCH_REGEX, '\/admin\/.*'), null]], 'results' => ['getHost' => 'https://weglot.com', 'getPathPrefix' => '/landing', 'getPath' => '/how-to-manage-your-translations', 'getCurrentLanguage' => $this->languages['fr'], 'detectBaseUrl' => 'https://weglot.com/landing/how-to-manage-your-translations', 'getAllUrls' => [['language' => $this->languages['en'], 'url' => 'https://weglot.com/landing/how-to-manage-your-translations', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['fr'], 'url' => 'https://weglot.com/landing/fr/how-to-manage-your-translations', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['kr'], 'url' => 'https://weglot.com/landing/kr/how-to-manage-your-translations', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
@@ -134,16 +104,21 @@ class UrlTest extends TestCase
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
-    /**
-     * @return void
-     */
-    public function testSimpleUrlDefaultFrWithEnUrlAndQuery()
+    public function testSimpleUrlDefaultFrWithEnUrlAndQuery(): void
     {
         $profile = ['url' => 'https://www.ratp.fr/en/horaires?from=2018-06-04&to=2018-06-05', 'default' => $this->languages['fr'], 'languages' => [$this->languages['en']], 'prefix' => '', 'exclude' => [], 'results' => ['getHost' => 'https://www.ratp.fr', 'getPathPrefix' => '', 'detectBaseUrl' => 'https://www.ratp.fr/horaires?from=2018-06-04&to=2018-06-05', 'getPath' => '/horaires', 'getCurrentLanguage' => $this->languages['en'], 'getAllUrls' => [['language' => $this->languages['fr'], 'url' => 'https://www.ratp.fr/horaires?from=2018-06-04&to=2018-06-05', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true], ['language' => $this->languages['en'], 'url' => 'https://www.ratp.fr/en/horaires?from=2018-06-04&to=2018-06-05', 'excluded' => \false, 'exclusion_behavior' => 'NOT_TRANSLATED', 'language_button_displayed' => \true]]]];
         $url = $this->_urlInstance($profile);
         $this->_checkResults($url, $profile);
     }
     /**
+     * @param array{
+     *     url: string,
+     *     default: LanguageEntry,
+     *     languages: array<LanguageEntry>,
+     *     prefix: string|null,
+     *     exclude: array<ExcludedUrl>,
+     * } $profile
+     *
      * @return Url
      */
     protected function _urlInstance(array $profile)
@@ -151,6 +126,8 @@ class UrlTest extends TestCase
         return new Url($profile['url'], $profile['default'], $profile['languages'], $profile['prefix'], $profile['exclude'], []);
     }
     /**
+     * @param array<array{url: string, language: LanguageEntry}> $currentRequestAllUrls
+     *
      * @return string
      */
     protected function _generateHrefLangs(array $currentRequestAllUrls)
@@ -161,10 +138,7 @@ class UrlTest extends TestCase
         }
         return $render;
     }
-    /**
-     * @return void
-     */
-    protected function _checkResults(Url $url, array $profile)
+    protected function _checkResults(Url $url, array $profile): void
     {
         $this->assertEquals($profile['results']['detectBaseUrl'], $url->detectUrlDetails());
         $this->assertEquals($profile['results']['getHost'], $url->getHost());

@@ -51,9 +51,9 @@ class Parser
     /**
      * Attribute to match in DOM when we don't want to translate innertext & childs.
      */
-    const ATTRIBUTE_NO_TRANSLATE = 'data-wg-notranslate';
-    const ATTRIBUTE_TRANSLATE = 'data-wg-translate';
-    const ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS = 'data-wg-translate-inside-blocks';
+    public const ATTRIBUTE_NO_TRANSLATE = 'data-wg-notranslate';
+    public const ATTRIBUTE_TRANSLATE = 'data-wg-translate';
+    public const ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS = 'data-wg-translate-inside-blocks';
     /**
      * @var Client
      */
@@ -63,15 +63,15 @@ class Parser
      */
     protected $configProvider;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $excludeBlocks;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $whiteList;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $translateInsideExclusionsBlocks;
     /**
@@ -102,6 +102,11 @@ class Parser
      * @var IgnoredNodes
      */
     protected $ignoredNodesFormatter;
+    /**
+     * @param array<string> $excludeBlocks
+     * @param array<string> $whiteList
+     * @param array<string> $translateInsideExclusionsBlocks
+     */
     public function __construct(Client $client, ConfigProviderInterface $config, array $excludeBlocks = [], array $customSwitchers = [], array $whiteList = [], array $translateInsideExclusionsBlocks = [])
     {
         $this->setClient($client)->setConfigProvider($config)->setExcludeBlocks($excludeBlocks)->setWhiteList($whiteList)->setTranslateInsideExclusionsBlocks($translateInsideExclusionsBlocks)->setCustomSwitchers($customSwitchers)->setWords(new WordCollection())->setDomCheckerProvider(new DomCheckerProvider($this, $client->getProfile()->getTranslationEngine()))->setRegexCheckerProvider(new RegexCheckerProvider($this))->setIgnoredNodesFormatter(new IgnoredNodes());
@@ -122,6 +127,8 @@ class Parser
         return $this->client;
     }
     /**
+     * @param array<string> $excludeBlocks
+     *
      * @return $this
      */
     public function setExcludeBlocks(array $excludeBlocks)
@@ -130,13 +137,15 @@ class Parser
         return $this;
     }
     /**
-     * @return array
+     * @return array<string>
      */
     public function getExcludeBlocks()
     {
         return $this->excludeBlocks;
     }
     /**
+     * @param array<string> $whiteList
+     *
      * @return $this
      */
     public function setWhiteList(array $whiteList)
@@ -145,20 +154,22 @@ class Parser
         return $this;
     }
     /**
-     * @return array
+     * @return array<string>
      */
     public function getWhiteList()
     {
         return $this->whiteList;
     }
     /**
-     * @return array
+     * @return array<string>
      */
     public function getTranslateInsideExclusionsBlocks()
     {
         return $this->translateInsideExclusionsBlocks;
     }
     /**
+     * @param array<string> $translateInsideExclusionsBlocks
+     *
      * @return $this
      */
     public function setTranslateInsideExclusionsBlocks(array $translateInsideExclusionsBlocks)
@@ -481,7 +492,10 @@ class Parser
             return $source;
         }
         if (SourceType::SOURCE_TEXT === $tree['type']) {
-            $source = str_replace($tree['text'], $translateEntry->getOutputWords()[$index]->getWord(), $source);
+            $outputWord = $translateEntry->getOutputWords()[$index] ?? null;
+            if (null !== $outputWord) {
+                $source = str_replace($tree['text'], $outputWord->getWord(), $source);
+            }
             ++$index;
         }
         if (SourceType::SOURCE_JSON === $tree['type']) {

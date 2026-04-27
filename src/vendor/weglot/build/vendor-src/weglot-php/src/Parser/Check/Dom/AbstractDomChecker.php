@@ -13,25 +13,25 @@ abstract class AbstractDomChecker
      *
      * @var string
      */
-    const DOM = '';
+    public const DOM = '';
     /**
      * DOM property to get.
      *
      * @var string
      */
-    const PROPERTY = '';
+    public const PROPERTY = '';
     /**
      * Type of content returned by DOM property.
      *
      * @var int
      */
-    const WORD_TYPE = WordType::TEXT;
+    public const WORD_TYPE = WordType::TEXT;
     /**
      * Need to escape DOM attribute.
      *
      * @var bool
      */
-    const ESCAPE_SPECIAL_CHAR = \false;
+    public const ESCAPE_SPECIAL_CHAR = \false;
     /**
      * @var simple_html_dom_node
      */
@@ -95,9 +95,8 @@ abstract class AbstractDomChecker
         // we check if we're on wg-mode-whitelist
         if ($this->node->hasAncestorAttribute('wg-mode-whitelist')) {
             return '' != Text::fullTrim($this->node->{$property}) && $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE);
-        } else {
-            return '' != Text::fullTrim($this->node->{$property}) && (!$this->node->hasAncestorAttribute(Parser::ATTRIBUTE_NO_TRANSLATE) || $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS));
         }
+        return '' != Text::fullTrim($this->node->{$property}) && (!$this->node->hasAncestorAttribute(Parser::ATTRIBUTE_NO_TRANSLATE) || $this->node->hasAncestorAttribute(Parser::ATTRIBUTE_TRANSLATE_INSIDE_BLOCKS));
     }
     /**
      * @return bool

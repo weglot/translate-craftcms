@@ -2,6 +2,7 @@
 
 namespace Weglot\Vendor\Weglot\Util;
 
+use Weglot\Vendor\Jaybizzle\CrawlerDetect\CrawlerDetect;
 use Weglot\Vendor\Weglot\Client\Api\Enum\BotType;
 class Server
 {
@@ -41,31 +42,30 @@ class Server
     public static function detectBot(array $server)
     {
         $userAgent = self::getUserAgent($server);
-        if (\is_string($userAgent) && !empty($userAgent) && preg_match('/bot|favicon|crawl|facebook|slurp|spider/i', $userAgent)) {
-            $checkBotAgent = \true;
-        } else {
-            $checkBotAgent = \false;
-        }
-        $checkBotGoogle = Text::contains($userAgent, 'Google') || Text::contains($userAgent, 'facebook') || Text::contains($userAgent, 'wprocketbot') || Text::contains($userAgent, 'Ahrefs') || Text::contains($userAgent, 'SemrushBot');
-        if (null !== $userAgent && !$checkBotAgent) {
+        if (null === $userAgent) {
             return BotType::HUMAN;
         }
-        if (null !== $userAgent && $checkBotAgent && $checkBotGoogle) {
+        if (str_contains($userAgent, 'wprocketbot')) {
             return BotType::GOOGLE;
         }
-        foreach (self::otherBotAgents() as $agent => $agentBot) {
-            if (null !== $userAgent && $checkBotAgent && !$checkBotGoogle && Text::contains($userAgent, $agent)) {
-                return $agentBot;
-            }
+        $crawlerDetect = new CrawlerDetect();
+        if (!$crawlerDetect->isCrawler($userAgent)) {
+            return BotType::HUMAN;
+        }
+        $lowerUserAgent = strtolower($userAgent);
+        switch (\true) {
+            case str_contains($lowerUserAgent, 'google'):
+                return BotType::GOOGLE;
+            case str_contains($lowerUserAgent, 'bing'):
+                return BotType::BING;
+            case str_contains($lowerUserAgent, 'yahoo'):
+                return BotType::YAHOO;
+            case str_contains($lowerUserAgent, 'baidu'):
+                return BotType::BAIDU;
+            case str_contains($lowerUserAgent, 'yandex'):
+                return BotType::YANDEX;
         }
         return BotType::OTHER;
-    }
-    /**
-     * @return array
-     */
-    private static function otherBotAgents()
-    {
-        return ['bing' => BotType::BING, 'yahoo' => BotType::YAHOO, 'Baidu' => BotType::BAIDU, 'Yandex' => BotType::YANDEX];
     }
     /**
      * @return bool

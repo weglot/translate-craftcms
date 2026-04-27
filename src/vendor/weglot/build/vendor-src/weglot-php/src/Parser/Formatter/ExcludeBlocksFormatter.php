@@ -11,22 +11,22 @@ class ExcludeBlocksFormatter
      */
     protected $dom;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $excludeBlocks;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $whiteList;
     /**
-     * @var array
+     * @var array<string>
      */
     protected $translateInsideExclusionsBlocks;
     /**
      * @param simple_html_dom $dom
-     * @param array           $excludeBlocks
-     * @param array           $whiteList
-     * @param array           $translateInsideExclusionsBlocks
+     * @param array<string>   $excludeBlocks
+     * @param array<string>   $whiteList
+     * @param array<string>   $translateInsideExclusionsBlocks
      */
     public function __construct($dom, $excludeBlocks, $whiteList = [], $translateInsideExclusionsBlocks = [])
     {
@@ -49,6 +49,8 @@ class ExcludeBlocksFormatter
         return $this->dom;
     }
     /**
+     * @param array<string> $excludeBlocks
+     *
      * @return $this
      */
     public function setExcludeBlocks(array $excludeBlocks)
@@ -57,13 +59,15 @@ class ExcludeBlocksFormatter
         return $this;
     }
     /**
-     * @return array
+     * @return array<string>
      */
     public function getExcludeBlocks()
     {
         return $this->excludeBlocks;
     }
     /**
+     * @param array<string> $whiteList
+     *
      * @return $this
      */
     public function setWhiteList(array $whiteList)
@@ -72,20 +76,22 @@ class ExcludeBlocksFormatter
         return $this;
     }
     /**
-     * @return array
+     * @return array<string>
      */
     public function getWhiteList()
     {
         return $this->whiteList;
     }
     /**
-     * @return array
+     * @return array<string>
      */
     public function getTranslateInsideExclusionsBlocks()
     {
         return $this->translateInsideExclusionsBlocks;
     }
     /**
+     * @param array<string> $translateInsideExclusionsBlocks
+     *
      * @return $this
      */
     public function setTranslateInsideExclusionsBlocks(array $translateInsideExclusionsBlocks)
@@ -97,10 +103,8 @@ class ExcludeBlocksFormatter
      * Add ATTRIBUTE_NO_TRANSLATE to dom elements that don't
      * want to be translated or ATTRIBUTE_TRANSLATE if on mode
      * wg-mode-whitelist.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         if (!empty($this->whiteList)) {
             foreach ($this->whiteList as $exception) {

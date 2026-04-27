@@ -15,7 +15,7 @@ class Client
      *
      * @var string
      */
-    const VERSION = '0.5.11';
+    public const VERSION = '0.5.11';
     /**
      * Weglot API Key.
      *
@@ -63,10 +63,8 @@ class Client
     }
     /**
      * Creating Guzzle HTTP connector based on $options.
-     *
-     * @return void
      */
-    protected function setupConnector()
+    protected function setupConnector(): void
     {
         $this->httpClient = new CurlClient();
     }
@@ -95,6 +93,17 @@ class Client
     {
         // merging default options with user options
         $this->options = array_merge($this->defaultOptions(), $options);
+        return $this;
+    }
+    /**
+     * @param string $key
+     * @param mixed  $value
+     *
+     * @return $this
+     */
+    public function setOption($key, $value)
+    {
+        $this->options[$key] = $value;
         return $this;
     }
     /**
@@ -207,6 +216,9 @@ class Client
                 $body = [];
             } else {
                 $urlParams = ['api_key' => $this->apiKey, 'v' => $this->version];
+                if (isset($this->options['live']) && $this->options['live']) {
+                    $urlParams['live'] = 1;
+                }
             }
             // Check JSON encoding validity before make API call
             $jsonBody = json_encode($body);
@@ -218,7 +230,8 @@ class Client
                     throw new \Exception('JSON encoding error: ' . json_last_error_msg());
                 }
             }
-            list($rawBody, $httpStatusCode, $httpHeader) = $this->getHttpClient()->request($method, $this->makeAbsUrl($endpoint), $urlParams, $body);
+            $absoluteUrl = $this->makeAbsUrl($endpoint);
+            list($rawBody, $httpStatusCode, $httpHeader) = $this->getHttpClient()->request($method, $absoluteUrl, $urlParams, $body);
         } catch (\Exception $e) {
             throw new ApiError($e->getMessage(), $body);
         }

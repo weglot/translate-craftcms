@@ -23,10 +23,8 @@ class Profile
     /**
      * @param string $apiKey
      * @param int    $translationEngine
-     *
-     * @return void
      */
-    protected function setup($apiKey, $translationEngine)
+    protected function setup($apiKey, $translationEngine): void
     {
         $apiKeyLength = \strlen($apiKey);
         if (35 === $apiKeyLength) {

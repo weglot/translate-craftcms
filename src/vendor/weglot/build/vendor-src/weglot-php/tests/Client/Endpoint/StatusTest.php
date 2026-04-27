@@ -26,17 +26,11 @@ class StatusTest extends TestCase
         }
         $this->status = new Status($this->client);
     }
-    /**
-     * @return void
-     */
-    public function testEndpoint()
+    public function testEndpoint(): void
     {
         $this->assertTrue($this->status->handle(), 'API not reachable');
     }
-    /**
-     * @return void
-     */
-    public function testPath()
+    public function testPath(): void
     {
         $this->assertEquals('/public/status', $this->status->getPath());
     }

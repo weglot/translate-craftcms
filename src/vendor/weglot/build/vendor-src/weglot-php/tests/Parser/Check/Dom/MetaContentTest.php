@@ -39,10 +39,7 @@ class MetaContentTest extends TestCase
         $this->client->setOptions(['host' => 'https://api.weglot.dev']);
         $this->markTestSkipped('TODO');
     }
-    /**
-     * @return void
-     */
-    public function testCheck()
+    public function testCheck(): void
     {
         // Parser
         $this->parser = new Parser($this->client, $this->config);

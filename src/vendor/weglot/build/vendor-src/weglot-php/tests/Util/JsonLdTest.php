@@ -32,18 +32,12 @@ class JsonLdTest extends TestCase
 EOT;
         $this->json = json_decode($raw, \true);
     }
-    /**
-     * @return void
-     */
-    public function testGet()
+    public function testGet(): void
     {
         $this->assertNull(JsonUtil::get($this->json, 'description'));
         $this->assertEquals('John Smith', JsonUtil::get($this->json, 'name'));
     }
-    /**
-     * @return void
-     */
-    public function testAdd()
+    public function testAdd(): void
     {
         $words = new WordCollection();
         $words->addOne(new WordEntry('Une voiture bleue'));
@@ -53,10 +47,7 @@ EOT;
         $this->assertCount(2, $words);
         $this->assertEquals(new WordEntry($value), $words[1]);
     }
-    /**
-     * @return void
-     */
-    public function testSet()
+    public function testSet(): void
     {
         $nextJson = 0;
         $words = new WordCollection();
