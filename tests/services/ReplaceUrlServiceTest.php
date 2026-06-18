@@ -27,7 +27,7 @@ class ReplaceUrlServiceTest extends TestCase
         // Restore the real component so a mock set in one test does not leak.
         // Guarded: setUp() may have thrown before the property was assigned,
         // and PHPUnit still calls tearDown() in that case.
-        if (null !== $this->originalReplaceLinkService) {
+        if ($this->originalReplaceLinkService instanceof ReplaceLinkService) {
             Plugin::getInstance()->set('replaceLinkService', $this->originalReplaceLinkService);
         }
         parent::tearDown();
