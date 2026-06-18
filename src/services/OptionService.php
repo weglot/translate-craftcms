@@ -11,8 +11,10 @@ use GuzzleHttp\Exception\RequestException;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\helpers\HelperFlagType;
 use weglot\craftweglot\Plugin;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use Weglot\Vendor\Weglot\Util\Regex;
 use Weglot\Vendor\Weglot\Util\Regex\RegexEnum;
+use Weglot\Vendor\Weglot\Util\Url;
 
 class OptionService extends Component
 {
@@ -446,6 +448,9 @@ class OptionService extends Component
             $autoRedirect = (bool) ($this->getOption('auto_redirect') ?? $this->getOption('auto_switch') ?? false);
 
             $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
+            $apiKey = trim($pluginSettings->apiKey);
+
+            $sourcePath = $this->resolveSourcePath($requestUrl, $original, $currentLanguage, $apiKey);
 
             $allLanguages = [];
             if (null !== $original) {
@@ -456,69 +461,21 @@ class OptionService extends Component
             }
 
             foreach ($allLanguages as $lang) {
-                $link = $requestUrl->getForLanguage($lang, true);
-                if ('' !== $link) {
-                    try {
-                        if (
-                            null !== $original
-                            && null !== $currentLanguage
-                            && $lang->getInternalCode() === $original->getInternalCode()
-                            && $currentLanguage->getInternalCode() !== $original->getInternalCode()
-                        ) {
-                            $settingsModel = Plugin::getInstance()->getTypedSettings();
-                            $apiKey = trim((string) $settingsModel->apiKey);
+                $link = $this->buildSwitcherLink($requestUrl, $lang, $original, $sourcePath, $apiKey);
 
-                            $fromExternal = strtolower(trim((string) $currentLanguage->getExternalCode())); // ex: fr
-                            if ('' !== $apiKey && '' !== $fromExternal) {
-                                $parsed = parse_url($link);
-                                $path = \is_array($parsed) ? ($parsed['path'] ?? '') : '';
-                                if (\is_string($path) && '' !== $path) {
-                                    $internalPath = ltrim($path, '/'); // ex: blog-fr
-                                    $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
-                                        $apiKey,
-                                        [$fromExternal],
-                                        $fromExternal,
-                                        $internalPath
-                                    );
-
-                                    if (null !== $rewritten && $rewritten !== $internalPath) {
-                                        $newPath = '/'.ltrim($rewritten, '/');
-
-                                        $rebuilt = $newPath;
-                                        if (\is_array($parsed) && isset($parsed['scheme'], $parsed['host'])) {
-                                            $rebuilt = $parsed['scheme'].'://'.$parsed['host']
-                                                       .(isset($parsed['port']) ? ':'.$parsed['port'] : '')
-                                                       .$newPath
-                                                       .(isset($parsed['query']) && '' !== $parsed['query'] ? '?'.$parsed['query'] : '')
-                                                       .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
-                                        } elseif (\is_array($parsed)) {
-                                            $rebuilt = $newPath
-                                                       .(isset($parsed['query']) && '' !== $parsed['query'] ? '?'.$parsed['query'] : '')
-                                                       .(isset($parsed['fragment']) && '' !== $parsed['fragment'] ? '#'.$parsed['fragment'] : '');
-                                        }
-
-                                        $link = $rebuilt;
-                                    }
-                                }
-                            }
-                        }
-                    } catch (\Throwable) {
-                        // silent
+                if ($autoRedirect && null !== $original) {
+                    $isOrig = ($lang->getInternalCode() === $original->getInternalCode()) ? 'true' : 'false';
+                    if (str_contains($link, '?')) {
+                        $link = str_replace('?', "?wg-choose-original=$isOrig&", $link);
+                    } else {
+                        $link .= "?wg-choose-original=$isOrig";
                     }
-
-                    if ($autoRedirect && null !== $original) {
-                        $isOrig = ($lang->getInternalCode() === $original->getInternalCode()) ? 'true' : 'false';
-                        if (str_contains($link, '?')) {
-                            $link = str_replace('?', "?wg-choose-original=$isOrig&", $link);
-                        } else {
-                            $link .= "?wg-choose-original=$isOrig";
-                        }
-                    }
-                    $settings['switcher_links'][$lang->getInternalCode()] = $link;
                 }
+
+                $settings['switcher_links'][$lang->getInternalCode()] = $link;
             }
 
-            $settings['original_path'] = $requestUrl->getPath();
+            $settings['original_path'] = $sourcePath;
         } catch (\Throwable) {
         }
 
@@ -536,6 +493,115 @@ class OptionService extends Component
         $json = Json::htmlEncode($settings);
         $html = '<script type="application/json" id="weglot-data">'.$json.'</script>';
         \Craft::$app->getView()->registerHtml($html, View::POS_HEAD);
+    }
+
+    /**
+     * Resolve the canonical source-language path for the current request.
+     *
+     * The Weglot Url object only strips the language prefix, so on a translated
+     * page its path is the translated slug. When the current language is not the
+     * source one, the slug is reverse-mapped back to its source form so that both
+     * `original_path` and every switcher link start from the source slug.
+     */
+    private function resolveSourcePath(Url $requestUrl, ?LanguageEntry $original, ?LanguageEntry $currentLanguage, string $apiKey): string
+    {
+        $currentPath = $requestUrl->getPath();
+        if (!\is_string($currentPath) || '' === $currentPath) {
+            $currentPath = '/';
+        }
+
+        if (
+            '' === $apiKey
+            || !$original instanceof LanguageEntry
+            || !$currentLanguage instanceof LanguageEntry
+            || $currentLanguage->getInternalCode() === $original->getInternalCode()
+        ) {
+            return $currentPath;
+        }
+
+        $fromExternal = strtolower(trim($currentLanguage->getExternalCode()));
+        $internalPath = ltrim($currentPath, '/');
+        if ('' === $fromExternal || '' === $internalPath) {
+            return $currentPath;
+        }
+
+        $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
+            $apiKey,
+            [$fromExternal],
+            $fromExternal,
+            $internalPath
+        );
+
+        if (null === $rewritten || '' === $rewritten) {
+            return $currentPath;
+        }
+
+        return '/'.ltrim($rewritten, '/');
+    }
+
+    /**
+     * Build the switcher link for a single language, always starting from the
+     * source-language path so cross-language links use the correct per-language slug.
+     */
+    private function buildSwitcherLink(Url $requestUrl, LanguageEntry $lang, ?LanguageEntry $original, string $sourcePath, string $apiKey): string
+    {
+        $isOriginal = $original instanceof LanguageEntry && $lang->getInternalCode() === $original->getInternalCode();
+
+        if ($isOriginal) {
+            $path = $sourcePath;
+        } else {
+            $externalCode = strtolower(trim($lang->getExternalCode()));
+            $translatedPath = $this->translateSourcePathForLanguage($sourcePath, $externalCode, $apiKey);
+            $path = '/'.$externalCode.$translatedPath;
+        }
+
+        $link = $requestUrl->getHost().$path;
+
+        $query = $requestUrl->getQuery();
+        if (null !== $query && '' !== $query) {
+            $link .= '?'.$query;
+        }
+
+        $fragment = $requestUrl->getFragment();
+        if (null !== $fragment && '' !== $fragment) {
+            $link .= '#'.$fragment;
+        }
+
+        return $link;
+    }
+
+    /**
+     * Forward-translate the first segment of the source path into the target language.
+     * Falls back to the untranslated source path when no slug mapping exists.
+     */
+    private function translateSourcePathForLanguage(string $sourcePath, string $externalCode, string $apiKey): string
+    {
+        if ('' === $apiKey || '' === $externalCode) {
+            return $sourcePath;
+        }
+
+        $internalPath = ltrim($sourcePath, '/');
+        if ('' === $internalPath) {
+            return $sourcePath;
+        }
+
+        $segments = explode('/', $internalPath);
+        $first = $segments[0];
+
+        $translated = Plugin::getInstance()->getSlug()->translateSlug(
+            $apiKey,
+            [$externalCode],
+            $externalCode,
+            $first
+        );
+
+        if (null === $translated || '' === $translated) {
+            return $sourcePath;
+        }
+
+        $segments[0] = $translated;
+
+        return '/'.implode('/', $segments);
     }
 
     /**
