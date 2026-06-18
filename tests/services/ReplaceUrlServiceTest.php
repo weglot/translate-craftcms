@@ -6,16 +6,31 @@ namespace weglot\craftweglot\tests\services;
 
 use PHPUnit\Framework\TestCase;
 use weglot\craftweglot\Plugin;
+use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\ReplaceUrlService;
 
 class ReplaceUrlServiceTest extends TestCase
 {
     private ReplaceUrlService $service;
 
+    private ?ReplaceLinkService $originalReplaceLinkService = null;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->originalReplaceLinkService = Plugin::getInstance()->getReplaceLinkService();
         $this->service = new ReplaceUrlService();
+    }
+
+    protected function tearDown(): void
+    {
+        // Restore the real component so a mock set in one test does not leak.
+        // Guarded: setUp() may have thrown before the property was assigned,
+        // and PHPUnit still calls tearDown() in that case.
+        if ($this->originalReplaceLinkService instanceof ReplaceLinkService) {
+            Plugin::getInstance()->set('replaceLinkService', $this->originalReplaceLinkService);
+        }
+        parent::tearDown();
     }
 
     /**
@@ -29,7 +44,7 @@ class ReplaceUrlServiceTest extends TestCase
 
         $result = $this->service->modifyLink($pattern, $translatedPage, $type);
 
-        $this->assertSame($translatedPage, $result);
+        self::assertSame($translatedPage, $result);
     }
 
     /**
@@ -42,16 +57,16 @@ class ReplaceUrlServiceTest extends TestCase
         $type = 'a';
 
         // Mock Plugin ReplaceLinkService behavior
-        $mockReplaceLinkService = $this->createMock(Plugin::getInstance()->getReplaceLinkService()::class);
+        $mockReplaceLinkService = $this->createMock(ReplaceLinkService::class);
         $mockReplaceLinkService->expects($this->once())
                                ->method('replaceA')
                                ->willReturn('<a href="https://example-translated.com">Example</a>');
 
-        Plugin::getInstance()->method('getReplaceLinkService')->willReturn($mockReplaceLinkService);
+        Plugin::getInstance()->set('replaceLinkService', $mockReplaceLinkService);
 
         $result = $this->service->modifyLink($pattern, $translatedPage, $type);
 
-        $this->assertSame('<a href="https://example-translated.com">Example</a>', $result);
+        self::assertSame('<a href="https://example-translated.com">Example</a>', $result);
     }
 
     /**
@@ -66,7 +81,7 @@ class ReplaceUrlServiceTest extends TestCase
 
         $result = $this->service->modifyLink($pattern, $translatedPage, $type);
 
-        $this->assertSame($translatedPage, $result);
+        self::assertSame($translatedPage, $result);
     }
 
     /**
@@ -80,7 +95,7 @@ class ReplaceUrlServiceTest extends TestCase
 
         $result = $this->service->modifyLink($pattern, $translatedPage, $type);
 
-        $this->assertSame($translatedPage, $result);
+        self::assertSame($translatedPage, $result);
     }
 
     /**
@@ -93,15 +108,15 @@ class ReplaceUrlServiceTest extends TestCase
         $type = 'form';
 
         // Mock Plugin ReplaceLinkService behavior
-        $mockReplaceLinkService = $this->createMock(Plugin::getInstance()->getReplaceLinkService()::class);
+        $mockReplaceLinkService = $this->createMock(ReplaceLinkService::class);
         $mockReplaceLinkService->expects($this->once())
                                ->method('replaceForm')
                                ->willReturn('<form action="https://translated.com/process">');
 
-        Plugin::getInstance()->method('getReplaceLinkService')->willReturn($mockReplaceLinkService);
+        Plugin::getInstance()->set('replaceLinkService', $mockReplaceLinkService);
 
         $result = $this->service->modifyLink($pattern, $translatedPage, $type);
 
-        $this->assertSame('<form action="https://translated.com/process">', $result);
+        self::assertSame('<form action="https://translated.com/process">', $result);
     }
 }
