@@ -11,14 +11,14 @@ use weglot\craftweglot\helpers\HelperApi;
 class SlugService extends Component
 {
     /**
-     * @var array<string, array{forward: array<string,string>, reverse: array<string,string>}>|null
+     * @var array<string, array<string, array{forward: array<string,string>, reverse: array<string,string>}>>
      */
-    private ?array $slugsCache = null;
+    private array $slugsCache = [];
 
     /**
-     * @var array<string, array{forward: array<string,string>, reverse: array<string,string>}>|null
+     * @var array<string, array<string, array{forward: array<string,string>, reverse: array<string,string>}>>
      */
-    private ?array $slugsFromApi = null;
+    private array $slugsFromApi = [];
 
     /**
      * @param array<int,string> $destinationLanguages
@@ -27,25 +27,26 @@ class SlugService extends Component
      */
     public function getSlugMapsFromCacheWithApiKey(string $apiKey, array $destinationLanguages): array
     {
-        if (null !== $this->slugsCache) {
-            return $this->slugsCache;
-        }
-
         $destinationLanguages = array_values(array_unique(array_filter(array_map(strtolower(...), $destinationLanguages))));
         sort($destinationLanguages);
+
+        $memoKey = implode(',', $destinationLanguages);
+        if (isset($this->slugsCache[$memoKey])) {
+            return $this->slugsCache[$memoKey];
+        }
 
         $cacheKey = $this->buildSlugsCacheKey($apiKey, $destinationLanguages);
 
         $cached = \Craft::$app->getCache()->get($cacheKey);
         if (\is_array($cached)) {
-            $this->slugsCache = $cached;
+            $this->slugsCache[$memoKey] = $cached;
 
-            return $this->slugsCache;
+            return $cached;
         }
 
         try {
             $maps = $this->getSlugMapsFromApiWithApiKey($apiKey, $destinationLanguages);
-            $this->slugsCache = $maps;
+            $this->slugsCache[$memoKey] = $maps;
 
             $ttl = 0; // à ajuster si tu veux une expiration
             \Craft::$app->getCache()->set($cacheKey, $maps, $ttl);
@@ -65,15 +66,16 @@ class SlugService extends Component
      */
     public function getSlugMapsFromApiWithApiKey(string $apiKey, array $destinationLanguages): array
     {
-        if (null !== $this->slugsFromApi) {
-            return $this->slugsFromApi;
+        $destinationLanguages = array_values(array_unique(array_filter(array_map(strtolower(...), $destinationLanguages))));
+        sort($destinationLanguages);
+
+        if ([] === $destinationLanguages) {
+            return [];
         }
 
-        $destinationLanguages = array_values(array_unique(array_filter(array_map(strtolower(...), $destinationLanguages))));
-        if ([] === $destinationLanguages) {
-            $this->slugsFromApi = [];
-
-            return $this->slugsFromApi;
+        $memoKey = implode(',', $destinationLanguages);
+        if (isset($this->slugsFromApi[$memoKey])) {
+            return $this->slugsFromApi[$memoKey];
         }
 
         $options = \Craft::$app->getCache()->get('weglot_cache_cdn');
@@ -135,7 +137,7 @@ class SlugService extends Component
             }
         }
 
-        $this->slugsFromApi = $out;
+        $this->slugsFromApi[$memoKey] = $out;
 
         return $out;
     }
@@ -171,29 +173,22 @@ class SlugService extends Component
      * @param string            $languageTo            the target language code for the translation
      * @param string            $pathWithoutLangPrefix the path to be processed, without any language prefix
      *
-     * @return string|null the translated redirect path if the first segment is successfully translated, or null if no translation is applicable
+     * @return string|null the translated path when at least one segment is translated, or null when no segment matches a slug mapping
      */
     public function getRedirectPathIfUntranslated(string $apiKey, array $destinationLanguages, string $languageTo, string $pathWithoutLangPrefix): ?string
     {
-        $pathWithoutLangPrefix = ltrim($pathWithoutLangPrefix, '/');
-        if ('' === $pathWithoutLangPrefix) {
+        $languageTo = strtolower(trim($languageTo));
+        if ('' === $languageTo) {
             return null;
         }
 
-        $segments = explode('/', $pathWithoutLangPrefix);
-        $first = $segments[0] ?? '';
-        if ('' === $first) {
+        $maps = $this->getSlugMapsFromCacheWithApiKey($apiKey, $destinationLanguages);
+        $forward = $maps[$languageTo]['forward'] ?? null;
+        if (!\is_array($forward)) {
             return null;
         }
 
-        $translated = $this->translateSlug($apiKey, $destinationLanguages, $languageTo, $first);
-        if (null === $translated) {
-            return null;
-        }
-
-        $segments[0] = $translated;
-
-        return implode('/', $segments);
+        return $this->translatePathSegments($pathWithoutLangPrefix, $forward);
     }
 
     /**
@@ -227,14 +222,7 @@ class SlugService extends Component
     public function getInternalPathIfTranslatedSlug(string $apiKey, array $destinationLanguages, string $languageTo, string $pathWithoutLangPrefix): ?string
     {
         $languageTo = strtolower(trim($languageTo));
-        $pathWithoutLangPrefix = ltrim($pathWithoutLangPrefix, '/');
-        if ('' === $languageTo || '' === $pathWithoutLangPrefix) {
-            return null;
-        }
-
-        $segments = explode('/', $pathWithoutLangPrefix);
-        $first = $segments[0] ?? '';
-        if ('' === $first) {
+        if ('' === $languageTo) {
             return null;
         }
 
@@ -244,12 +232,42 @@ class SlugService extends Component
             return null;
         }
 
-        $original = $reverse[$first] ?? null;
-        if (!\is_string($original) || '' === $original) {
+        return $this->translatePathSegments($pathWithoutLangPrefix, $reverse);
+    }
+
+    /**
+     * Translate every path segment that matches a key in the given slug map.
+     *
+     * Slug maps are keyed by individual slugs (not full paths), so a nested URI
+     * such as `blog/my-article` must be matched segment by segment rather than on
+     * its first segment only.
+     *
+     * @param array<string, string> $map original|translated slug mapping
+     *
+     * @return string|null the rewritten path, or null when no segment matched
+     */
+    private function translatePathSegments(string $pathWithoutLangPrefix, array $map): ?string
+    {
+        $pathWithoutLangPrefix = ltrim($pathWithoutLangPrefix, '/');
+        if ('' === $pathWithoutLangPrefix) {
             return null;
         }
 
-        $segments[0] = $original;
+        $segments = explode('/', $pathWithoutLangPrefix);
+        $changed = false;
+        foreach ($segments as $i => $segment) {
+            if ('' === $segment) {
+                continue;
+            }
+            if (isset($map[$segment]) && '' !== $map[$segment]) {
+                $segments[$i] = $map[$segment];
+                $changed = true;
+            }
+        }
+
+        if (!$changed) {
+            return null;
+        }
 
         return implode('/', $segments);
     }
@@ -290,20 +308,18 @@ class SlugService extends Component
             return $url;
         }
 
-        $segments = explode('/', $after);
-        $first = $segments[0] ?? '';
-        if ('' === $first) {
+        $maps = $this->getSlugMapsFromCacheWithApiKey($apiKey, $destinationLanguages);
+        $forward = $maps[$languageToExternal]['forward'] ?? null;
+        if (!\is_array($forward)) {
             return $url;
         }
 
-        // translateSlug(...) doit exister dans ton SlugService (mapping original => translated)
-        $translated = $this->translateSlug($apiKey, $destinationLanguages, $languageToExternal, $first);
-        if (null === $translated || '' === $translated || $translated === $first) {
+        $translatedAfter = $this->translatePathSegments($after, $forward);
+        if (null === $translatedAfter || '' === $translatedAfter) {
             return $url;
         }
 
-        $segments[0] = $translated;
-        $newPath = $prefix.implode('/', $segments);
+        $newPath = $prefix.$translatedAfter;
 
         if (isset($parsed['scheme'], $parsed['host'])) {
             $rebuilt = $parsed['scheme'].'://'.$parsed['host'];

@@ -37,3 +37,7 @@
 - Improvement: Upgrades craftcms/cms from 5.9.5 to 5.9.15 and removes the thamtech/yii2-ratelimiter-advanced dependency from composer.lock.
 - Improvement: Updates ParserService::getParser() to propagate a sanitized incoming wg-editor-session request header as an outbound editor-session header (when present) and to always include a weglot-integration: Craft CMS Plugin header on Weglot HTTP requests.
 - Improvement: Introduces a large set of new unit tests covering helpers, settings validation, URL eligibility/path rewriting, link replacement, hreflang generation, redirect language selection, slug translation, option parsing/excludes, and translation rendering/error handling; older targeted tests are removed/reworked into broader suites.
+## 1.2.5
+- Fix: Language switcher links and `original_path` in the `weglot-data` payload are now computed from the source-language slug instead of the current translated slug, so every switcher link resolves to the correct per-language URL when browsing a translated page.
+- Fix: Slug translation now matches every path segment against the slug maps instead of only the first one, so nested URLs (e.g. blog articles under `blog/`) are correctly redirected to their translated slug and resolved back to the source entry — fixing missing redirects and 404s on translated article URLs.
+- Fix: In-memory slug-map memoization is now keyed by the requested destination-language set, preventing languages from being dropped within a single request depending on call order.

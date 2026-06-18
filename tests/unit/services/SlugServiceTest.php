@@ -199,4 +199,76 @@ final class SlugServiceTest extends TestCase
         $svc = new SlugService();
         self::assertSame([], $svc->getSlugMapsFromApiWithApiKey('key', []));
     }
+
+    // -------------------------------------------------------------------------
+    // Nested slugs — translatable segment is NOT the first one (blog articles)
+    // -------------------------------------------------------------------------
+
+    /**
+     * Slug maps keyed by the article slug only, served under a structural `blog/`
+     * prefix that has no mapping of its own.
+     *
+     * @return array<string, array{forward: array<string,string>, reverse: array<string,string>}>
+     */
+    private function nestedMaps(): array
+    {
+        return [
+            'fr' => [
+                'forward' => ['article-demo-11-productivite-2' => 'article-de-demonstration-11-productivite-2'],
+                'reverse' => ['article-de-demonstration-11-productivite-2' => 'article-demo-11-productivite-2'],
+            ],
+        ];
+    }
+
+    public function testGetInternalPathTranslatesNestedSlugSegment(): void
+    {
+        $svc = $this->makeSvc($this->nestedMaps());
+        self::assertSame(
+            'blog/article-demo-11-productivite-2',
+            $svc->getInternalPathIfTranslatedSlug('key', ['fr'], 'fr', 'blog/article-de-demonstration-11-productivite-2')
+        );
+    }
+
+    public function testGetRedirectPathTranslatesNestedSlugSegment(): void
+    {
+        $svc = $this->makeSvc($this->nestedMaps());
+        self::assertSame(
+            'blog/article-de-demonstration-11-productivite-2',
+            $svc->getRedirectPathIfUntranslated('key', ['fr'], 'fr', 'blog/article-demo-11-productivite-2')
+        );
+    }
+
+    public function testGetInternalPathReturnsNullWhenNoNestedSegmentMatches(): void
+    {
+        $svc = $this->makeSvc($this->nestedMaps());
+        self::assertNull($svc->getInternalPathIfTranslatedSlug('key', ['fr'], 'fr', 'blog/unknown-article'));
+    }
+
+    public function testGetRedirectPathReturnsNullWhenNoNestedSegmentMatches(): void
+    {
+        $svc = $this->makeSvc($this->nestedMaps());
+        self::assertNull($svc->getRedirectPathIfUntranslated('key', ['fr'], 'fr', 'blog/unknown-article'));
+    }
+
+    public function testTranslateUrlForLanguageTranslatesNestedSlugSegment(): void
+    {
+        $svc = $this->makeSvc($this->nestedMaps());
+        $url = 'https://example.com/fr/blog/article-demo-11-productivite-2';
+        self::assertSame(
+            'https://example.com/fr/blog/article-de-demonstration-11-productivite-2',
+            $svc->translateUrlForLanguage('key', ['fr'], 'fr', $url)
+        );
+    }
+
+    public function testTranslatesEverySegmentThatMatchesAKey(): void
+    {
+        $maps = [
+            'fr' => [
+                'forward' => ['blog' => 'blog-fr', 'article-demo' => 'article-fr'],
+                'reverse' => ['blog-fr' => 'blog', 'article-fr' => 'article-demo'],
+            ],
+        ];
+        $svc = $this->makeSvc($maps);
+        self::assertSame('blog-fr/article-fr', $svc->getRedirectPathIfUntranslated('key', ['fr'], 'fr', 'blog/article-demo'));
+    }
 }

@@ -585,23 +585,18 @@ class OptionService extends Component
             return $sourcePath;
         }
 
-        $segments = explode('/', $internalPath);
-        $first = $segments[0];
-
-        $translated = Plugin::getInstance()->getSlug()->translateSlug(
+        $translated = Plugin::getInstance()->getSlug()->getRedirectPathIfUntranslated(
             $apiKey,
             [$externalCode],
             $externalCode,
-            $first
+            $internalPath
         );
 
         if (null === $translated || '' === $translated) {
             return $sourcePath;
         }
 
-        $segments[0] = $translated;
-
-        return '/'.implode('/', $segments);
+        return '/'.ltrim($translated, '/');
     }
 
     /**
