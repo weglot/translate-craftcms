@@ -29,9 +29,14 @@ composer run phpstan
 
 # Step 3 — rector (no un-applied transformations allowed)
 composer run rector
+
+# Step 4 — dependency security audit
+composer audit
 ```
 
-If any command reports errors, fix them immediately and re-run until all three pass cleanly.
+If any command reports errors, fix them immediately and re-run until all four pass cleanly.
+
+For `composer audit`, report any advisories found. Vulnerabilities in transitive dependencies pinned by `craftcms/cms` (Twig, Symfony, Yii2) are usually resolved by a Craft upgrade rather than by this plugin — do not attempt to bump them in isolation without confirming Craft's version constraints allow it.
 
 ---
 
