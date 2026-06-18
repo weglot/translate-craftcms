@@ -13,7 +13,7 @@ class ReplaceUrlServiceTest extends TestCase
 {
     private ReplaceUrlService $service;
 
-    private ReplaceLinkService $originalReplaceLinkService;
+    private ?ReplaceLinkService $originalReplaceLinkService = null;
 
     protected function setUp(): void
     {
@@ -25,7 +25,11 @@ class ReplaceUrlServiceTest extends TestCase
     protected function tearDown(): void
     {
         // Restore the real component so a mock set in one test does not leak.
-        Plugin::getInstance()->set('replaceLinkService', $this->originalReplaceLinkService);
+        // Guarded: setUp() may have thrown before the property was assigned,
+        // and PHPUnit still calls tearDown() in that case.
+        if (null !== $this->originalReplaceLinkService) {
+            Plugin::getInstance()->set('replaceLinkService', $this->originalReplaceLinkService);
+        }
         parent::tearDown();
     }
 
