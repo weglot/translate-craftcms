@@ -165,4 +165,36 @@ final class ReplaceLinkServiceTest extends TestCase
         self::assertStringContainsString('class="nav"', $out);
         self::assertStringContainsString('rel="nofollow"', $out);
     }
+
+    // -------------------------------------------------------------------------
+    // replaceHx* — htmx attribute substitution
+    // -------------------------------------------------------------------------
+
+    public function testReplaceHxGetReplacesUrlAndPreservesSurroundingAttributes(): void
+    {
+        $svc = $this->makeReplaceSvcWithTranslation($this->fr, 'https://example.com/fr/rooms/grid/111874/453607');
+
+        $html = '<div id="htmx-rooms-453607" hx-get="https://example.com/rooms/grid/111874/453607" hx-target="#htmx-rooms-453607">';
+        $out = $svc->replaceHxGet(
+            $html,
+            'https://example.com/rooms/grid/111874/453607',
+            '"',
+            '"',
+            'div id="htmx-rooms-453607" ',
+        );
+
+        self::assertStringContainsString('hx-get="https://example.com/fr/rooms/grid/111874/453607"', $out);
+        self::assertStringContainsString('id="htmx-rooms-453607"', $out);
+        self::assertStringContainsString('hx-target="#htmx-rooms-453607"', $out);
+    }
+
+    public function testReplaceHxPostReplacesUrl(): void
+    {
+        $svc = $this->makeReplaceSvcWithTranslation($this->fr, 'https://example.com/fr/rooms/book/');
+
+        $html = '<form hx-post="https://example.com/rooms/book/">';
+        $out = $svc->replaceHxPost($html, 'https://example.com/rooms/book/', '"', '"', 'form ');
+
+        self::assertStringContainsString('hx-post="https://example.com/fr/rooms/book/"', $out);
+    }
 }
