@@ -1,5 +1,9 @@
 # Release Notes for Weglot
 
+## Unreleased
+
+- Fix: `CHANGELOG.md` is now compatible with the Craft CMS Plugin Store.
+
 ## 1.2.5 - 2026-06-18
 
 - Fix: Language switcher links and `original_path` in the `weglot-data` payload are now computed from the source-language slug instead of the current translated slug, so every switcher link resolves to the correct per-language URL when browsing a translated page.
