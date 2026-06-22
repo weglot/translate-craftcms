@@ -177,6 +177,86 @@ class ReplaceLinkService extends Component
     }
 
     /**
+     * Replaces the URL in an htmx hx-get attribute.
+     *
+     * @param string      $translatedPage the content of the translated page where the replacement will occur
+     * @param string      $currentUrl     the current URL used for the replacement logic
+     * @param string      $quote1         the first quote character used in the replacement process
+     * @param string      $quote2         the second quote character used in the replacement process
+     * @param string|null $sometags       optional additional tags to include in the replacement
+     *
+     * @return string the modified content of the translated page with the hx-get URL replaced
+     */
+    public function replaceHxGet(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
+    {
+        return $this->simpleReplace('', 'hx-get', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+    }
+
+    /**
+     * Replaces the URL in an htmx hx-post attribute.
+     *
+     * @param string      $translatedPage the content of the translated page where the replacement will occur
+     * @param string      $currentUrl     the current URL used for the replacement logic
+     * @param string      $quote1         the first quote character used in the replacement process
+     * @param string      $quote2         the second quote character used in the replacement process
+     * @param string|null $sometags       optional additional tags to include in the replacement
+     *
+     * @return string the modified content of the translated page with the hx-post URL replaced
+     */
+    public function replaceHxPost(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
+    {
+        return $this->simpleReplace('', 'hx-post', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+    }
+
+    /**
+     * Replaces the URL in an htmx hx-put attribute.
+     *
+     * @param string      $translatedPage the content of the translated page where the replacement will occur
+     * @param string      $currentUrl     the current URL used for the replacement logic
+     * @param string      $quote1         the first quote character used in the replacement process
+     * @param string      $quote2         the second quote character used in the replacement process
+     * @param string|null $sometags       optional additional tags to include in the replacement
+     *
+     * @return string the modified content of the translated page with the hx-put URL replaced
+     */
+    public function replaceHxPut(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
+    {
+        return $this->simpleReplace('', 'hx-put', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+    }
+
+    /**
+     * Replaces the URL in an htmx hx-patch attribute.
+     *
+     * @param string      $translatedPage the content of the translated page where the replacement will occur
+     * @param string      $currentUrl     the current URL used for the replacement logic
+     * @param string      $quote1         the first quote character used in the replacement process
+     * @param string      $quote2         the second quote character used in the replacement process
+     * @param string|null $sometags       optional additional tags to include in the replacement
+     *
+     * @return string the modified content of the translated page with the hx-patch URL replaced
+     */
+    public function replaceHxPatch(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
+    {
+        return $this->simpleReplace('', 'hx-patch', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+    }
+
+    /**
+     * Replaces the URL in an htmx hx-delete attribute.
+     *
+     * @param string      $translatedPage the content of the translated page where the replacement will occur
+     * @param string      $currentUrl     the current URL used for the replacement logic
+     * @param string      $quote1         the first quote character used in the replacement process
+     * @param string      $quote2         the second quote character used in the replacement process
+     * @param string|null $sometags       optional additional tags to include in the replacement
+     *
+     * @return string the modified content of the translated page with the hx-delete URL replaced
+     */
+    public function replaceHxDelete(string $translatedPage, string $currentUrl, string $quote1, string $quote2, ?string $sometags = null): string
+    {
+        return $this->simpleReplace('', 'hx-delete', $translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+    }
+
+    /**
      * @param string      $translatedPage the content of the translated page where form action URLs will be replaced
      * @param string      $currentUrl     the current URL to be replaced in the form action attribute
      * @param string      $quote1         the first quote character used around the URL in the form action attribute

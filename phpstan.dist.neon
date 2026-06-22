@@ -13,6 +13,8 @@ parameters:
     paths:
         - src
         - tests
+    excludePaths:
+        - src/vendor
     stubFiles:
         - phpstan/stubs/yii/BaseYii.stub
         - phpstan/stubs/craft/console/Application.stub

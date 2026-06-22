@@ -103,6 +103,21 @@ class ReplaceUrlService extends Component
                 case 'datacart':
                     $translatedPage = $replaceLinkService->replaceDatacart($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
                     break;
+                case 'hxget':
+                    $translatedPage = $replaceLinkService->replaceHxGet($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+                    break;
+                case 'hxpost':
+                    $translatedPage = $replaceLinkService->replaceHxPost($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+                    break;
+                case 'hxput':
+                    $translatedPage = $replaceLinkService->replaceHxPut($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+                    break;
+                case 'hxpatch':
+                    $translatedPage = $replaceLinkService->replaceHxPatch($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+                    break;
+                case 'hxdelete':
+                    $translatedPage = $replaceLinkService->replaceHxDelete($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
+                    break;
                 case 'form':
                     $translatedPage = $replaceLinkService->replaceForm($translatedPage, $currentUrl, $quote1, $quote2, $sometags);
                     break;
