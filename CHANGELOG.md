@@ -1,8 +1,9 @@
 # Release Notes for Weglot
 
-## Unreleased
+## 1.2.6 - 2026-06-23
 
-- Fix: `CHANGELOG.md` is now compatible with the Craft CMS Plugin Store.
+- Improvement: Adds htmx attribute URL rewriting support, extending the existing URL replacement pipeline to translate URLs found in `hx-*` attributes.
+- Improvement: Reverses the release order and adds dates to each entry to improve display in the Craft CMS Plugin Store.
 
 ## 1.2.5 - 2026-06-18
 
