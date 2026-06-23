@@ -82,6 +82,7 @@ For `composer audit`, report any advisories found. Vulnerabilities in transitive
     - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style`
     - Example: `fix(translate): handle empty API response gracefully`
 - Never commit code that fails linting or static analysis
+- Always run `composer audit` before committing — do not commit with unresolved security advisories on dependencies this plugin can update
 - One logical change per commit — avoid mixing unrelated fixes
 
 ---
