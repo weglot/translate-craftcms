@@ -79,8 +79,8 @@ For `composer audit`, report any advisories found. Vulnerabilities in transitive
 
 - **Do not add AI attribution markers** — no `Co-Authored-By` in commit messages, no "Generated with Claude Code" or similar footers in merge request descriptions
 - Commit messages follow the **Conventional Commits** format: `type(scope): short description`
-  - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style`
-  - Example: `fix(translate): handle empty API response gracefully`
+    - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style`
+    - Example: `fix(translate): handle empty API response gracefully`
 - Never commit code that fails linting or static analysis
 - One logical change per commit — avoid mixing unrelated fixes
 
@@ -163,6 +163,59 @@ make clean        # Remove all build artifacts
 
 ---
 
+## Manual Release (GitHub)
+
+GitHub releases are created automatically by the `.github/workflows/create-release.yml` workflow, which runs **only** on a `repository_dispatch` event of type `craftcms/new-release`. That event is sent by the **Craft Plugin Store** (via id.craftcms.com) when it detects a new version tag — **pushing a git tag alone does NOT create a release.**
+
+### When the release does not appear after tagging
+
+If a tag exists (e.g. on https://github.com/weglot/translate-craftcms) but no release was created, the Craft Plugin Store did not send the dispatch. The root cause is almost always **upstream, not GitHub**:
+
+1. **GitHub authorization in the Craft Console expired/was revoked** — re-authorize the Craft CMS GitHub app on the repo at **id.craftcms.com** (this is the real fix; once repaired, releases resume automatically).
+2. **Packagist does not have the new version** — if Packagist doesn't list the tag, Craft never learns about it.
+
+Diagnose with:
+
+```bash
+gh auth status                                                                  # must be logged in with 'workflow' scope + write access to the repo
+gh run list --repo weglot/translate-craftcms --workflow=create-release.yml --event=repository_dispatch --limit 5
+gh release list --repo weglot/translate-craftcms --limit 10                     # compare against tags
+gh api repos/weglot/translate-craftcms/tags --jq '.[].name' | head
+```
+
+### Workaround — fire the dispatch manually
+
+When Craft support is unresponsive, send the same `repository_dispatch` Craft would have sent. This creates the GitHub Release attached to the **already-existing** tag (it does not touch or move the tag).
+
+**Prerequisites:** `gh` logged in with the `workflow` scope + write access to the repo, and the tag must already exist (otherwise `ncipollo/release-action` would create the tag on the default branch).
+
+```bash
+# Build the payload (notes come from the matching CHANGELOG.md section)
+cat > dispatch.json <<'EOF'
+{
+  "event_type": "craftcms/new-release",
+  "client_payload": {
+    "version": "1.2.5",
+    "tag": "1.2.5",
+    "latest": true,
+    "prerelease": false,
+    "notes": "- Fix: ...\n- Fix: ..."
+  }
+}
+EOF
+
+# Send it (HTTP 204, no output = success)
+gh api repos/weglot/translate-craftcms/dispatches --input dispatch.json
+
+# Verify
+gh run list --repo weglot/translate-craftcms --workflow=create-release.yml --event=repository_dispatch --limit 1
+gh release view 1.2.5 --repo weglot/translate-craftcms
+```
+
+The workflow maps each `client_payload` field to `ncipollo/release-action`: `version`→`name`, `tag`→`tag`, `notes`→`body`, `latest`→`makeLatest`, `prerelease`→`prerelease`. This is a workaround only — the durable fix is restoring the Craft↔GitHub connection.
+
+---
+
 ## Architecture
 
 ### Project Structure
@@ -226,10 +279,10 @@ weglot/
 1. **`Plugin::init()`** — sets alias `@weglot/craftweglot`, calls `attachEventHandlers()`
 2. **`Plugin::config()`** — declares all 16 services as Yii2 components (lazy-instantiated)
 3. **`attachEventHandlers()`** — registers all Craft event listeners:
-   - `UrlManager::EVENT_REGISTER_SITE_URL_RULES` — language-prefixed URL rules
-   - `View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE` — detect language, wrap request
-   - `View::EVENT_AFTER_RENDER_PAGE_TEMPLATE` — pass HTML through translation pipeline
-   - `View::EVENT_BEGIN_PAGE` — inject hrefLang, switcher, analytics scripts
+    - `UrlManager::EVENT_REGISTER_SITE_URL_RULES` — language-prefixed URL rules
+    - `View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE` — detect language, wrap request
+    - `View::EVENT_AFTER_RENDER_PAGE_TEMPLATE` — pass HTML through translation pipeline
+    - `View::EVENT_BEGIN_PAGE` — inject hrefLang, switcher, analytics scripts
 4. **`Plugin::afterSaveSettings()`** — normalizes language codes, syncs settings to Weglot API
 
 ### Request Translation Pipeline
