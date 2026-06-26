@@ -675,6 +675,11 @@ class OptionService extends Component
         }
 
         $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
+
+        if ('' === ($options['api_key'] ?? '')) {
+            return ['success' => false, 'code' => 'missing_private_key', 'message' => 'Weglot private key not found in options.'];
+        }
+
         $options['language_from'] = $languageFrom;
         $options['languages'] = array_map(
             static fn (string $code): array => ['language_to' => $code],
@@ -720,6 +725,11 @@ class OptionService extends Component
         }
 
         $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
+
+        if ('' === ($options['api_key'] ?? '')) {
+            return ['success' => false, 'code' => 'missing_private_key', 'message' => 'Weglot private key not found in options.'];
+        }
+
         $options['language_from'] = $languageFrom;
         $options['languages'] = array_map(
             static fn (string $code): array => ['language_to' => $code],
