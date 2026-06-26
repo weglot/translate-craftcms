@@ -10,7 +10,7 @@ class Regex
      * - We have a lot of real URL in database, so `/` should be avoided as delimiter.
      * - `#` is used as anchor in URL so cannot be used as delimiter.
      */
-    const REGEX_DELIMITER = '~';
+    public const REGEX_DELIMITER = '~';
     /**
      * @var string
      */

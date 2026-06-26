@@ -5,9 +5,9 @@ namespace Weglot\Vendor\Weglot\Parser\Check\Dom;
 use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 class ExternalLinkHref extends AbstractDomChecker
 {
-    const DOM = 'a';
-    const PROPERTY = 'href';
-    const WORD_TYPE = WordType::EXTERNAL_LINK;
+    public const DOM = 'a';
+    public const PROPERTY = 'href';
+    public const WORD_TYPE = WordType::EXTERNAL_LINK;
     protected function check()
     {
         $current_url = $this->node->href;
@@ -18,8 +18,7 @@ class ExternalLinkHref extends AbstractDomChecker
         }
         if (isset($server_host) && isset($parsed_url['host']) && str_replace('www.', '', $parsed_url['host']) !== str_replace('www.', '', $server_host)) {
             return \true;
-        } else {
-            return \false;
         }
+        return \false;
     }
 }

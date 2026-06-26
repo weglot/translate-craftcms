@@ -1,0 +1,204 @@
+<?php
+
+namespace Weglot\Vendor;
+
+/*
+ * This file is part of Crawler Detect - the web crawler detection library.
+ *
+ * (c) Mark Beech <m@rkbee.ch>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+use Weglot\Vendor\Jaybizzle\CrawlerDetect\CrawlerDetect;
+use Weglot\Vendor\Jaybizzle\CrawlerDetect\Fixtures\Crawlers;
+use Weglot\Vendor\PHPUnit\Framework\TestCase;
+final class UserAgentTest extends TestCase
+{
+    protected $crawlerDetect;
+    protected function setUp(): void
+    {
+        $this->crawlerDetect = new CrawlerDetect();
+    }
+    /** @test */
+    public function user_agents_are_bots()
+    {
+        $lines = \file(__DIR__ . '/data/user_agent/crawlers.txt', \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $test = $this->crawlerDetect->isCrawler($line);
+            $this->assertTrue($test, $line);
+        }
+    }
+    /** @test */
+    public function user_agents_are_devices()
+    {
+        $lines = \file(__DIR__ . '/data/user_agent/devices.txt', \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $test = $this->crawlerDetect->isCrawler($line);
+            $this->assertFalse($test, $line);
+        }
+    }
+    /** @test */
+    public function sec_ch_ua_are_bots()
+    {
+        $lines = \file(__DIR__ . '/data/sec_ch_ua/crawlers.txt', \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $test = $this->crawlerDetect->isCrawler($line);
+            $this->assertTrue($test, $line);
+        }
+    }
+    /** @test */
+    public function sec_ch_ua_are_devices()
+    {
+        $lines = \file(__DIR__ . '/data/sec_ch_ua/devices.txt', \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $test = $this->crawlerDetect->isCrawler($line);
+            $this->assertFalse($test, $line);
+        }
+    }
+    /** @test */
+    public function it_returns_correct_matched_bot_name()
+    {
+        $this->crawlerDetect->isCrawler('Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit (KHTML, like Gecko) Mobile (compatible; Yahoo Ad monitoring; https://help.yahoo.com/kb/yahoo-ad-monitoring-SLN24857.html)');
+        $matches = $this->crawlerDetect->getMatches();
+        $this->assertEquals($this->crawlerDetect->getMatches(), 'monitoring', $matches);
+    }
+    /** @test */
+    public function it_returns_user_agent()
+    {
+        $ua = 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit (KHTML, like Gecko) Mobile (compatible; Yahoo Ad monitoring; https://help.yahoo.com/kb/yahoo-ad-monitoring-SLN24857.html)';
+        $cd = new CrawlerDetect(null, $ua);
+        $this->assertEquals($cd->getUserAgent(), $ua);
+    }
+    /** @test */
+    public function it_returns_full_matched_bot_name()
+    {
+        $this->crawlerDetect->isCrawler('somenaughtybot');
+        $matches = $this->crawlerDetect->getMatches();
+        $this->assertEquals($this->crawlerDetect->getMatches(), 'somenaughtybot', $matches);
+    }
+    /** @test */
+    public function it_returns_null_when_no_bot_detected()
+    {
+        $this->crawlerDetect->isCrawler('nothing to see here');
+        $this->assertNull($this->crawlerDetect->getMatches());
+    }
+    /** @test */
+    public function empty_user_agent()
+    {
+        $test = $this->crawlerDetect->isCrawler('      ');
+        $this->assertFalse($test);
+    }
+    /** @test */
+    public function current_visitor()
+    {
+        $headers = (array) \json_decode('{"DOCUMENT_ROOT":"\/home\/test\/public_html","GATEWAY_INTERFACE":"CGI\/1.1","HTTP_ACCEPT":"*\/*","HTTP_ACCEPT_ENCODING":"gzip, deflate","HTTP_CACHE_CONTROL":"no-cache","HTTP_CONNECTION":"Keep-Alive","HTTP_FROM":"bingbot(at)microsoft.com","HTTP_HOST":"www.test.com","HTTP_PRAGMA":"no-cache","HTTP_USER_AGENT":"Mozilla\/5.0 (compatible; bingbot\/2.0; +http:\/\/www.bing.com\/bingbot.htm)","PATH":"\/bin:\/usr\/bin","QUERY_STRING":"order=closingDate","REDIRECT_STATUS":"200","REMOTE_ADDR":"127.0.0.1","REMOTE_PORT":"3360","REQUEST_METHOD":"GET","REQUEST_URI":"\/?test=testing","SCRIPT_FILENAME":"\/home\/test\/public_html\/index.php","SCRIPT_NAME":"\/index.php","SERVER_ADDR":"127.0.0.1","SERVER_ADMIN":"webmaster@test.com","SERVER_NAME":"www.test.com","SERVER_PORT":"80","SERVER_PROTOCOL":"HTTP\/1.1","SERVER_SIGNATURE":"","SERVER_SOFTWARE":"Apache","UNIQUE_ID":"Vx6MENRxerBUSDEQgFLAAAAAS","PHP_SELF":"\/index.php","REQUEST_TIME_FLOAT":1461619728.0705,"REQUEST_TIME":1461619728}');
+        $cd = new CrawlerDetect($headers);
+        $this->assertTrue($cd->isCrawler());
+    }
+    /** @test */
+    public function user_agent_passed_via_constructor()
+    {
+        $cd = new CrawlerDetect(null, 'Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit (KHTML, like Gecko) Mobile (compatible; Yahoo Ad monitoring; https://help.yahoo.com/kb/yahoo-ad-monitoring-SLN24857.html)');
+        $this->assertTrue($cd->isCrawler());
+    }
+    /** @test */
+    public function http_from_header()
+    {
+        $headers = (array) \json_decode('{"DOCUMENT_ROOT":"\/home\/test\/public_html","GATEWAY_INTERFACE":"CGI\/1.1","HTTP_ACCEPT":"*\/*","HTTP_ACCEPT_ENCODING":"gzip, deflate","HTTP_CACHE_CONTROL":"no-cache","HTTP_CONNECTION":"Keep-Alive","HTTP_FROM":"googlebot(at)googlebot.com","HTTP_HOST":"www.test.com","HTTP_PRAGMA":"no-cache","HTTP_USER_AGENT":"Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/28.0.1500.71 Safari\/537.36","PATH":"\/bin:\/usr\/bin","QUERY_STRING":"order=closingDate","REDIRECT_STATUS":"200","REMOTE_ADDR":"127.0.0.1","REMOTE_PORT":"3360","REQUEST_METHOD":"GET","REQUEST_URI":"\/?test=testing","SCRIPT_FILENAME":"\/home\/test\/public_html\/index.php","SCRIPT_NAME":"\/index.php","SERVER_ADDR":"127.0.0.1","SERVER_ADMIN":"webmaster@test.com","SERVER_NAME":"www.test.com","SERVER_PORT":"80","SERVER_PROTOCOL":"HTTP\/1.1","SERVER_SIGNATURE":"","SERVER_SOFTWARE":"Apache","UNIQUE_ID":"Vx6MENRxerBUSDEQgFLAAAAAS","PHP_SELF":"\/index.php","REQUEST_TIME_FLOAT":1461619728.0705,"REQUEST_TIME":1461619728}');
+        $cd = new CrawlerDetect($headers);
+        $this->assertTrue($cd->isCrawler());
+    }
+    /** @test */
+    public function matches_does_not_persist_across_multiple_calls()
+    {
+        $this->crawlerDetect->isCrawler('Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit (KHTML, like Gecko) Mobile (compatible; Yahoo Ad monitoring; https://help.yahoo.com/kb/yahoo-ad-monitoring-SLN24857.html)');
+        $matches = $this->crawlerDetect->getMatches();
+        $this->assertEquals($this->crawlerDetect->getMatches(), 'monitoring', $matches);
+        $this->crawlerDetect->isCrawler('This should not match');
+        $matches = $this->crawlerDetect->getMatches();
+        $this->assertNull($this->crawlerDetect->getMatches());
+        // Empty
+        $this->crawlerDetect->isCrawler('Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit (KHTML, like Gecko) Mobile (compatible; Yahoo Ad monitoring; https://help.yahoo.com/kb/yahoo-ad-monitoring-SLN24857.html)');
+        $this->crawlerDetect->isCrawler('');
+        $this->assertNull($this->crawlerDetect->getMatches());
+        // Excluded
+        $this->crawlerDetect->isCrawler('Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit (KHTML, like Gecko) Mobile (compatible; Yahoo Ad monitoring; https://help.yahoo.com/kb/yahoo-ad-monitoring-SLN24857.html)');
+        $this->crawlerDetect->isCrawler('iPod');
+        $this->assertNull($this->crawlerDetect->getMatches());
+    }
+    /** @test */
+    public function the_regex_patterns_are_unique()
+    {
+        $crawlers = new Crawlers();
+        $this->assertEquals(\count($crawlers->getAll()), \count(\array_unique($crawlers->getAll())));
+    }
+    /** @test */
+    public function there_are_no_regex_collisions()
+    {
+        $crawlers = new Crawlers();
+        $all = $crawlers->getAll();
+        foreach ($all as $key1 => $regex) {
+            foreach ($all as $key2 => $compare) {
+                // Only check each pair once, and skip self-comparison
+                if ($key1 >= $key2) {
+                    continue;
+                }
+                \preg_match('/' . $regex . '/i', \stripslashes($compare), $matches);
+                $this->assertEmpty($matches, $regex . ' collided with ' . $compare);
+                \preg_match('/' . $compare . '/i', \stripslashes($regex), $matches);
+                $this->assertEmpty($matches, $compare . ' collided with ' . $regex);
+            }
+        }
+    }
+    /** @test */
+    public function is_crawler_with_explicit_agent_does_not_change_stored_agent()
+    {
+        $ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36';
+        $cd = new CrawlerDetect(null, $ua);
+        $cd->isCrawler('Googlebot/2.1');
+        $this->assertEquals($ua, $cd->getUserAgent());
+    }
+    /** @test */
+    public function is_crawler_returns_false_when_preg_match_errors()
+    {
+        $originalLimit = \ini_get('pcre.backtrack_limit');
+        \ini_set('pcre.backtrack_limit', '1');
+        try {
+            $result = @$this->crawlerDetect->isCrawler('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)');
+            $this->assertFalse($result);
+            $this->assertNull($this->crawlerDetect->getMatches());
+        } finally {
+            \ini_set('pcre.backtrack_limit', $originalLimit);
+        }
+    }
+    /** @test */
+    public function all_regex_patterns_are_valid()
+    {
+        $crawlers = new Crawlers();
+        foreach ($crawlers->getAll() as $pattern) {
+            $result = @\preg_match('/' . $pattern . '/i', '');
+            $this->assertNotFalse($result, 'Invalid regex pattern: ' . $pattern);
+        }
+    }
+    /**
+     * Regression guard for issue #594.
+     *
+     * Amazon CloudFront has been added and removed from the crawler list
+     * three times (#392 added, #410 removed, #504 re-added, #602 removed).
+     * It is a reverse proxy: for sites hosted behind it, the 'Amazon CloudFront'
+     * UA on inbound requests is the CDN fetching from origin on behalf of real
+     * end users, not crawler activity. Treating it as a crawler silently breaks
+     * analytics, auth, and rate-limiting for AWS-hosted sites.
+     *
+     * If this test fails, do NOT delete it to make a re-add green. Open a fresh
+     * design discussion on the issue tracker first.
+     *
+     * @test
+     */
+    public function amazon_cloudfront_must_not_be_classified_as_a_crawler()
+    {
+        $this->assertFalse($this->crawlerDetect->isCrawler('Amazon CloudFront'), 'Amazon CloudFront UA was matched by a crawler signature. ' . 'See issue #594 — this UA represents a reverse-proxy origin fetch on ' . 'behalf of real users, not crawler traffic. Do not re-add it.');
+    }
+}
+\class_alias('Weglot\Vendor\UserAgentTest', 'UserAgentTest', \false);

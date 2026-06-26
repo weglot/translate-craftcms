@@ -45,19 +45,13 @@ class CachedTranslateTest extends TestCase
         // Translate endpoint
         $this->translate = new Translate($this->entry, $this->client);
     }
-    /**
-     * @return void
-     */
-    public function testSetOutputWords()
+    public function testSetOutputWords(): void
     {
         $this->entry->setOutputWords();
         $this->assertInstanceOf(WordCollection::class, $this->entry->getOutputWords());
         $this->assertCount(0, $this->entry->getOutputWords());
     }
-    /**
-     * @return void
-     */
-    public function testGetParams()
+    public function testGetParams(): void
     {
         $params = $this->entry->getParams();
         $this->assertEquals('en', $params['language_from']);
@@ -65,33 +59,21 @@ class CachedTranslateTest extends TestCase
         $this->assertEquals('https://weglot.com/', $params['request_url']);
         $this->assertEquals(BotType::HUMAN, $params['bot']);
     }
-    /**
-     * @return void
-     */
-    public function testEndpointCountWord()
+    public function testEndpointCountWord(): void
     {
         $translated = $this->translate->handle();
         $this->assertCount($this->entry->getInputWords()->count(), $translated->getOutputWords());
     }
-    /**
-     * @return void
-     */
-    public function testTranslateEntry()
+    public function testTranslateEntry(): void
     {
         $this->assertInstanceOf(TranslateEntry::class, $this->translate->getTranslateEntry());
         $this->assertSame($this->translate->getTranslateEntry(), $this->entry);
     }
-    /**
-     * @return void
-     */
-    public function testPath()
+    public function testPath(): void
     {
         $this->assertEquals('/translate', $this->translate->getPath());
     }
-    /**
-     * @return void
-     */
-    public function testCachedRequest()
+    public function testCachedRequest(): void
     {
         $translated = $this->translate->handle();
         $this->assertCount($this->entry->getInputWords()->count(), $translated->getOutputWords());

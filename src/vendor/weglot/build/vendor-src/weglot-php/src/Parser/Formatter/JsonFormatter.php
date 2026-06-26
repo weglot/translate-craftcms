@@ -37,7 +37,7 @@ class JsonFormatter extends AbstractFormatter
     {
         return $this->source;
     }
-    public function handle(array $tree, &$index)
+    public function handle(array $tree, &$index): void
     {
         $translated_words = $this->getTranslated()->getOutputWords();
         $jsonString = $tree['source'];

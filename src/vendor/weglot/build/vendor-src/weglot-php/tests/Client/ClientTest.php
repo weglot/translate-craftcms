@@ -21,18 +21,12 @@ class ClientTest extends TestCase
             $this->client->getHttpClient()->addHeader("{$headerKey}: {$headerValue}");
         }
     }
-    /**
-     * @return void
-     */
-    public function testOptions()
+    public function testOptions(): void
     {
         $options = $this->client->getOptions();
         $this->assertEquals('https://api.weglot.dev', $options['host']);
     }
-    /**
-     * @return void
-     */
-    public function testConnector()
+    public function testConnector(): void
     {
         $httpClient = $this->client->getHttpClient();
         $this->assertInstanceOf(CurlClient::class, $httpClient);
@@ -43,10 +37,7 @@ class ClientTest extends TestCase
         $headers = ['Weglot-Context: PHP\\' . Client::VERSION, "{$headerKey}: {$headerValue}"];
         $this->assertEquals($headers, $httpClient->getDefaultHeaders());
     }
-    /**
-     * @return void
-     */
-    public function testProfile()
+    public function testProfile(): void
     {
         $wgApiKeys = ['wg_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' => 2];
         foreach ($wgApiKeys as $wgApiKey => $version) {
@@ -56,26 +47,17 @@ class ClientTest extends TestCase
             $this->assertEquals(3, $profile->getTranslationEngine());
         }
     }
-    /**
-     * @return void
-     */
-    public function testMakeRequest()
+    public function testMakeRequest(): void
     {
         $response = $this->client->makeRequest('GET', '/public/status', []);
         $this->assertEquals([], $response);
     }
-    /**
-     * @return void
-     */
-    public function testMakeRequestAsResponse()
+    public function testMakeRequestAsResponse(): void
     {
         list($rawBody, $httpStatusCode, $httpHeader) = $this->client->makeRequest('GET', '/public/status', [], \false);
         $this->assertSame(200, $httpStatusCode);
     }
-    /**
-     * @return void
-     */
-    public function testRecursivelyConvertToUtf8FixesJsonEncoding()
+    public function testRecursivelyConvertToUtf8FixesJsonEncoding(): void
     {
         $badStr = "\xc3(";
         $data = ['invalid' => $badStr];

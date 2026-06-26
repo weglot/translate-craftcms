@@ -39,6 +39,24 @@ class ParserService extends Component
         $translationEngine = Plugin::getInstance()->getOption()->getTranslationEngine();
         $apiKey = $settings->apiKey;
 
+        if (HelperApi::isV2ApiKey($apiKey)) {
+            $apiBaseUrl = $this->optionService->getOption('api_base_url');
+            $host = \is_string($apiBaseUrl) && '' !== $apiBaseUrl ? $apiBaseUrl : HelperApi::getApiUrlV2();
+
+            $client = new Client(
+                $apiKey,
+                $translationEngine,
+                $version,
+                [
+                    'host' => $host,
+                    'live' => 1,
+                ]
+            );
+            $client->getHttpClient()->addHeader('Authorization: Key '.$apiKey);
+
+            return $client;
+        }
+
         return new Client(
             $apiKey,
             $translationEngine,

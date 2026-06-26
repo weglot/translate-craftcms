@@ -57,20 +57,16 @@ class IgnoredNodes
     }
     /**
      * @param array $matches
-     *
-     * @return void
      */
-    protected function replaceContent($matches)
+    protected function replaceContent($matches): void
     {
         $this->setSource(str_replace($matches[0], '&lt;' . $matches['tag'] . str_replace('>', '&gt;', str_replace('<', '&lt;', $matches['more'])) . '&gt;' . $matches['content'] . '&lt;/' . $matches['tag'] . '&gt;', $this->getSource()));
     }
     /**
      * Convert < & > for some dom tags to let them able
      * to go through API calls.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         // time for the BIG regex ...
         $pattern = '#<(?<tag>' . implode('|', $this->ignoredNodes) . ')(?<more>\s.*?)?\>(?<content>[^>]*?)\<\/(?<tagclosed>' . implode('|', $this->ignoredNodes) . ')>#i';

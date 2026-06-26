@@ -7,10 +7,7 @@ use Weglot\Vendor\Weglot\Util\Regex;
 use Weglot\Vendor\Weglot\Util\Regex\RegexEnum;
 class RegexTest extends TestCase
 {
-    /**
-     * @return void
-     */
-    public function testRegexStartWith()
+    public function testRegexStartWith(): void
     {
         $regexInstance = new Regex(RegexEnum::START_WITH, 'http://');
         $regex = str_replace('/', '\/', $regexInstance->getRegex());
@@ -19,10 +16,7 @@ class RegexTest extends TestCase
         $this->assertTrue($regexInstance->match('http:// foo'));
         $this->assertFalse($regexInstance->match('foo http://'));
     }
-    /**
-     * @return void
-     */
-    public function testRegexEndWith()
+    public function testRegexEndWith(): void
     {
         $regexInstance = new Regex(RegexEnum::END_WITH, 'http://');
         $regex = str_replace('/', '\/', $regexInstance->getRegex());
@@ -31,10 +25,7 @@ class RegexTest extends TestCase
         $this->assertTrue($regexInstance->match('test string http://'));
         $this->assertFalse($regexInstance->match('http:// test'));
     }
-    /**
-     * @return void
-     */
-    public function testRegexContain()
+    public function testRegexContain(): void
     {
         $regexInstance = new Regex(RegexEnum::CONTAIN, 'http://');
         $regex = str_replace('/', '\/', $regexInstance->getRegex());
@@ -42,10 +33,7 @@ class RegexTest extends TestCase
         $this->assertMatchesRegularExpression('#' . $regex . '#', 'test http:// string');
         $this->assertTrue($regexInstance->match('test http:// string'));
     }
-    /**
-     * @return void
-     */
-    public function testRegexIsExactly()
+    public function testRegexIsExactly(): void
     {
         $regexInstance = new Regex(RegexEnum::IS_EXACTLY, 'http://');
         $regex = str_replace('/', '\/', $regexInstance->getRegex());
@@ -55,10 +43,7 @@ class RegexTest extends TestCase
         $this->assertFalse($regexInstance->match('http://weglot.com'));
         $this->assertFalse($regexInstance->match('some http://'));
     }
-    /**
-     * @return void
-     */
-    public function testMatchRegex()
+    public function testMatchRegex(): void
     {
         $regexInstance = new Regex(RegexEnum::MATCH_REGEX, '^http:\/\/');
         $regex = $regexInstance->getRegex();

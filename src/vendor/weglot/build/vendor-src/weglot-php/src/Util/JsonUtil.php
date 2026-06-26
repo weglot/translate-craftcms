@@ -8,9 +8,10 @@ use Weglot\Vendor\Weglot\Client\Api\WordCollection;
 use Weglot\Vendor\Weglot\Client\Api\WordEntry;
 class JsonUtil
 {
-    const SEPARATOR = '##';
+    public const SEPARATOR = '##';
     /**
-     * @param string $key
+     * @param array<mixed> $data
+     * @param string       $key
      *
      * @return mixed
      */
@@ -24,38 +25,44 @@ class JsonUtil
     /**
      * @param string $value
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
-    public static function add(WordCollection $words, $value)
+    public static function add(WordCollection $words, $value): void
     {
         $words->addOne(new WordEntry($value, WordType::TEXT));
     }
     /**
-     * @param array  $data
-     * @param string $index
-     * @param int    $nextJson
+     * @param array<mixed> $data
+     * @param string       $index
+     * @param int          $nextJson
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function set(WordCollection $words, $data, $index, &$nextJson)
     {
         $keys = explode(self::SEPARATOR, $index);
         $current =& $data;
         foreach ($keys as $key) {
+            if (!\is_array($current) || !\array_key_exists($key, $current)) {
+                ++$nextJson;
+                return $data;
+            }
             $current =& $current[$key];
+        }
+        if (!isset($words[$nextJson])) {
+            ++$nextJson;
+            return $data;
         }
         $current = $words[$nextJson]->getWord();
         ++$nextJson;
         return $data;
     }
     /**
-     * @param string $newHTML
-     * @param array  $data
-     * @param string $key
+     * @param string       $newHTML
+     * @param array<mixed> $data
+     * @param string       $key
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function setHTML($newHTML, $data, $key)
     {
@@ -68,11 +75,11 @@ class JsonUtil
         return $data;
     }
     /**
-     * @param string $jsonString
-     * @param array  $data
-     * @param string $key
+     * @param string       $jsonString
+     * @param array<mixed> $data
+     * @param string       $key
      *
-     * @return array
+     * @return array<mixed>
      */
     public static function setJSONString($jsonString, $data, $key)
     {

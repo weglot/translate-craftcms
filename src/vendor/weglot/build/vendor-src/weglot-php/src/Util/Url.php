@@ -4,8 +4,15 @@ namespace Weglot\Vendor\Weglot\Util;
 
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 /**
- * @phpstan-type ExcludedUrl = array{Regex, mixed}
+ * @phpstan-type ExcludedUrl = array{0: Regex, 1: mixed, 2?: mixed, 3?: mixed}
  * @phpstan-type CustomUrl = array<string, string>
+ * @phpstan-type UrlDetails = array{
+ *     language: LanguageEntry,
+ *     url: string,
+ *     excluded: bool,
+ *     exclusion_behavior: string,
+ *     language_button_displayed: bool,
+ * }
  */
 class Url
 {
@@ -26,7 +33,7 @@ class Url
      */
     protected $fragment;
     /**
-     * @var array|null
+     * @var array<UrlDetails>|null
      */
     protected $allUrls;
     /**
@@ -90,10 +97,8 @@ class Url
      * Sets the full URL.
      *
      * @param string $url
-     *
-     * @return void
      */
-    public function setUrl($url)
+    public function setUrl($url): void
     {
         $this->url = $url;
         $this->detectUrlDetails();
@@ -175,7 +180,7 @@ class Url
      */
     public function getDestinationLanguagesExternal()
     {
-        return array_map(function ($l) {
+        return array_map(static function ($l) {
             return $l->getExternalCode();
         }, $this->destinationLanguages);
     }
@@ -346,9 +351,9 @@ class Url
     /**
      * Returns advance excluded option button displayed.
      *
-     * @param array $excludedUrl
+     * @param ExcludedUrl $excludedUrl
      *
-     * @return bool
+     * @return string
      */
     public function exclusionBehavior($excludedUrl)
     {
@@ -361,7 +366,7 @@ class Url
     /**
      * Returns advance excluded option button displayed.
      *
-     * @param array $excludedUrl
+     * @param ExcludedUrl $excludedUrl
      *
      * @return bool
      */
@@ -376,7 +381,7 @@ class Url
     /**
      * Returns array with all possible URL for current Request.
      *
-     * @return array
+     * @return array<UrlDetails>
      */
     public function getAllUrls()
     {

@@ -46,6 +46,9 @@ class JsonChecker
      */
     public function __construct(Parser $parser, $jsonString, $extraKeys)
     {
+        if (\function_exists('Weglot\Vendor\apply_filters')) {
+            $this->default_keys = apply_filters('list_json_ld_keys', $this->default_keys);
+        }
         $this->setParser($parser)->setJSonString($jsonString)->setExtraKeys($extraKeys);
     }
     /**
@@ -101,11 +104,9 @@ class JsonChecker
      * @param string                                       $currentKey
      * @param array<array{key: int|string, parsed: array}> $paths
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
-    public function findWords($json, $currentKey, &$paths)
+    public function findWords($json, $currentKey, &$paths): void
     {
         foreach ($json as $key => $value) {
             if (!\is_string($value)) {

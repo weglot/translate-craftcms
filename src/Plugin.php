@@ -12,6 +12,7 @@ use craft\web\Request;
 use craft\web\UrlManager;
 use craft\web\View;
 use weglot\craftweglot\helpers\DashboardHelper;
+use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;
 use weglot\craftweglot\services\DynamicsService;
@@ -42,6 +43,8 @@ class Plugin extends BasePlugin
     public string $icon = '@weglot/craftweglot/resources/icon.svg';
 
     private ?Request $weglotOriginalRequest = null;
+
+    private static bool $savingSettings = false;
 
     /**
      * Configures and returns an array of components and their respective services.
@@ -95,6 +98,12 @@ class Plugin extends BasePlugin
     {
         parent::afterSaveSettings();
 
+        if (self::$savingSettings) {
+            return;
+        }
+
+        self::$savingSettings = true;
+
         try {
             $settings = $this->getTypedSettings();
 
@@ -132,6 +141,21 @@ class Plugin extends BasePlugin
                 return;
             }
 
+            if (HelperApi::isV2ApiKey($apiKey)) {
+                $apiResult = self::getInstance()->getOption()->getOptionsFromApiWithApiKey($apiKey);
+                if ($apiResult['success']) {
+                    $data = $apiResult['result'];
+                    $languageFrom = \is_string($data['language_from'] ?? null) ? $data['language_from'] : $languageFrom;
+                    $fetched = array_values(array_filter(array_column($data['languages'] ?? [], 'language_to')));
+                    if ([] !== $fetched) {
+                        $languages = $fetched;
+                    }
+                    $settings->languageFrom = $languageFrom;
+                    $settings->languages = $languages;
+                    \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
+                }
+            }
+
             $result = self::getInstance()->getOption()->saveWeglotSettings(
                 $apiKey,
                 $languageFrom,
@@ -157,6 +181,8 @@ class Plugin extends BasePlugin
         } catch (\Throwable $e) {
             \Craft::error('Synchronisation Weglot après sauvegarde: '.$e->getMessage(), __METHOD__);
             \Craft::$app->getSession()->setError(\Craft::t('weglot', 'Erreur lors de la synchronisation Weglot.'));
+        } finally {
+            self::$savingSettings = false;
         }
     }
 
@@ -381,6 +407,7 @@ class Plugin extends BasePlugin
                 'apiSettings' => $apiSettings,
                 'cdnSettings' => $cdnSettings,
                 'showFirstSettingsPopup' => $showFirstSettingsPopup,
+                'showV1Fields' => '' !== $settings->apiKey && str_starts_with($settings->apiKey, 'wg_'),
             ]
         );
     }

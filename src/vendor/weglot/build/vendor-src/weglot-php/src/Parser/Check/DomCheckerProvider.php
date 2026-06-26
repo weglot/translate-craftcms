@@ -16,7 +16,7 @@ class DomCheckerProvider
      * @var array
      */
     protected $inlineNodes = ['a', 'span', 'strong', 'b', 'em', 'i', 'small', 'big', 'sub', 'sup', 'abbr', 'acronym', 'bdo', 'cite', 'kbd', 'q', 'u', 'mark'];
-    const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Vendor\Weglot\Parser\Check\Dom\\';
+    public const DEFAULT_CHECKERS_NAMESPACE = '\Weglot\Vendor\Weglot\Parser\Check\Dom\\';
     /**
      * @var Parser
      */
@@ -157,13 +157,11 @@ class DomCheckerProvider
     }
     /**
      * Load default checkers.
-     *
-     * @return void
      */
-    protected function loadDefaultCheckers()
+    protected function loadDefaultCheckers(): void
     {
         $files = array_diff(scandir(__DIR__ . '/Dom'), ['AbstractDomChecker.php', '..', '.']);
-        $checkers = array_map(function ($filename) {
+        $checkers = array_map(static function ($filename) {
             return self::DEFAULT_CHECKERS_NAMESPACE . Text::removeFileExtension($filename);
         }, $files);
         $this->addCheckers($checkers);
@@ -250,11 +248,9 @@ class DomCheckerProvider
      * @param string       $property
      * @param int          $wordType
      *
-     * @return void
-     *
      * @throws InvalidWordTypeException
      */
-    public function handleOldEngine($discoveringNodes, &$nodes, $class, $property, $wordType)
+    public function handleOldEngine($discoveringNodes, &$nodes, $class, $property, $wordType): void
     {
         foreach ($discoveringNodes as $node) {
             $instance = new $class($node, $property);
@@ -303,9 +299,8 @@ class DomCheckerProvider
                     $number = $this->numberOfTextNodeInParentAfterChild($n, null, $countEmptyText);
                     if (\false === $number) {
                         return \false;
-                    } else {
-                        $count += $number;
                     }
+                    $count += $number;
                 }
             }
             $node->nodes = array_values($node->nodes);
@@ -367,9 +362,8 @@ class DomCheckerProvider
         if ($this->isText($node)) {
             if ('' != Text::fullTrim($node->innertext())) {
                 return \false;
-            } else {
-                return \true;
             }
+            return \true;
         }
         foreach ($node->nodes as $child) {
             if (!$this->hasOnlyEmptyChild($child)) {
@@ -414,14 +408,13 @@ class DomCheckerProvider
     {
         if ($this->isBlock($node)) {
             return \true;
-        } else {
-            foreach ($node->nodes as $n) {
-                if ($this->containsBlock($n)) {
-                    return \true;
-                }
-            }
-            return \false;
         }
+        foreach ($node->nodes as $n) {
+            if ($this->containsBlock($n)) {
+                return \true;
+            }
+        }
+        return \false;
     }
     /**
      * @param simple_html_dom_node $node

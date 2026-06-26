@@ -5,8 +5,8 @@ namespace Weglot\Vendor\Weglot\Parser\Check\Dom;
 use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 class LinkTitle extends AbstractDomChecker
 {
-    const DOM = 'a';
-    const PROPERTY = 'title';
-    const WORD_TYPE = WordType::TEXT;
-    const ESCAPE_SPECIAL_CHAR = \true;
+    public const DOM = 'a';
+    public const PROPERTY = 'title';
+    public const WORD_TYPE = WordType::TEXT;
+    public const ESCAPE_SPECIAL_CHAR = \true;
 }

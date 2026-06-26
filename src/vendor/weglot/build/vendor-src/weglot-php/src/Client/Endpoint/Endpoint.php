@@ -7,8 +7,8 @@ use Weglot\Vendor\Weglot\Client\Caching\CacheInterface;
 use Weglot\Vendor\Weglot\Client\Client;
 abstract class Endpoint
 {
-    const METHOD = 'GET';
-    const ENDPOINT = '/';
+    public const METHOD = 'GET';
+    public const ENDPOINT = '/';
     /**
      * @var Client
      */
@@ -17,10 +17,7 @@ abstract class Endpoint
     {
         $this->setClient($client);
     }
-    /**
-     * @return void
-     */
-    public function setClient(Client $client)
+    public function setClient(Client $client): void
     {
         $this->client = $client;
     }
