@@ -162,6 +162,16 @@ make all          # Full update: checkout + scoper + vendor-sync
 make clean        # Remove all build artifacts
 ```
 
+### After any vendor update — regenerate the autoloader
+
+The scoped `weglot-php` parser discovers its DOM checkers by scanning the `Parser/Check/Dom/` directory at runtime (`DomCheckerProvider::loadDefaultCheckers()` uses `scandir()`), then builds each class name from the filename. Those classes are autoloaded via the **classmap** declared in `composer.json` (`autoload.classmap`), which is a static generated list.
+
+So whenever `make vendor-sync` / `make all` **adds or removes** a checker file (or any scoped class), you MUST run `composer dump-autoload` in every project that consumes the plugin. Otherwise `scandir()` finds a file the classmap doesn't know about and the parser throws `Class "\Weglot\Vendor\Weglot\Parser\Check\Dom\..." not found` at runtime (this is exactly how a newly-added `ImageSourceSet` checker broke translation until the autoloader was regenerated).
+
+```bash
+composer dump-autoload   # run in the Craft project root after every vendor update
+```
+
 ---
 
 ## Manual Release (GitHub)

@@ -129,6 +129,35 @@ final class ReplaceLinkServiceTest extends TestCase
         self::assertSame($url, $svc->replaceUrl($url, $this->fr));
     }
 
+    /**
+     * Non-navigational schemes carry no host, so the external-host guard cannot catch them; they
+     * must still be left untouched instead of being treated as internal paths and getting a wrong
+     * language prefix (e.g. mailto:a@b.com -> /fr/a@b.com/).
+     *
+     * @dataProvider nonNavigationalUrlProvider
+     */
+    public function testReplaceUrlLeavesNonNavigationalSchemesUntouched(string $url): void
+    {
+        $rus = $this->makeRusNoTranslation('https://example.com/page');
+        $svc = new ReplaceLinkService($rus);
+
+        self::assertSame($url, $svc->replaceUrl($url, $this->fr));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function nonNavigationalUrlProvider(): array
+    {
+        return [
+            'mailto' => ['mailto:concierge@weglot-craft-project.ddev.site'],
+            'tel' => ['tel:+33123456789'],
+            'sms' => ['sms:+33123456789'],
+            'javascript' => ['javascript:void(0)'],
+            'data' => ['data:text/plain;base64,SGVsbG8='],
+        ];
+    }
+
     // -------------------------------------------------------------------------
     // replaceA — regex substitution
     // -------------------------------------------------------------------------

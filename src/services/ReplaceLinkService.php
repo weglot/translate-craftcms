@@ -29,6 +29,14 @@ class ReplaceLinkService extends Component
      */
     public function replaceUrl(string $url, LanguageEntry $language, bool $evenExcluded = true): string
     {
+        // Non-navigational schemes (mailto:, tel:, sms:, javascript:, data:, ...) must never be
+        // rewritten: parse_url() returns no host for them, so the external-host guard below would
+        // not catch them and the URL would wrongly get a language prefix.
+        $scheme = parse_url($url, \PHP_URL_SCHEME);
+        if (\is_string($scheme) && !\in_array(strtolower($scheme), ['http', 'https'], true)) {
+            return $url;
+        }
+
         $currentHost = parse_url($this->requestUrlService->getFullUrl(), \PHP_URL_HOST);
         $urlHost = parse_url($url, \PHP_URL_HOST);
 
