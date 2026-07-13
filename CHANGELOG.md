@@ -1,5 +1,9 @@
 # Release Notes for Weglot
 
+## 1.2.7 - 2026-07-13
+
+- Fix: URLs using non-navigational schemes (mailto:, tel:, sms:, javascript:, data:, ...) are no longer rewritten with a language prefix; only http/https links go through language rewriting and slug translation.
+
 ## 1.2.6 - 2026-06-23
 
 - Improvement: Adds htmx attribute URL rewriting support, extending the existing URL replacement pipeline to translate URLs found in `hx-*` attributes.
