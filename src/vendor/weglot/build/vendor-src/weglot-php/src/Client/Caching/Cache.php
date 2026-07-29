@@ -17,7 +17,7 @@ class Cache implements CacheInterface
     protected $expire = 604800;
     // 7 days (= 60 * 60 * 24 * 7)
     /**
-     * @param null $itemPool
+     * @param CacheItemPoolInterface|null $itemPool
      */
     public function __construct($itemPool = null)
     {

@@ -3,13 +3,13 @@
 namespace Weglot\Vendor\Weglot\Tests\Client\Endpoint;
 
 use Weglot\Vendor\PHPUnit\Framework\TestCase;
-use Weglot\Vendor\Weglot\Client\Api\Enum\BotType;
-use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
-use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
-use Weglot\Vendor\Weglot\Client\Api\WordCollection;
-use Weglot\Vendor\Weglot\Client\Api\WordEntry;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Client\Endpoint\Translate;
+use Weglot\Vendor\Weglot\Parser\Definitions\Enum\BotType;
+use Weglot\Vendor\Weglot\Parser\Definitions\Enum\WordType;
+use Weglot\Vendor\Weglot\Parser\Definitions\TranslateEntry;
+use Weglot\Vendor\Weglot\Parser\Definitions\WordCollection;
+use Weglot\Vendor\Weglot\Parser\Definitions\WordEntry;
 class TranslateTest extends TestCase
 {
     /**
@@ -36,19 +36,13 @@ class TranslateTest extends TestCase
         // Translate endpoint
         $this->translate = new Translate($this->entry, $this->client);
     }
-    /**
-     * @return void
-     */
-    public function testSetOutputWords()
+    public function testSetOutputWords(): void
     {
         $this->entry->setOutputWords(null);
         $this->assertInstanceOf(WordCollection::class, $this->entry->getOutputWords());
         $this->assertCount(0, $this->entry->getOutputWords());
     }
-    /**
-     * @return void
-     */
-    public function testGetParams()
+    public function testGetParams(): void
     {
         $params = $this->entry->getParams();
         $this->assertEquals('en', $params['language_from']);
@@ -56,26 +50,17 @@ class TranslateTest extends TestCase
         $this->assertEquals('https://weglot.com/', $params['request_url']);
         $this->assertEquals(BotType::HUMAN, $params['bot']);
     }
-    /**
-     * @return void
-     */
-    public function testEndpointCountWord()
+    public function testEndpointCountWord(): void
     {
         $translated = $this->translate->handle();
         $this->assertCount($this->entry->getInputWords()->count(), $translated->getOutputWords());
     }
-    /**
-     * @return void
-     */
-    public function testTranslateEntry()
+    public function testTranslateEntry(): void
     {
         $this->assertInstanceOf(TranslateEntry::class, $this->translate->getTranslateEntry());
         $this->assertSame($this->translate->getTranslateEntry(), $this->entry);
     }
-    /**
-     * @return void
-     */
-    public function testPath()
+    public function testPath(): void
     {
         $this->assertEquals('/translate', $this->translate->getPath());
     }

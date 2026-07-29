@@ -9,7 +9,7 @@ use craft\base\Component;
 class DomCheckersService extends Component
 {
     /**
-     * @return string[]
+     * @return list<string> list of fully-qualified checker class names (feeds DomCheckerProvider::addCheckers(), typed array<int, mixed>)
      */
     public function getDomCheckers(): array
     {

@@ -16,11 +16,11 @@ if (!\defined('CURL_SSLVERSION_TLSv1_2')) {
 // @codingStandardsIgnoreEnd
 class CurlClient implements ClientInterface
 {
-    const DEFAULT_TIMEOUT = 80;
-    const DEFAULT_CONNECT_TIMEOUT = 30;
-    const INITIAL_NETWORK_RETRY_DELAY = 0.5;
-    const MAX_NETWORK_RETRY_DELAY = 2.0;
-    const MAX_NETWORK_RETRIES = 0;
+    public const DEFAULT_TIMEOUT = 80;
+    public const DEFAULT_CONNECT_TIMEOUT = 30;
+    public const INITIAL_NETWORK_RETRY_DELAY = 0.5;
+    public const MAX_NETWORK_RETRY_DELAY = 2.0;
+    public const MAX_NETWORK_RETRIES = 0;
     /**
      * @var int
      */
@@ -57,10 +57,8 @@ class CurlClient implements ClientInterface
     }
     /**
      * Initializing default user-agent.
-     *
-     * @return void
      */
-    public function initUserAgentInfo()
+    public function initUserAgentInfo(): void
     {
         $curlVersion = curl_version();
         $this->userAgentInfo = ['curl' => 'cURL\\' . $curlVersion['version'], 'ssl' => $curlVersion['ssl_version']];
@@ -74,10 +72,8 @@ class CurlClient implements ClientInterface
     }
     /**
      * @param string $header
-     *
-     * @return void
      */
-    public function addHeader($header)
+    public function addHeader($header): void
     {
         $this->defaultHeaders[] = $header;
     }
@@ -91,10 +87,8 @@ class CurlClient implements ClientInterface
     /**
      * @param string $service
      * @param string $value
-     *
-     * @return void
      */
-    public function addUserAgentInfo($service, $value)
+    public function addUserAgentInfo($service, $value): void
     {
         $this->userAgentInfo[$service] = $value;
     }
@@ -172,7 +166,7 @@ class CurlClient implements ClientInterface
         $options = $this->processHeadersAndOptions($headers, $options, $absUrl);
         // Create a callback to capture HTTP headers for the response
         $rheaders = [];
-        $headerCallback = function ($curl, $header_line) use (&$rheaders) {
+        $headerCallback = static function ($curl, $header_line) use (&$rheaders) {
             // Ignore the HTTP request line (HTTP/1.1 200 OK)
             if (!str_contains($header_line, ':')) {
                 return \strlen($header_line);

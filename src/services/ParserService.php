@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
+use weglot\craftweglot\checkers\dom\ImageSourceSet;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Client;
@@ -12,7 +13,7 @@ use Weglot\Vendor\Weglot\Parser\Check\Dom\ExternalLinkHref;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageDataSource;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageSource;
 use Weglot\Vendor\Weglot\Parser\ConfigProvider\ServerConfigProvider;
-use Weglot\Vendor\Weglot\Parser\Parser;
+use Weglot\Vendor\Weglot\Parser\TranslatingParser;
 
 class ParserService extends Component
 {
@@ -52,7 +53,7 @@ class ParserService extends Component
     /**
      * @throws \Exception
      */
-    public function getParser(): Parser
+    public function getParser(): TranslatingParser
     {
         $excludeBlocks = Plugin::getInstance()->getOption()->getExcludeBlocks();
         $customSwitchers = Plugin::getInstance()->getOption()->getOption('switchers');
@@ -72,7 +73,7 @@ class ParserService extends Component
 
         $safeCustomSwitchers = \is_array($customSwitchers) ? $customSwitchers : [];
 
-        $parser = new Parser($client, $config, $excludeBlocks, $safeCustomSwitchers, [], []);
+        $parser = new TranslatingParser($client, $config, $excludeBlocks, $safeCustomSwitchers, [], []);
 
         $parser->getDomCheckerProvider()->addCheckers($this->domCheckersService->getDomCheckers());
         $parser->getRegexCheckerProvider()->addCheckers($this->regexCheckersService->getRegexCheckers());
@@ -84,14 +85,20 @@ class ParserService extends Component
         $mediaEnabled = $this->optionService->getOption('media_enabled');
         $externalEnabled = $this->optionService->getOption('external_enabled');
 
+        // Checkers are registered with a leading backslash: DomCheckerProvider builds default
+        // checker names from DEFAULT_CHECKERS_NAMESPACE ('\Weglot\Vendor\...\') and
+        // DomCheckersService prefixes plugin checkers the same way. ::class has no leading
+        // backslash, so removeCheckers()'s array_diff would never match and the removal would be a
+        // silent no-op. Prefix '\' so the media/external toggles actually take effect.
         $removeChecker = [];
         if (!(bool) $externalEnabled) {
-            $removeChecker[] = ExternalLinkHref::class;
+            $removeChecker[] = '\\'.ExternalLinkHref::class;
         }
 
         if (!(bool) $mediaEnabled) {
-            $removeChecker[] = ImageDataSource::class;
-            $removeChecker[] = ImageSource::class;
+            $removeChecker[] = '\\'.ImageDataSource::class;
+            $removeChecker[] = '\\'.ImageSource::class;
+            $removeChecker[] = '\\'.ImageSourceSet::class;
         }
 
         if ([] !== $removeChecker) {

@@ -3,11 +3,11 @@
 namespace Weglot\Vendor\Weglot\Client\Factory;
 
 use Weglot\Vendor\Weglot\Client\Api\Exception\InputAndOutputCountMatchException;
-use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
-use Weglot\Vendor\Weglot\Client\Api\Exception\MissingRequiredParamException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
-use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
-use Weglot\Vendor\Weglot\Client\Api\WordEntry;
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\InvalidWordTypeException;
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\MissingRequiredParamException;
+use Weglot\Vendor\Weglot\Parser\Definitions\TranslateEntry;
+use Weglot\Vendor\Weglot\Parser\Definitions\WordEntry;
 class Translate
 {
     /**

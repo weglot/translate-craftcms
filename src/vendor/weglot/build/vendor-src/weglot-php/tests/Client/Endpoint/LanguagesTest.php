@@ -23,26 +23,17 @@ class LanguagesTest extends TestCase
         $endpoint = new LanguagesList($this->client);
         $this->languages = $endpoint->handle();
     }
-    /**
-     * @return void
-     */
-    public function testCount()
+    public function testCount(): void
     {
-        $this->assertCount(140, $this->languages);
+        $this->assertCount(141, $this->languages);
     }
-    /**
-     * @return void
-     */
-    public function testGetCode()
+    public function testGetCode(): void
     {
         $this->assertEquals('Finnish', $this->languages->getCode('fi')->getEnglishName());
         $this->assertEquals('Hrvatski', $this->languages->getCode('hr')->getLocalName());
         $this->assertNull($this->languages->getCode('foo'));
     }
-    /**
-     * @return void
-     */
-    public function testSerialize()
+    public function testSerialize(): void
     {
         $json = json_encode($this->languages->getCode('fa'));
         $expected = '{"internal_code":"fa","external_code":"fa","english":"Persian","local":"\u0641\u0627\u0631\u0633\u06cc","rtl":true}';

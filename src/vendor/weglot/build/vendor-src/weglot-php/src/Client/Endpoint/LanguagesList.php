@@ -10,8 +10,8 @@ use Weglot\Vendor\WeglotLanguages\Languages;
  */
 class LanguagesList extends Endpoint
 {
-    const METHOD = 'GET';
-    const ENDPOINT = '/languages';
+    public const METHOD = 'GET';
+    public const ENDPOINT = '/languages';
     /**
      * @return array<string, Language>
      */
@@ -26,7 +26,7 @@ class LanguagesList extends Endpoint
     {
         $languageCollection = new LanguageCollection();
         $data = $this->getLanguages();
-        $data = array_map(function ($data) {
+        $data = array_map(static function ($data) {
             $external_code = $data['code'];
             if ('tw' == $external_code) {
                 $external_code = 'zh-tw';

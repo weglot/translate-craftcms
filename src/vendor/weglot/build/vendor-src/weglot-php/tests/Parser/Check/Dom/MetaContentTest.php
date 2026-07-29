@@ -3,10 +3,10 @@
 namespace Weglot\Vendor\Weglot\Tests\Parser\Check\Dom;
 
 use Weglot\Vendor\PHPUnit\Framework\TestCase;
-use Weglot\Vendor\Weglot\Client\Api\Enum\BotType;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Parser\ConfigProvider\ManualConfigProvider;
-use Weglot\Vendor\Weglot\Parser\Parser;
+use Weglot\Vendor\Weglot\Parser\Definitions\Enum\BotType;
+use Weglot\Vendor\Weglot\Parser\TranslatingParser;
 class MetaContentTest extends TestCase
 {
     /**
@@ -22,7 +22,7 @@ class MetaContentTest extends TestCase
      */
     protected $client;
     /**
-     * @var Parser
+     * @var TranslatingParser
      */
     protected $parser;
     /**
@@ -39,13 +39,10 @@ class MetaContentTest extends TestCase
         $this->client->setOptions(['host' => 'https://api.weglot.dev']);
         $this->markTestSkipped('TODO');
     }
-    /**
-     * @return void
-     */
-    public function testCheck()
+    public function testCheck(): void
     {
         // Parser
-        $this->parser = new Parser($this->client, $this->config);
+        $this->parser = new TranslatingParser($this->client, $this->config);
         // Run the Parser
         $translatedContent = $this->parser->translate($this->content, 'en', 'de');
         $old = $this->_getSimpleDom($this->content);

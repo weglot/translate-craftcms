@@ -2,7 +2,7 @@
 
 namespace Weglot\Vendor\Weglot\Client\Api;
 
-use Weglot\Vendor\Weglot\Client\Api\Shared\AbstractCollectionEntry;
+use Weglot\Vendor\Weglot\Parser\Definitions\Shared\AbstractCollectionEntry;
 class LanguageEntry extends AbstractCollectionEntry
 {
     /**
