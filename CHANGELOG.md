@@ -1,8 +1,12 @@
 # Release Notes for Weglot
 
-## 1.2.8 - 2026-07-29
+## 1.2.9 - 2026-07-30
 
 - Fix: Same-document links (fragment-only `#anchor` / `#/spa/route` and query-only `?foo=bar` hrefs) are no longer rewritten with a language prefix on translated pages; they now stay relative to the current page instead of being rebased onto the language root (e.g. `#/booking/step-1?` no longer becomes `/fr/#/booking/step-1?`), fixing in-page and SPA navigation.
+- Fix: Restores translation of the `srcset` attribute on `<img>` in translated pages. The responsible checker was dropped in the library split, so a translated `src` could previously coexist with original-language `srcset` URLs.
+- Fix: The `media_enabled` and `external_enabled` options now correctly disable translation of media attributes (`src`, `data-src`, `srcset`) and external links respectively; a class-name matching bug previously made both toggles silent no-ops.
+- Improvement: Migrates the bundled Weglot PHP library to weglot-php 1.9.9, whose parsing layer is now extracted into a separate weglot-parser-php 0.1.1 dependency; the scoped vendor and the DOM/regex checker wiring were updated accordingly, with no change to translation output.
+- Improvement: Updates locked dependencies to clear all reported security advisories — guzzlehttp/guzzle 7.15.2, guzzlehttp/psr7 2.13.0, and craftcms/cms 5.10.12 (pulling fixed phpoffice/phpspreadsheet and web-auth/webauthn-lib) — all within the existing version constraints.
 
 ## 1.2.7 - 2026-07-13
 
