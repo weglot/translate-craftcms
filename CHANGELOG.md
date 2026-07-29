@@ -1,5 +1,9 @@
 # Release Notes for Weglot
 
+## 1.2.8 - 2026-07-29
+
+- Fix: Same-document links (fragment-only `#anchor` / `#/spa/route` and query-only `?foo=bar` hrefs) are no longer rewritten with a language prefix on translated pages; they now stay relative to the current page instead of being rebased onto the language root (e.g. `#/booking/step-1?` no longer becomes `/fr/#/booking/step-1?`), fixing in-page and SPA navigation.
+
 ## 1.2.7 - 2026-07-13
 
 - Fix: URLs using non-navigational schemes (mailto:, tel:, sms:, javascript:, data:, ...) are no longer rewritten with a language prefix; only http/https links go through language rewriting and slug translation.
