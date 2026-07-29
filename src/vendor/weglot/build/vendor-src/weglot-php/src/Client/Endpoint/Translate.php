@@ -4,16 +4,16 @@ namespace Weglot\Vendor\Weglot\Client\Endpoint;
 
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Api\Exception\InputAndOutputCountMatchException;
-use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
-use Weglot\Vendor\Weglot\Client\Api\Exception\MissingRequiredParamException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
-use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Client\Factory\Translate as TranslateFactory;
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\InvalidWordTypeException;
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\MissingRequiredParamException;
+use Weglot\Vendor\Weglot\Parser\Definitions\TranslateEntry;
 class Translate extends Endpoint
 {
-    const METHOD = 'POST';
-    const ENDPOINT = '/translate';
+    public const METHOD = 'POST';
+    public const ENDPOINT = '/translate';
     /**
      * @var TranslateEntry
      */

@@ -4,17 +4,17 @@ namespace Weglot\Vendor\Weglot\Client\Endpoint;
 
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Api\Exception\InputAndOutputCountMatchException;
-use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
-use Weglot\Vendor\Weglot\Client\Api\Exception\MissingRequiredParamException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
-use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Client\Factory\Translate as TranslateFactory;
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\InvalidWordTypeException;
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\MissingRequiredParamException;
+use Weglot\Vendor\Weglot\Parser\Definitions\TranslateEntry;
 class CdnTranslate extends Endpoint
 {
-    const METHOD = 'POST';
-    const ENDPOINT = '/translate';
-    const WORDS_LIMIT = 600;
+    public const METHOD = 'POST';
+    public const ENDPOINT = '/translate';
+    public const WORDS_LIMIT = 600;
     /**
      * @var TranslateEntry
      */
@@ -24,8 +24,7 @@ class CdnTranslate extends Endpoint
         $this->setTranslateEntry($translateEntry);
         $currentHost = $client->getOptions()['host'];
         if ($currentHost) {
-            $cdnHost = str_replace('https://api.weglot.', 'https://cdn-api-weglot.', $currentHost);
-            $client->setOptions(['host' => $cdnHost]);
+            $client->setOption('host', str_replace('https://api.weglot.', 'https://cdn-api-weglot.', $currentHost));
         }
         parent::__construct($client);
     }

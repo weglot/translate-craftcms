@@ -10,7 +10,7 @@ use Weglot\Vendor\Weglot\Parser\Check\Regex\RegexChecker;
 class RegexCheckersService extends Component
 {
     /**
-     * @return RegexChecker[]
+     * @return list<RegexChecker> list of RegexChecker instances (feeds RegexCheckerProvider::addCheckers(), typed array<int, RegexChecker>)
      */
     public function getRegexCheckers(): array
     {

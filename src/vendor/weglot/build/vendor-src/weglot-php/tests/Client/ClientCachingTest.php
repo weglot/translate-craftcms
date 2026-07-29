@@ -18,27 +18,18 @@ class ClientCachingTest extends TestCase
         $itemPool = new ArrayAdapter();
         $this->client->setCacheItemPool($itemPool);
     }
-    /**
-     * @return void
-     */
-    public function testExpire()
+    public function testExpire(): void
     {
         $this->assertEquals(604800, $this->client->getCache()->getExpire());
         $this->client->getCache()->setExpire(240);
         $this->assertEquals(240, $this->client->getCache()->getExpire());
     }
-    /**
-     * @return void
-     */
-    public function testGenerateKey()
+    public function testGenerateKey(): void
     {
         $cacheKey = $this->client->getCache()->generateKey(['method' => 'GET', 'endpoint' => '/translate', 'content' => []]);
         $this->assertEquals('wg_8bdaed005c88bda03e938c3de08da157ecbe5dfa', $cacheKey);
     }
-    /**
-     * @return void
-     */
-    public function testGetItem()
+    public function testGetItem(): void
     {
         $key = 'getItem';
         $item = $this->client->getCache()->get($key);

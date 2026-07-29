@@ -1,0 +1,17 @@
+<?php
+
+namespace Weglot\Vendor\Weglot\Parser\Check\Dom;
+
+use Weglot\Vendor\Weglot\Parser\Definitions\Enum\WordType;
+use Weglot\Vendor\Weglot\Parser\Util\Text as TextUtil;
+class MetaTitleContent extends AbstractDomChecker
+{
+    public const DOM = 'meta[property="og:title"],meta[name="twitter:title"]';
+    public const PROPERTY = 'content';
+    public const WORD_TYPE = WordType::TITLE;
+    public const ESCAPE_SPECIAL_CHAR = \true;
+    protected function check()
+    {
+        return !is_numeric(TextUtil::fullTrim($this->node->placeholder)) && !preg_match('/^\d+%$/', TextUtil::fullTrim($this->node->placeholder));
+    }
+}

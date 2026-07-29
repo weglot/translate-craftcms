@@ -13,23 +13,20 @@ class Profile
      */
     protected $translationEngine;
     /**
-     * @param string $apiKey
-     * @param int    $translationEngine
+     * @param string|null $apiKey
+     * @param int         $translationEngine
      */
     public function __construct($apiKey, $translationEngine)
     {
         $this->setup($apiKey, $translationEngine);
     }
     /**
-     * @param string $apiKey
-     * @param int    $translationEngine
-     *
-     * @return void
+     * @param string|null $apiKey
+     * @param int         $translationEngine
      */
-    protected function setup($apiKey, $translationEngine)
+    protected function setup($apiKey, $translationEngine): void
     {
-        $apiKeyLength = \strlen($apiKey);
-        if (35 === $apiKeyLength) {
+        if (\is_string($apiKey) && str_starts_with($apiKey, 'wg_') && 35 === \strlen($apiKey)) {
             $this->setApiVersion(1)->setTranslationEngine(1);
         } else {
             $this->setApiVersion(2)->setTranslationEngine($translationEngine);

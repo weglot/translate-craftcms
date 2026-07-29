@@ -16,7 +16,7 @@ use weglot\craftweglot\services\RequestUrlService;
 use weglot\craftweglot\services\TranslateService;
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
-use Weglot\Vendor\Weglot\Parser\Parser;
+use Weglot\Vendor\Weglot\Parser\TranslatingParser;
 use Weglot\Vendor\Weglot\Util\Url;
 
 final class TranslateServiceTest extends TestCase
@@ -48,20 +48,20 @@ final class TranslateServiceTest extends TestCase
         $fr = $this->fr;
 
         return new class([$en, $fr]) extends Url {
-            /** @var array<int, array{url: string, language: LanguageEntry, excluded: bool}> */
+            /** @var array<int, array{url: string, language: LanguageEntry, excluded: bool, exclusion_behavior: string, language_button_displayed: bool}> */
             private readonly array $mockedUrls;
 
             /** @param LanguageEntry[] $langs */
             public function __construct(array $langs)
             {
                 $this->mockedUrls = [
-                    ['url' => 'https://example.com/', 'language' => $langs[0], 'excluded' => false],
-                    ['url' => 'https://example.com/fr/', 'language' => $langs[1], 'excluded' => false],
+                    ['url' => 'https://example.com/', 'language' => $langs[0], 'excluded' => false, 'exclusion_behavior' => '', 'language_button_displayed' => true],
+                    ['url' => 'https://example.com/fr/', 'language' => $langs[1], 'excluded' => false, 'exclusion_behavior' => '', 'language_button_displayed' => true],
                 ];
                 parent::__construct('https://example.com', $langs[0], [], '', [], []);
             }
 
-            /** @return array<int, array{url: string, language: LanguageEntry, excluded: bool}> */
+            /** @return array<int, array{url: string, language: LanguageEntry, excluded: bool, exclusion_behavior: string, language_button_displayed: bool}> */
             public function getAllUrls(): array
             {
                 return $this->mockedUrls;
@@ -114,8 +114,8 @@ final class TranslateServiceTest extends TestCase
         bool $throwsApiError = false,
         bool $throwsException = false,
     ): ParserService {
-        /** @var Parser&MockObject $parserMock */
-        $parserMock = $this->getMockBuilder(Parser::class)
+        /** @var TranslatingParser&MockObject $parserMock */
+        $parserMock = $this->getMockBuilder(TranslatingParser::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -131,14 +131,14 @@ final class TranslateServiceTest extends TestCase
         $mock = $parserMock;
 
         return new class($mock) extends ParserService {
-            public function __construct(private readonly Parser $mockParser)
+            public function __construct(private readonly TranslatingParser $mockParser)
             {
                 // ParserService constructor requires these three; they have no
                 // constructor injection of their own so new() is safe here.
                 parent::__construct(new OptionService(), new DomCheckersService(), new RegexCheckersService());
             }
 
-            public function getParser(): Parser
+            public function getParser(): TranslatingParser
             {
                 return $this->mockParser;
             }

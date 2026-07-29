@@ -31,7 +31,7 @@ return [
 
     'patchers' => [
         static function (string $filePath, string $prefix, string $content): string {
-            if (str_contains($filePath, 'weglot-php/src/Parser/Check/DomCheckerProvider.php')) {
+            if (str_contains($filePath, 'weglot-parser-php/src/Check/DomCheckerProvider.php')) {
                 $content = str_replace(
                     '\\Weglot\\Parser\\Check\\Dom\\\\',
                     '\\Weglot\\Vendor\\Weglot\\Parser\\Check\\Dom\\\\',

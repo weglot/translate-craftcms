@@ -4,16 +4,16 @@ namespace Weglot\Vendor;
 
 require_once __DIR__ . '/vendor/autoload.php';
 use Weglot\Vendor\GuzzleHttp\Exception\GuzzleException;
-use Weglot\Vendor\Weglot\Client\Api\Enum\BotType;
-use Weglot\Vendor\Weglot\Client\Api\Enum\WordType;
 use Weglot\Vendor\Weglot\Client\Api\Exception\InputAndOutputCountMatchException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\InvalidWordTypeException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingRequiredParamException;
 use Weglot\Vendor\Weglot\Client\Api\Exception\MissingWordsOutputException;
-use Weglot\Vendor\Weglot\Client\Api\TranslateEntry;
-use Weglot\Vendor\Weglot\Client\Api\WordEntry;
 use Weglot\Vendor\Weglot\Client\Client;
 use Weglot\Vendor\Weglot\Client\Endpoint\Translate;
+use Weglot\Vendor\Weglot\Parser\Definitions\Enum\BotType;
+use Weglot\Vendor\Weglot\Parser\Definitions\Enum\WordType;
+use Weglot\Vendor\Weglot\Parser\Definitions\TranslateEntry;
+use Weglot\Vendor\Weglot\Parser\Definitions\WordEntry;
 // DotEnv
 $dotenv = new Dotenv\Dotenv(__DIR__);
 $dotenv->load();

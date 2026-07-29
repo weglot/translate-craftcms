@@ -23,9 +23,8 @@ class Text
     {
         if (\is_string($haystack) && str_contains($haystack, $search)) {
             return \true;
-        } else {
-            return \false;
         }
+        return \false;
     }
     /**
      * @param string|null $filename
@@ -46,9 +45,8 @@ class Text
     {
         if (null !== $regex) {
             return str_replace('\\\\/', '\/', str_replace('/', '\/', $regex));
-        } else {
-            return str_replace('\\\\/', '\/', str_replace('/', '\/', ''));
         }
+        return str_replace('\\\\/', '\/', str_replace('/', '\/', ''));
     }
     /**
      * @param mixed $string
@@ -72,8 +70,7 @@ class Text
     {
         if (\is_string($string)) {
             return strip_tags($string) !== $string;
-        } else {
-            return \false;
         }
+        return \false;
     }
 }

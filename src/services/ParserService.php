@@ -12,7 +12,7 @@ use Weglot\Vendor\Weglot\Parser\Check\Dom\ExternalLinkHref;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageDataSource;
 use Weglot\Vendor\Weglot\Parser\Check\Dom\ImageSource;
 use Weglot\Vendor\Weglot\Parser\ConfigProvider\ServerConfigProvider;
-use Weglot\Vendor\Weglot\Parser\Parser;
+use Weglot\Vendor\Weglot\Parser\TranslatingParser;
 
 class ParserService extends Component
 {
@@ -52,7 +52,7 @@ class ParserService extends Component
     /**
      * @throws \Exception
      */
-    public function getParser(): Parser
+    public function getParser(): TranslatingParser
     {
         $excludeBlocks = Plugin::getInstance()->getOption()->getExcludeBlocks();
         $customSwitchers = Plugin::getInstance()->getOption()->getOption('switchers');
@@ -72,7 +72,7 @@ class ParserService extends Component
 
         $safeCustomSwitchers = \is_array($customSwitchers) ? $customSwitchers : [];
 
-        $parser = new Parser($client, $config, $excludeBlocks, $safeCustomSwitchers, [], []);
+        $parser = new TranslatingParser($client, $config, $excludeBlocks, $safeCustomSwitchers, [], []);
 
         $parser->getDomCheckerProvider()->addCheckers($this->domCheckersService->getDomCheckers());
         $parser->getRegexCheckerProvider()->addCheckers($this->regexCheckersService->getRegexCheckers());

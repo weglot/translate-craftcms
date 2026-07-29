@@ -1,0 +1,131 @@
+<?php
+
+namespace Weglot\Vendor\Weglot\Parser\Check\Regex;
+
+use Weglot\Vendor\Weglot\Parser\Definitions\Exception\InvalidWordTypeException;
+use Weglot\Vendor\Weglot\Parser\Parser;
+use Weglot\Vendor\Weglot\Parser\Util\JsonUtil;
+use Weglot\Vendor\Weglot\Parser\Util\SourceType;
+use Weglot\Vendor\Weglot\Parser\Util\Text;
+class JsonChecker
+{
+    /**
+     * @var string[]
+     */
+    protected $default_keys = ['description', 'name'];
+    /**
+     * @var string
+     */
+    protected $jsonString;
+    /**
+     * @var Parser
+     */
+    protected $parser;
+    /**
+     * @var array<int, string>
+     */
+    protected $extraKeys;
+    /**
+     * @return $this
+     */
+    public function setParser(Parser $parser)
+    {
+        $this->parser = $parser;
+        return $this;
+    }
+    /**
+     * @return Parser
+     */
+    public function getParser()
+    {
+        return $this->parser;
+    }
+    /**
+     * @param string             $jsonString
+     * @param array<int, string> $extraKeys
+     */
+    public function __construct(Parser $parser, $jsonString, $extraKeys)
+    {
+        if (\function_exists('Weglot\Vendor\apply_filters')) {
+            $this->default_keys = apply_filters('list_json_ld_keys', $this->default_keys);
+        }
+        $this->setParser($parser)->setJsonString($jsonString)->setExtraKeys($extraKeys);
+    }
+    /**
+     * @param string $jsonString
+     *
+     * @return $this
+     */
+    public function setJsonString($jsonString)
+    {
+        $this->jsonString = $jsonString;
+        return $this;
+    }
+    /**
+     * @return string
+     */
+    public function getJsonString()
+    {
+        return $this->jsonString;
+    }
+    /**
+     * @param array<int, string> $extraKeys
+     *
+     * @return $this
+     */
+    public function setExtraKeys($extraKeys)
+    {
+        $this->extraKeys = $extraKeys;
+        return $this;
+    }
+    /**
+     * @return array<int, string>
+     */
+    public function getExtraKeys()
+    {
+        return $this->extraKeys;
+    }
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws InvalidWordTypeException
+     */
+    public function handle()
+    {
+        $json = json_decode($this->jsonString, \true);
+        $paths = [];
+        if (\is_array($json)) {
+            $this->findWords($json, '', $paths);
+        }
+        return ['type' => SourceType::SOURCE_JSON, 'source' => $this->jsonString, 'jsonArray' => $json, 'paths' => $paths];
+    }
+    /**
+     * @param array<mixed>                                               $json
+     * @param string                                                     $currentKey
+     * @param array<array{key: int|string, parsed: array<mixed>|string}> $paths
+     *
+     * @throws InvalidWordTypeException
+     */
+    public function findWords($json, $currentKey, &$paths): void
+    {
+        foreach ($json as $key => $value) {
+            if (!\is_string($value)) {
+                if (\is_array($value)) {
+                    $this->findWords($value, ltrim($currentKey . JsonUtil::SEPARATOR . $key, JsonUtil::SEPARATOR), $paths);
+                }
+                continue;
+            }
+            $k = ltrim($currentKey . JsonUtil::SEPARATOR . $key, JsonUtil::SEPARATOR);
+            if (Text::isJSON($value)) {
+                $parsed = $this->getParser()->parseJSON($value, $this->getExtraKeys());
+            } elseif (Text::isHTML($value)) {
+                $parsed = $this->getParser()->parseHTML($value);
+            } elseif (!\is_int($key) && \in_array($key, array_unique(array_merge($this->default_keys, $this->getExtraKeys())), \true) || \is_int($key) && \in_array(substr($currentKey, (strrpos($currentKey, JsonUtil::SEPARATOR) ?: -\strlen(JsonUtil::SEPARATOR)) + \strlen(JsonUtil::SEPARATOR)), array_unique(array_merge($this->default_keys, $this->getExtraKeys())), \true)) {
+                $parsed = $this->getParser()->parseText($value);
+            } else {
+                continue;
+            }
+            $paths[] = ['key' => $k, 'parsed' => $parsed];
+        }
+    }
+}
