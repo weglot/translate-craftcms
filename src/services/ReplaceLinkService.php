@@ -29,6 +29,15 @@ class ReplaceLinkService extends Component
      */
     public function replaceUrl(string $url, LanguageEntry $language, bool $evenExcluded = true): string
     {
+        // Same-document references ("#anchor", "#/spa/route", "?foo=bar") resolve against the
+        // current page. parse_url() reports no host and no path for them, so the guards below
+        // would not catch them and they would wrongly receive a language prefix (e.g.
+        // "#/booking" -> "/fr/#/booking"), rebasing the link onto /fr/ and breaking in-page and
+        // SPA navigation. Leave them untouched.
+        if ('' === $url || '#' === $url[0] || '?' === $url[0]) {
+            return $url;
+        }
+
         // Non-navigational schemes (mailto:, tel:, sms:, javascript:, data:, ...) must never be
         // rewritten: parse_url() returns no host for them, so the external-host guard below would
         // not catch them and the URL would wrongly get a language prefix.

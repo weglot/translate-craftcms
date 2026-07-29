@@ -69,6 +69,33 @@ final class ReplaceLinkServiceTest extends TestCase
     }
 
     /**
+     * Build a RequestUrlService stub whose createUrlObject() throws. The
+     * same-document guard in replaceUrl() must short-circuit before any URL
+     * object is built, so createUrlObject() should never be reached; if the
+     * guard failed, replaceUrl() would call it and the exception would fail the
+     * test.
+     */
+    private function makeRusRejectingUrlBuild(string $currentUrl): RequestUrlService
+    {
+        return new class($currentUrl) extends RequestUrlService {
+            public function __construct(private readonly string $currentUrl)
+            {
+                parent::__construct();
+            }
+
+            public function getFullUrl(bool $useForwardedHost = false): string
+            {
+                return $this->currentUrl;
+            }
+
+            public function createUrlObject(string $url): Url
+            {
+                throw new \LogicException('createUrlObject() must not be reached for same-document references');
+            }
+        };
+    }
+
+    /**
      * Build a ReplaceLinkService subclass whose replaceUrl() returns a
      * controlled translated URL, bypassing all API and service calls.
      * Also injects a matching RequestUrlService stub into the plugin so that
@@ -155,6 +182,37 @@ final class ReplaceLinkServiceTest extends TestCase
             'sms' => ['sms:+33123456789'],
             'javascript' => ['javascript:void(0)'],
             'data' => ['data:text/plain;base64,SGVsbG8='],
+        ];
+    }
+
+    /**
+     * Fragment-only and query-only hrefs are references to the current document; they must be
+     * returned untouched instead of receiving a language prefix, which would rebase them onto
+     * /fr/ and break in-page / SPA navigation (e.g. "#/booking/step-1?" -> "/fr/#/booking/step-1?").
+     * The stub throws if replaceUrl() tries to build a URL object, so the test fails if the
+     * guard does not short-circuit.
+     *
+     * @dataProvider sameDocumentUrlProvider
+     */
+    public function testReplaceUrlLeavesSameDocumentReferencesUntouched(string $url): void
+    {
+        $rus = $this->makeRusRejectingUrlBuild('https://example.com/event');
+        $svc = new ReplaceLinkService($rus);
+
+        self::assertSame($url, $svc->replaceUrl($url, $this->fr));
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function sameDocumentUrlProvider(): array
+    {
+        return [
+            'spa fragment route' => ['#/booking/step-1?'],
+            'simple anchor' => ['#section'],
+            'bare hash' => ['#'],
+            'query only' => ['?foo=bar'],
+            'bare question mark' => ['?'],
         ];
     }
 
