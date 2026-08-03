@@ -28,10 +28,10 @@
     }
     function updateSaveDisabled() {
         if (!form) return;
-        const saveBtn = form.querySelector('button[type="submit"], .btn.submit');
-        if (!saveBtn) return;
-        if (isValid === false) { saveBtn.classList.add('disabled'); saveBtn.disabled = true; }
-        else { saveBtn.classList.remove('disabled'); saveBtn.disabled = false; }
+        form.querySelectorAll('button[type="submit"]').forEach(function(saveBtn) {
+            if (isValid === false) { saveBtn.classList.add('disabled'); saveBtn.disabled = true; }
+            else { saveBtn.classList.remove('disabled'); saveBtn.disabled = false; }
+        });
     }
     function checkKey(value) {
         if (!statusDiv) return Promise.resolve(false);

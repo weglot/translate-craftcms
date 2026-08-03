@@ -297,6 +297,20 @@ $spacing-base: 20px;
     }
 }
 
+// Onboarding actions: stacked buttons sharing the width of the widest label
+.weglot-onboarding-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: fit-content;
+    margin-top: 10px;
+
+    .btn {
+        margin: 0;
+    }
+}
+
 // Reset section
 .weglot-section-separator {
     margin: 32px 0;

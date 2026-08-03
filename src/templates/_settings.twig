@@ -24,7 +24,8 @@
 }) }}
 
 {% if not settings.apiKey or settings.getErrors('apiKey') %}
-    <div class="buttons" style="margin-top: 10px;">
+    <div class="buttons weglot-onboarding-actions">
+        <button type="submit" class="btn submit">{{ "Activate Weglot"|t('weglot') }}</button>
         <a href="{{ craft.app.plugins.getPlugin('weglot').dashboardHelper.getRegistrationUrl() }}" class="btn"
            target="_blank" rel="noopener">{{ "Register on Weglot"|t('weglot') }}</a>
     </div>
