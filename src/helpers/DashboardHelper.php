@@ -6,6 +6,7 @@ namespace weglot\craftweglot\helpers;
 
 use craft\helpers\App;
 use weglot\craftweglot\services\OptionService;
+use weglot\craftweglot\services\VersionService;
 use yii\helpers\Url;
 
 class DashboardHelper
@@ -15,7 +16,7 @@ class DashboardHelper
     private ?string $organizationSlug = null;
     private bool $canGenerate = false;
 
-    public function __construct(OptionService $optionService)
+    public function __construct(private readonly VersionService $versionService, OptionService $optionService)
     {
         $apiKey = $optionService->getOption('api_key');
 
@@ -136,6 +137,9 @@ class DashboardHelper
 
     public function getRegistrationUrl(): string
     {
-        return $this->getBaseUrl().'/register?project=craft';
+        return HelperApi::getRegisterUrl(
+            $this->versionService->getRandomOnboardingVersion(),
+            \Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? ''
+        );
     }
 }

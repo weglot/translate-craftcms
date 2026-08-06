@@ -30,6 +30,7 @@ use weglot\craftweglot\services\RequestUrlService;
 use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
+use weglot\craftweglot\services\VersionService;
 use weglot\craftweglot\web\WeglotVirtualRequest;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use yii\base\Event;
@@ -77,6 +78,7 @@ class Plugin extends BasePlugin
                 'pageViews' => ['class' => PageViewsService::class],
                 'redirectService' => ['class' => RedirectService::class],
                 'dynamics' => ['class' => DynamicsService::class],
+                'versionService' => ['class' => VersionService::class],
             ],
         ];
     }
