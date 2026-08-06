@@ -98,7 +98,15 @@ For `composer audit`, report any advisories found. Vulnerabilities in transitive
 
 ## WordPress Plugin as Reference Implementation
 
-When the user mentions an implementation from the Weglot WordPress plugin, automatically look it up in `/Users/edson/weglot-craft-project/weglot-wordpress/` — do not ask for the path. Use the MCP PHPStorm `search_symbol` tool to locate the relevant class or method there, then use it as the reference for porting or comparing behavior to the Craft plugin.
+When the user mentions "WP" or an implementation from the Weglot WordPress plugin, automatically look it up in:
+
+```
+/Users/edson/local-sites/new-plugin-weglot/app/public/wp-content/plugins/weglot
+```
+
+Do not ask for the path. Use the MCP PHPStorm `search_symbol` tool to locate the relevant class or method there, then use it as the reference for porting or comparing behavior to the Craft plugin.
+
+**Before searching, verify the WP project is open in PhpStorm** — call `mcp__phpstorm__get_repositories` with that path as `projectPath`. If it does not resolve, tell the user the WP project is not open in PhpStorm and ask them to open it, rather than silently falling back to plain file reads.
 
 ---
 
