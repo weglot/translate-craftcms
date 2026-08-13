@@ -32,6 +32,15 @@ final class TranslateServiceTest extends TestCase
         parent::setUp();
         $this->en = new LanguageEntry('en', 'en', 'English', 'English', false);
         $this->fr = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
+
+        // reverseTranslateSearchQuery() reads the request's absolute URL, and Yii
+        // cannot resolve a URI under the test bootstrap. Seed one so this class does
+        // not depend on an earlier test having populated it.
+        //
+        // Not restored afterwards: the request is a component of the single shared
+        // Craft app, and it caches the URL on first resolution anyway, so there is no
+        // "unresolved" value to put back. Any class needing a URL must seed its own.
+        \Craft::$app->getRequest()->setUrl('/');
     }
 
     // -------------------------------------------------------------------------
