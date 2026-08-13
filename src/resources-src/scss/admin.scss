@@ -309,6 +309,22 @@ $spacing-base: 20px;
     .btn {
         margin: 0;
     }
+
+    // Outranks Craft's `.btn { display: inline-flex }` without !important
+    .weglot-hidden {
+        display: none;
+    }
+
+    .btn-text {
+        margin: 0;
+        text-align: center;
+        line-height: 1.4;
+    }
+
+    .btn-subtext {
+        color: var(--medium-text-color, #606d7b);
+        font-size: 12px;
+    }
 }
 
 // Reset section

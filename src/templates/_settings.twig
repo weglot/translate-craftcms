@@ -1,5 +1,10 @@
 {% do craft.app.plugins.getPlugin('weglot').language.injectLanguagesJsonScript() %}
 {% do craft.app.view.registerAssetBundle('weglot\\craftweglot\\resources\\AdminAsset') %}
+
+{# Craft's plugin settings layout hardcodes a redirect to the settings index; this
+   overrides it so saving keeps the user on the Weglot settings page. #}
+{{ redirectInput('settings/plugins/weglot') }}
+
 <h1>General</h1>
 {% import '_includes/forms.twig' as forms %}
 {% set weglotPlugin = craft.app.plugins.getPlugin('weglot') %}
@@ -25,9 +30,14 @@
 
 {% if not settings.apiKey or settings.getErrors('apiKey') %}
     <div class="buttons weglot-onboarding-actions">
-        <button type="submit" class="btn submit">{{ "Activate Weglot"|t('weglot') }}</button>
+        {# Kept wired but hidden: saving goes through Craft's own Save button for now. #}
+        <button type="button" data-weglot-activate class="btn submit weglot-hidden">{{ "Activate Weglot"|t('weglot') }}</button>
         <a href="{{ craft.app.plugins.getPlugin('weglot').dashboardHelper.getRegistrationUrl() }}" class="btn"
            target="_blank" rel="noopener">{{ "Register on Weglot"|t('weglot') }}</a>
+        <p class="btn-text">
+            {{ "New to Weglot?"|t('weglot') }}<br>
+            <span class="btn-subtext">{{ "Get your free key in 2 minutes"|t('weglot') }}</span>
+        </p>
     </div>
 {% endif %}
 
@@ -101,6 +111,24 @@
                     </div>
                 </a>
 
+                {% if dashboardHelper.isV2Dashboard() %}
+                <a href="{{ dashboardHelper.getExclusionsUrl() }}" class="menu-card-link">
+                    <div class="menu-card">
+                        <div class="card-top">
+                            <img
+                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/puzzle.svg', true) }}"
+                                width="32"
+                                height="32"
+                                alt=""/>
+                            <div class="wrapper-card-text">
+                                <div class="card-title">Translation Exclusions</div>
+                                <div class="card-desc">Choose pages or blocks to exclude from translation</div>
+                            </div>
+                        </div>
+                        <span class="btn-link">Go to Dashboard</span>
+                    </div>
+                </a>
+                {% else %}
                 <a href="{{ dashboardHelper.getExcludeBlocksUrl() }}" class="menu-card-link">
                     <div class="menu-card">
                         <div class="card-top">
@@ -154,6 +182,7 @@
                         <span class="btn-link">Go to Dashboard</span>
                     </div>
                 </a>
+                {% endif %}
 
                 <a href="{{ dashboardHelper.getSwitcherEditor() }}" class="menu-card-link">
 

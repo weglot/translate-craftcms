@@ -3,8 +3,11 @@
     const apiKeyInput = document.querySelector('[data-weglot-api-key]');
     const statusDiv   = document.querySelector('[data-weglot-api-status]');
     const form        = apiKeyInput ? apiKeyInput.closest('form') : null;
+    const activateBtn = document.querySelector('[data-weglot-activate]');
 
     let isValid = apiKeyInput && apiKeyInput.value.trim() !== '' ? null : false;
+    let isV1Key = false;
+    let pendingCheck = null;
     let successTimeout = null;
     function setStatus(ok, message) {
         if (!statusDiv) return;
@@ -58,7 +61,8 @@
                     const ok = !(response.error || (response.succeeded && parseInt(response.succeeded) !== 1));
                     if (ok) {
                         var product = response.product != null ? String(response.product) : '';
-                        setV1FieldsVisible(product.startsWith('1'));
+                        isV1Key = product.startsWith('1');
+                        setV1FieldsVisible(isV1Key);
                         setStatus(true, Craft.t('weglot', 'Success! The API key is valid.'));
                         if (apiKeyField) {
                             apiKeyField.classList.add('is-valid');
@@ -87,41 +91,90 @@
     function setV1FieldsVisible(show) {
         var container = document.querySelector('[data-weglot-v1-fields]');
         if (!container) return;
+        var wasHidden = container.style.display === 'none';
         container.style.display = show ? '' : 'none';
+        // Selectize measures its width at init; built inside a hidden container it
+        // renders collapsed, so rebuild it the first time the fields are revealed.
+        if (show && wasHidden) {
+            initDestinationSelectize();
+        }
+    }
+
+    // Blurring the field and clicking a button both ask for a validation, so the
+    // in-flight request is shared and an already-validated key is not re-checked.
+    function validateKey(value) {
+        if (isValid === true) {
+            return Promise.resolve(true);
+        }
+        if (!pendingCheck) {
+            pendingCheck = checkKey(value).then(function(ok) {
+                pendingCheck = null;
+                if (apiKeyInput && apiKeyInput.value !== value) {
+                    return false;
+                }
+                isValid = ok;
+                updateSaveDisabled();
+                return ok;
+            });
+        }
+        return pendingCheck;
+    }
+    // Craft's own Save button is the only submit path that carries the whole CP
+    // behaviour (unsaved-changes guard, redirect resolution), so click it rather than
+    // submitting the form ourselves.
+    function submitForm() {
+        if (!form) return;
+        const saveBtn = form.querySelector('button[type="submit"].submit');
+        if (saveBtn) { saveBtn.click(); }
+        else if (form.requestSubmit) { form.requestSubmit(); }
+        else { form.submit(); }
+    }
+    function displayInvalidKeyError() {
+        (Craft.cp && Craft.cp.displayError)
+            ? Craft.cp.displayError(Craft.t('weglot', 'The API key is invalid.'))
+            : alert(Craft.t('weglot', 'The API key is invalid.'));
     }
 
     if (apiKeyInput) {
         apiKeyInput.addEventListener('input', function() {
-            isValid = null; clearStatus(); updateSaveDisabled();
+            isValid = null; pendingCheck = null; clearStatus(); updateSaveDisabled();
             setV1FieldsVisible(false);
         });
     }
     document.addEventListener('focusout', function(e) {
         if (e.target === apiKeyInput) {
-            checkKey(apiKeyInput.value).then(function(ok) { isValid = ok; updateSaveDisabled(); });
+            validateKey(apiKeyInput.value);
         }
     });
     if (form) {
         form.addEventListener('submit', function(e) {
             if (isValid === false) {
                 e.preventDefault();
-                (Craft.cp && Craft.cp.displayError)
-                    ? Craft.cp.displayError(Craft.t('weglot', 'The API key is invalid.'))
-                    : alert(Craft.t('weglot', 'The API key is invalid.'));
+                displayInvalidKeyError();
                 return;
             }
             if (isValid === null && apiKeyInput) {
                 e.preventDefault();
-                checkKey(apiKeyInput.value).then(function(ok) {
-                    isValid = ok; updateSaveDisabled();
-                    if (ok) { form.submit(); }
-                    else {
-                        (Craft.cp && Craft.cp.displayError)
-                            ? Craft.cp.displayError(Craft.t('weglot', 'The API key is invalid.'))
-                            : alert(Craft.t('weglot', 'The API key is invalid.'));
-                    }
+                validateKey(apiKeyInput.value).then(function(ok) {
+                    if (ok) { submitForm(); }
+                    else { displayInvalidKeyError(); }
                 });
             }
+        });
+    }
+
+    if (activateBtn && apiKeyInput) {
+        activateBtn.addEventListener('click', function() {
+            activateBtn.disabled = true;
+            validateKey(apiKeyInput.value).then(function(ok) {
+                activateBtn.disabled = false;
+                if (!ok) return;
+                // V1 keys still need the language selection, so reveal it and let the
+                // user save once it is filled. V2 keys get their languages back from
+                // the API on save, so activating is enough.
+                if (isV1Key) { setV1FieldsVisible(true); }
+                else { submitForm(); }
+            });
         });
     }
 
