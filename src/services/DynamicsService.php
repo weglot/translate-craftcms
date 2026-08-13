@@ -17,11 +17,11 @@ final class DynamicsService
         }
 
         $settings = Plugin::getInstance()->getTypedSettings();
-        if (false === (bool) $settings->enableDynamics) {
+        if (false === $settings->enableDynamics) {
             return;
         }
 
-        if (!$this->isAllowedUrl((string) ($settings->dynamicsAllowedUrls ?? ''))) {
+        if (!$this->isAllowedUrl($settings->dynamicsAllowedUrls)) {
             return;
         }
 
@@ -31,7 +31,7 @@ final class DynamicsService
 
         $whitelist = $this->mergeSelectors(
             $defaultWhitelist,
-            $this->parseSelectorsInput((string) ($settings->dynamicsWhitelistSelectors ?? ''))
+            $this->parseSelectorsInput($settings->dynamicsWhitelistSelectors)
         );
 
         // Récupération des dynamics depuis les options (plus depuis les settings/formulaire)
@@ -126,7 +126,8 @@ final class DynamicsService
             return $this->dedupeSelectors($out);
         }
 
-        $parts = preg_split('/[\r\n,]+/', $raw) ?: [];
+        $split = preg_split('/[\r\n,]+/', $raw);
+        $parts = false === $split ? [] : $split;
         $out = [];
         foreach ($parts as $p) {
             $s = trim($p);
@@ -205,7 +206,8 @@ final class DynamicsService
                 }
             }
         } else {
-            $parts = preg_split('/[\r\n,]+/', $rawAllowed) ?: [];
+            $split = preg_split('/[\r\n,]+/', $rawAllowed);
+            $parts = false === $split ? [] : $split;
             foreach ($parts as $p) {
                 $u = trim($p);
                 if ('' !== $u) {

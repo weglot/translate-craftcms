@@ -160,14 +160,11 @@ class DashboardHelper
             return '#';
         }
 
-        $launchUrl = Url::home();
-
         return \sprintf(
             '%s/workspaces/%s/projects/%s/settings/language-model',
             $this->getBaseUrl(),
             $this->organizationSlug,
-            $this->projectSlug,
-            urlencode($launchUrl)
+            $this->projectSlug
         );
     }
 

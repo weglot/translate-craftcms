@@ -28,7 +28,7 @@ class HrefLangService extends Component
             $originalLanguage = $languageService->getOriginalLanguage();
 
             $settings = Plugin::getInstance()->getTypedSettings();
-            $apiKey = trim((string) $settings->apiKey);
+            $apiKey = trim($settings->apiKey);
 
             $currentExternal = ($currentLanguage instanceof LanguageEntry) ? strtolower(trim($currentLanguage->getExternalCode())) : '';
             $isOnTranslatedPage = (

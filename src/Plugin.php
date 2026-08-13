@@ -57,6 +57,9 @@ class Plugin extends BasePlugin
     public const EVENT_REGISTER_WHITELIST_SELECTORS = 'registerWhitelistSelectors';
     public const EVENT_REGISTER_DYNAMICS_SELECTORS = 'registerDynamicsSelectors';
 
+    /**
+     * @return array{components: array<string, array{class: class-string}>}
+     */
     public static function config(): array
     {
         return [
@@ -228,9 +231,9 @@ class Plugin extends BasePlugin
 
                 try {
                     $settings = Plugin::getInstance()->getTypedSettings();
-                    $apiKey = trim((string) $settings->apiKey);
+                    $apiKey = trim($settings->apiKey);
 
-                    $langExternal = strtolower((string) $first);
+                    $langExternal = strtolower($first);
                     if (!\in_array('', [$apiKey, $langExternal, $internalPath], true)) {
                         $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
                             $apiKey,

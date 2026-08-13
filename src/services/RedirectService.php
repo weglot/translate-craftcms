@@ -218,7 +218,7 @@ class RedirectService extends Component
         }
 
         $url = $req->getAbsoluteUrl();
-        $url = preg_replace('/([&?])wg-choose-original=[^&]*(&|$)/', '$1', (string) $url);
+        $url = preg_replace('/([&?])wg-choose-original=[^&]*(&|$)/', '$1', $url);
         if (\is_string($url)) {
             $url = rtrim($url, '&?');
             $url = preg_replace('/\?$/', '', $url);

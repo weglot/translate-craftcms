@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace weglot\craftweglot\models;
 
+use yii\validators\Validator;
 use craft\base\Model;
 use weglot\craftweglot\Plugin;
 
@@ -27,7 +28,7 @@ class Settings extends Model
     /**
      * Defines validation rules for the properties of the model.
      *
-     * @return array list of validation rules for model attributes
+     * @return array<int, array<mixed>|Validator> list of validation rules for model attributes
      */
     public function rules(): array
     {
