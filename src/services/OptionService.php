@@ -81,7 +81,9 @@ class OptionService extends Component
         'has_first_settings' => true,
         'show_box_first_settings' => false,
         'version' => 1,
-        'translation_engine' => 2,
+        // No `translation_engine` default on purpose: the API omits the field on V2
+        // projects, and getTranslationEngine() falls back to 3 as the WordPress plugin
+        // does. A default here would shadow that fallback and pin every project to it.
     ];
 
     /**

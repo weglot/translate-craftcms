@@ -237,10 +237,11 @@ final class OptionServiceTest extends TestCase
     // getTranslationEngine
     // -------------------------------------------------------------------------
 
-    public function testGetTranslationEngineReturnsDefaultValueOfTwo(): void
+    public function testGetTranslationEngineFallsBackToThreeWhenTheApiOmitsIt(): void
     {
-        // Default options have 'translation_engine' => 2
-        self::assertSame(2, $this->makeSvc()->getTranslationEngine());
+        // V2 project settings never carry `translation_engine`; the WordPress plugin
+        // falls back to 3 in the same situation.
+        self::assertSame(3, $this->makeSvc()->getTranslationEngine());
     }
 
     public function testGetTranslationEngineReturnsConfiguredValue(): void
