@@ -20,6 +20,9 @@ final class DashboardHelperTest extends TestCase
         parent::setUp();
         $this->savedApiKey = Plugin::getInstance()->getTypedSettings()->apiKey;
         \Craft::$app->getCache()->delete(UserApiService::workspaceCacheKey('sk_abc123'));
+        // The service memoizes the slug for its lifetime, and the component is shared
+        // across the whole suite — hand each test a fresh one.
+        Plugin::getInstance()->set('userApi', new UserApiService());
     }
 
     protected function tearDown(): void

@@ -67,4 +67,46 @@ final class UserApiServiceTest extends TestCase
         // reachable from the test bootstrap the fetch yields an empty slug.
         self::assertSame('', $this->userApiService->getWorkspaceSlug('sk_other'));
     }
+
+    /**
+     * DashboardHelper asks once per quick link, so a failing lookup must not repeat
+     * its HTTP timeout for every card on the page.
+     */
+    public function testFetchIsMemoizedForTheRequest(): void
+    {
+        $svc = new class extends UserApiService {
+            public int $fetchCount = 0;
+
+            protected function fetchWorkspaceSlug(string $apiKey): string
+            {
+                ++$this->fetchCount;
+
+                return '';
+            }
+        };
+
+        self::assertSame('', $svc->getWorkspaceSlug(self::V2_KEY));
+        self::assertSame('', $svc->getWorkspaceSlug(self::V2_KEY));
+        self::assertSame('', $svc->getWorkspaceSlug(self::V2_KEY));
+        self::assertSame(1, $svc->fetchCount);
+    }
+
+    public function testMemoIsDroppedWhenTheApiKeyChanges(): void
+    {
+        $svc = new class extends UserApiService {
+            public int $fetchCount = 0;
+
+            protected function fetchWorkspaceSlug(string $apiKey): string
+            {
+                ++$this->fetchCount;
+
+                return 'a-workspace';
+            }
+        };
+
+        $svc->getWorkspaceSlug(self::V2_KEY);
+        $svc->getWorkspaceSlug('sk_other');
+
+        self::assertSame(2, $svc->fetchCount);
+    }
 }

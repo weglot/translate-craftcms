@@ -16,6 +16,17 @@ class UserApiService extends Component
     private const WORKSPACE_CACHE_TTL = 3600;
 
     /**
+     * A failed lookup yields an empty slug, which blanks every dashboard link. Keep it
+     * just long enough to throttle retries, not long enough for a network blip to cost
+     * a whole hour of broken links.
+     */
+    private const WORKSPACE_FAILURE_TTL = 300;
+
+    private ?string $memoizedApiKey = null;
+
+    private string $memoizedWorkspaceSlug = '';
+
+    /**
      * Scoped to the API key: saving the settings refreshes the option caches but never
      * clears this entry, so a shared key would keep serving the previous project's
      * workspace for a whole TTL after the API key changes.
@@ -61,21 +72,39 @@ class UserApiService extends Component
             return '';
         }
 
+        // DashboardHelper asks once per quick link, so without this a failing lookup
+        // would repeat its HTTP timeout for every card on the page.
+        if ($this->memoizedApiKey === $apiKey) {
+            return $this->memoizedWorkspaceSlug;
+        }
+
         $cache = \Craft::$app->getCache();
         $cacheKey = self::workspaceCacheKey($apiKey);
         $cached = $cache->get($cacheKey);
 
         if (\is_string($cached)) {
-            return $cached;
+            return $this->memoize($apiKey, $cached);
         }
 
         $slug = $this->fetchWorkspaceSlug($apiKey);
-        $cache->set($cacheKey, $slug, self::WORKSPACE_CACHE_TTL);
+        $cache->set(
+            $cacheKey,
+            $slug,
+            '' === $slug ? self::WORKSPACE_FAILURE_TTL : self::WORKSPACE_CACHE_TTL
+        );
+
+        return $this->memoize($apiKey, $slug);
+    }
+
+    private function memoize(string $apiKey, string $slug): string
+    {
+        $this->memoizedApiKey = $apiKey;
+        $this->memoizedWorkspaceSlug = $slug;
 
         return $slug;
     }
 
-    private function fetchWorkspaceSlug(string $apiKey): string
+    protected function fetchWorkspaceSlug(string $apiKey): string
     {
         $apiBaseUrl = Plugin::getInstance()->getOption()->getOption('api_base_url');
         $host = \is_string($apiBaseUrl) && '' !== $apiBaseUrl ? $apiBaseUrl : HelperApi::getApiUrlV2();
