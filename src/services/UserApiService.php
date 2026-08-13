@@ -7,9 +7,14 @@ namespace weglot\craftweglot\services;
 use craft\base\Component;
 use GuzzleHttp\Exception\RequestException;
 use weglot\craftweglot\helpers\HelperApi;
+use weglot\craftweglot\Plugin;
 
 class UserApiService extends Component
 {
+    public const WORKSPACE_CACHE_KEY = 'weglot_workspace_slug';
+
+    private const WORKSPACE_CACHE_TTL = 3600;
+
     /**
      * @return array<string, mixed>
      */
@@ -34,6 +39,59 @@ class UserApiService extends Component
         } catch (RequestException $e) {
             return $this->requestError($e);
         }
+    }
+
+    /**
+     * V2 projects carry no `organization_slug`; the dashboard URL is built from the
+     * workspace slug instead, which only this endpoint exposes.
+     */
+    public function getWorkspaceSlug(string $apiKey): string
+    {
+        if (!HelperApi::isV2ApiKey($apiKey)) {
+            return '';
+        }
+
+        $cache = \Craft::$app->getCache();
+        $cached = $cache->get(self::WORKSPACE_CACHE_KEY);
+
+        if (\is_string($cached)) {
+            return $cached;
+        }
+
+        $slug = $this->fetchWorkspaceSlug($apiKey);
+        $cache->set(self::WORKSPACE_CACHE_KEY, $slug, self::WORKSPACE_CACHE_TTL);
+
+        return $slug;
+    }
+
+    private function fetchWorkspaceSlug(string $apiKey): string
+    {
+        $apiBaseUrl = Plugin::getInstance()->getOption()->getOption('api_base_url');
+        $host = \is_string($apiBaseUrl) && '' !== $apiBaseUrl ? $apiBaseUrl : HelperApi::getApiUrlV2();
+
+        $requestOptions = [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Content-type' => 'application/json',
+                'Authorization' => 'Key '.$apiKey,
+            ],
+            'timeout' => 5,
+        ];
+
+        try {
+            $response = \Craft::createGuzzleClient()->request('GET', $host.'/workspaces/current', $requestOptions);
+            $decoded = json_decode($response->getBody()->getContents(), true);
+        } catch (RequestException $e) {
+            \Craft::error('Error retrieving Weglot workspace info: '.$e->getMessage(), __METHOD__);
+
+            return '';
+        }
+
+        if (!\is_array($decoded) || !\is_string($decoded['slug'] ?? null)) {
+            return '';
+        }
+
+        return trim($decoded['slug']);
     }
 
     /**
