@@ -108,6 +108,36 @@ Do not ask for the path. Use the MCP PHPStorm `search_symbol` tool to locate the
 
 **Before searching, verify the WP project is open in PhpStorm** — call `mcp__phpstorm__get_repositories` with that path as `projectPath`. If it does not resolve, tell the user the WP project is not open in PhpStorm and ask them to open it, rather than silently falling back to plain file reads.
 
+### V2 lives in its own templates
+
+**All V2 admin UI is under `templates/admin/v2/`** (`home.php`, `dashboard.php`, `settings.php`, `section/`). The V1 entry point `templates/admin/pages/settings.php` routes to it early:
+
+```php
+if ( $onboarding_version !== 1 ) {
+    include_once WEGLOT_TEMPLATES . '/admin/v2/settings.php';
+    return;
+}
+```
+
+So V1 and V2 screens are entirely separate files, and the two versions differ in structure, not just in URLs — V2 merges the block and URL exclusion cards into one and drops the Visual Editor card.
+
+When answering any V2 question, **sweep the whole `templates/admin/v2/` directory before concluding anything is missing**. `admin/v2/settings.php` is only the onboarding screen; the dashboard quick links are in `admin/v2/home.php`. Concluding "V2 has no equivalent" after reading a single V2 file has already produced wrong implementations.
+
+Dashboard URLs are the clearest example of the structural split:
+
+| | shape |
+|---|---|
+| V1 | `dashboard.weglot.*/workspaces/{organization_slug}/projects/{project_slug}/translations/languages/` |
+| V2 | `auth.weglot.*/{workspace_slug}/{project_slug}/languages` |
+
+V2 project settings carry **no `organization_slug`** and no `api_key` (they expose `public_key` instead). The workspace slug comes from a separate call: `GET {api_base_url}/workspaces/current` with the header `Authorization: Key <apiKey>` — `Key`, not `Bearer`.
+
+### Probing the Weglot API by hand
+
+Read the consuming Craft project's `.env` first (`/Users/edson/weglot-craft-project/.env`) and use the hosts it declares. `HelperApi` resolves every host from `WEGLOT_ENV` / `WEGLOT_DEV` and the `WEGLOT_*_STAGING` variables, so a dev key only resolves against `*.weglot.dev` — querying the `.com` production hosts returns `Project settings not found` and looks like a broken key.
+
+`auth.weglot.*` sits behind Cloudflare Access: every path, valid or not, 302s to a login. HTTP status probing cannot discover or validate its routes — read them from the WP templates instead.
+
 ---
 
 ## Language
