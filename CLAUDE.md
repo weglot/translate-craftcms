@@ -8,6 +8,62 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Before Writing Any Code
 
+## 1. Think Before Coding
+
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
+
+Before implementing:
+- State your assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them - don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
+
+## 2. Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+## 3. Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it - don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+## 4. Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
+Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
 For any **significant task** (touches multiple files, introduces a new feature, or changes existing behavior), Claude must:
 
 1. **Propose an action plan** — list the files to modify, the approach, and any trade-offs
@@ -37,6 +93,44 @@ composer audit
 If any command reports errors, fix them immediately and re-run until all four pass cleanly.
 
 For `composer audit`, report any advisories found. Vulnerabilities in transitive dependencies pinned by `craftcms/cms` (Twig, Symfony, Yii2) are usually resolved by a Craft upgrade rather than by this plugin — do not attempt to bump them in isolation without confirming Craft's version constraints allow it.
+
+---
+
+## WordPress Plugin as Reference Implementation
+
+When the user mentions "WP" or an implementation from the Weglot WordPress plugin, look it up in a local checkout of that plugin. Use the MCP PHPStorm `search_symbol` tool to locate the relevant class or method there, then use it as the reference for porting or comparing behavior to the Craft plugin.
+
+**The checkout path is machine-specific and is deliberately not recorded here** — this file is committed, so a personal path would send other contributors and CI to a directory that does not exist. Ask the user for their path the first time it is needed, then verify it with `mcp__phpstorm__get_repositories` before searching. If it does not resolve, say so and ask them to open the project in PhpStorm; never fall back to plain file reads against a guessed path, and never answer a WP question from memory when the checkout is unavailable.
+
+### V2 lives in its own templates
+
+**All V2 admin UI is under `templates/admin/v2/`** (`home.php`, `dashboard.php`, `settings.php`, `section/`). The V1 entry point `templates/admin/pages/settings.php` routes to it early:
+
+```php
+if ( $onboarding_version !== 1 ) {
+    include_once WEGLOT_TEMPLATES . '/admin/v2/settings.php';
+    return;
+}
+```
+
+So V1 and V2 screens are entirely separate files, and the two versions differ in structure, not just in URLs — V2 merges the block and URL exclusion cards into one and drops the Visual Editor card.
+
+When answering any V2 question, **sweep the whole `templates/admin/v2/` directory before concluding anything is missing**. `admin/v2/settings.php` is only the onboarding screen; the dashboard quick links are in `admin/v2/home.php`. Concluding "V2 has no equivalent" after reading a single V2 file has already produced wrong implementations.
+
+Dashboard URLs are the clearest example of the structural split:
+
+| | shape |
+|---|---|
+| V1 | `dashboard.weglot.*/workspaces/{organization_slug}/projects/{project_slug}/translations/languages/` |
+| V2 | `auth.weglot.*/{workspace_slug}/{project_slug}/languages` |
+
+V2 project settings carry **no `organization_slug`** and no `api_key` (they expose `public_key` instead). The workspace slug comes from a separate call: `GET {api_base_url}/workspaces/current` with the header `Authorization: Key <apiKey>` — `Key`, not `Bearer`.
+
+### Probing the Weglot API by hand
+
+Read the consuming Craft project's `.env` first and use the hosts it declares. The plugin sits at `<craft-project>/plugins/weglot`, so that file is `../../.env` from this repository root. `HelperApi` resolves every host from `WEGLOT_ENV` / `WEGLOT_DEV` and the `WEGLOT_*_STAGING` variables, so a dev key only resolves against `*.weglot.dev` — querying the `.com` production hosts returns `Project settings not found` and looks like a broken key.
+
+`auth.weglot.*` sits behind Cloudflare Access: every path, valid or not, 302s to a login. HTTP status probing cannot discover or validate its routes — read them from the WP templates instead.
 
 ---
 

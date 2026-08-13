@@ -10,8 +10,9 @@ final class RegisterSelectorsEvent extends Event
 {
     /**
      * @param array<int, array{value: string}> $selectors
+     * @param array<string, mixed>             $config
      */
-    public function __construct(public array $selectors, $config = [])
+    public function __construct(public array $selectors, array $config = [])
     {
         parent::__construct($config);
     }

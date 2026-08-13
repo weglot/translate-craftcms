@@ -297,6 +297,67 @@ $spacing-base: 20px;
     }
 }
 
+// Onboarding actions: stacked buttons sharing the width of the widest label
+.weglot-onboarding-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: fit-content;
+    margin-top: 10px;
+
+    .btn {
+        margin: 0;
+    }
+
+    // Outranks Craft's `.btn { display: inline-flex }` without !important
+    .weglot-hidden {
+        display: none;
+    }
+
+    .btn-text {
+        margin: 0;
+        text-align: center;
+        line-height: 1.4;
+    }
+
+    .btn-subtext {
+        color: var(--medium-text-color, #606d7b);
+        font-size: 12px;
+    }
+}
+
+// Reset section
+.weglot-section-separator {
+    margin: 32px 0;
+    border: none;
+    border-top: 1px solid var(--hairline-color, #e3e5e8);
+}
+
+.weglot-reset-description {
+    color: var(--medium-text-color, #606d7b);
+    margin-bottom: 12px;
+}
+
+// Modal actions row
+.weglot-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+// Modal error message
+.weglot-modal-error {
+    color: var(--error-color, #CF1124);
+    margin-top: 12px;
+}
+
+// Utility: hidden state for modal and error
+.weglot-reset-modal--hidden {
+    display: none;
+}
+
 // Close Button
 .weglot-btn-close {
     position: absolute;

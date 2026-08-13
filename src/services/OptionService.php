@@ -7,7 +7,9 @@ namespace weglot\craftweglot\services;
 use craft\base\Component;
 use craft\helpers\Json;
 use craft\web\View;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Psr\Http\Message\ResponseInterface;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\helpers\HelperFlagType;
 use weglot\craftweglot\Plugin;
@@ -79,7 +81,9 @@ class OptionService extends Component
         'has_first_settings' => true,
         'show_box_first_settings' => false,
         'version' => 1,
-        'translation_engine' => 2,
+        // No `translation_engine` default on purpose: the API omits the field on V2
+        // projects, and getTranslationEngine() falls back to 3 as the WordPress plugin
+        // does. A default here would shadow that fallback and pin every project to it.
     ];
 
     /**
@@ -135,7 +139,7 @@ class OptionService extends Component
         }
 
         $key = str_replace('wg_', '', $apiKey);
-        $url = \sprintf('%s%s.json', HelperApi::getCdnUrl(), $key);
+        $url = \sprintf('%s%s.json', HelperApi::getCdnUrlForKey($apiKey), $key);
         $client = \Craft::createGuzzleClient();
 
         try {
@@ -180,39 +184,69 @@ class OptionService extends Component
             ];
         }
 
-        $url = \sprintf('%s/projects/settings?api_key=%s', HelperApi::getApiUrl(), $apiKey);
         $client = \Craft::createGuzzleClient();
+
+        if (HelperApi::isV2ApiKey($apiKey)) {
+            return $this->fetchOptionsV2($client, $apiKey);
+        }
+
+        return $this->fetchOptionsV1($client, $apiKey);
+    }
+
+    /**
+     * @return array{success: true, result: array<string, mixed>}|array{success: false, result: array<string, mixed>}
+     */
+    private function fetchOptionsV1(Client $client, string $apiKey): array
+    {
+        $url = \sprintf('%s/projects/settings?api_key=%s', HelperApi::getApiUrl(), $apiKey);
 
         try {
             $response = $client->request('GET', $url, ['timeout' => 3]);
-            $body = json_decode($response->getBody()->getContents(), true);
 
-            if (!\is_array($body)) {
-                return [
-                    'success' => false,
-                    'result' => $this->getOptionsDefault(),
-                ];
-            }
-
-            $options = array_merge($this->optionsBddDefault, $body);
-            $options['api_key_private'] = $this->getApiKeyPrivate();
-
-            $this->optionsFromApi = $options;
-
-            \Craft::$app->getCache()->set('weglot_cache_cdn', $options, 300);
-
-            return [
-                'success' => true,
-                'result' => $options,
-            ];
+            return $this->processOptionsResponse($response->getBody()->getContents(), $apiKey);
         } catch (\Exception $e) {
-            \Craft::error('Error retrieving Weglot options from API : '.$e->getMessage(), __METHOD__);
+            \Craft::error('Error retrieving Weglot options from API (v1): '.$e->getMessage(), __METHOD__);
 
-            return [
-                'success' => false,
-                'result' => $this->getOptionsDefault(),
-            ];
+            return ['success' => false, 'result' => $this->getOptionsDefault()];
         }
+    }
+
+    /**
+     * @return array{success: true, result: array<string, mixed>}|array{success: false, result: array<string, mixed>}
+     */
+    private function fetchOptionsV2(Client $client, string $apiKey): array
+    {
+        $url = \sprintf('%s/project-settings?api_key=%s', HelperApi::getApiUrl(), $apiKey);
+
+        try {
+            $response = $client->request('GET', $url, ['timeout' => 3]);
+
+            return $this->processOptionsResponse($response->getBody()->getContents(), $apiKey);
+        } catch (\Exception $e) {
+            \Craft::error('Error retrieving Weglot options from API (v2): '.$e->getMessage(), __METHOD__);
+
+            return ['success' => false, 'result' => $this->getOptionsDefault()];
+        }
+    }
+
+    /**
+     * @return array{success: true, result: array<string, mixed>}|array{success: false, result: array<string, mixed>}
+     */
+    private function processOptionsResponse(string $contents, string $apiKey): array
+    {
+        $body = json_decode($contents, true);
+
+        if (!\is_array($body)) {
+            return ['success' => false, 'result' => $this->getOptionsDefault()];
+        }
+
+        $options = array_merge($this->optionsBddDefault, $body);
+        $options['api_key_private'] = $apiKey;
+
+        $this->optionsFromApi = $options;
+        \Craft::$app->getCache()->set('weglot_cache_cdn', $options, 300);
+
+        return ['success' => true, 'result' => $options];
     }
 
     /**
@@ -235,13 +269,33 @@ class OptionService extends Component
 
         $response = $this->getOptionsFromApiWithApiKey($apiKey);
 
-        if ($response['success']) {
-            $this->_options = array_merge($this->getOptionsDefault(), $response['result']);
-        } else {
-            $this->_options = $this->getOptionsDefault();
-        }
+        $this->_options = $response['success'] ? $this->mergeWithDefaults($response['result']) : $this->getOptionsDefault();
 
         return $this->_options;
+    }
+
+    /**
+     * Flat merge, except for `custom_settings`: V2 project settings always return it
+     * as an empty object, which a flat merge would use to wipe the nested defaults.
+     *
+     * @param array<string,mixed> $result
+     *
+     * @return array<string,mixed>
+     */
+    private function mergeWithDefaults(array $result): array
+    {
+        $defaults = $this->getOptionsDefault();
+        $options = array_merge($defaults, $result);
+
+        $defaultCustomSettings = $defaults['custom_settings'] ?? null;
+        $customSettings = $result['custom_settings'] ?? null;
+
+        $options['custom_settings'] = array_merge(
+            \is_array($defaultCustomSettings) ? $defaultCustomSettings : [],
+            \is_array($customSettings) ? $customSettings : []
+        );
+
+        return $options;
     }
 
     /**
@@ -268,8 +322,24 @@ class OptionService extends Component
 
     private function getApiKeyPrivate(): string
     {
-        // TODO: Implement the logic to retrieve the private API key
-        return '';
+        return trim(Plugin::getInstance()->getTypedSettings()->apiKey);
+    }
+
+    public function resetOptions(): void
+    {
+        $cache = \Craft::$app->getCache();
+
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $seed = $settings->apiKey;
+
+        $cache->delete('weglot_cache_cdn');
+        $cache->delete('weglot_public_api_key_'.substr(sha1($seed), 0, 16));
+        $cache->delete('weglot_languages_limit_'.substr(sha1($seed), 0, 16));
+        $cache->delete(UserApiService::workspaceCacheKey($seed));
+
+        $this->_options = null;
+        $this->optionsCdn = null;
+        $this->optionsFromApi = null;
     }
 
     /**
@@ -368,8 +438,7 @@ class OptionService extends Component
     public function getPublicApiKey(): string
     {
         $settings = Plugin::getInstance()->getTypedSettings();
-        $seed = (string) ($settings->apiKey ?? '');
-        $cacheKey = 'weglot_public_api_key_'.substr(sha1($seed), 0, 16);
+        $cacheKey = 'weglot_public_api_key_'.substr(sha1($settings->apiKey), 0, 16);
 
         $cache = \Craft::$app->getCache();
         $cached = $cache->get($cacheKey);
@@ -377,7 +446,12 @@ class OptionService extends Component
             return $cached;
         }
 
-        $value = $this->getOption('api_key');
+        // V2 project settings expose the public key as `public_key`; V1 calls it `api_key`.
+        $value = $this->getOption('public_key');
+        if (!\is_string($value) || '' === trim($value)) {
+            $value = $this->getOption('api_key');
+        }
+
         $publicKey = \is_string($value) ? trim($value) : '';
 
         if ('' !== $publicKey) {
@@ -604,40 +678,35 @@ class OptionService extends Component
      *
      * @return array{success:bool, result?:array<string,mixed>, code?:string, message?:string}
      */
-    public function saveWeglotSettings(string $publicApiKey, string $languageFrom, array|string $destinationLanguages): array
+    public function saveWeglotSettings(string $apiKey, string $languageFrom, array|string $destinationLanguages): array
     {
-        $cdn = $this->getOptionsFromApiWithApiKey($publicApiKey);
+        $codes = $this->normalizeLanguageCodes($destinationLanguages);
+
+        if (HelperApi::isV2ApiKey($apiKey)) {
+            return $this->saveWeglotSettingsV2($apiKey, $languageFrom, $codes);
+        }
+
+        return $this->saveWeglotSettingsV1($apiKey, $languageFrom, $codes);
+    }
+
+    /**
+     * @param string[] $codes
+     *
+     * @return array{success:bool, result?:array<string,mixed>, code?:string, message?:string}
+     */
+    private function saveWeglotSettingsV1(string $apiKey, string $languageFrom, array $codes): array
+    {
+        $cdn = $this->getOptionsFromApiWithApiKey($apiKey);
 
         if (false === $cdn['success']) {
-            return [
-                'success' => false,
-                'code' => 'cdn_fetch_fail',
-                'message' => 'Unable to retrieve options from Weglot CDN.',
-            ];
+            return ['success' => false, 'code' => 'cdn_fetch_fail', 'message' => 'Unable to retrieve options from Weglot API.'];
         }
 
         $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
-        $apiKeyPrivate = $options['api_key'] ?? '';
-        if ('' === $apiKeyPrivate) {
-            return [
-                'success' => false,
-                'code' => 'missing_private_key',
-                'message' => 'Weglot private key not found in options.',
-            ];
-        }
 
-        $destinationLanguages = \is_array($destinationLanguages) ? $destinationLanguages : [$destinationLanguages];
-
-        $codes = [];
-        foreach ($destinationLanguages as $item) {
-            foreach (preg_split('/[|,]/', $item) as $part) {
-                $part = trim($part);
-                if ('' !== $part) {
-                    $codes[] = $part;
-                }
-            }
+        if ('' === ($options['api_key'] ?? '')) {
+            return ['success' => false, 'code' => 'missing_private_key', 'message' => 'Weglot private key not found in options.'];
         }
-        $codes = array_values(array_unique($codes));
 
         $options['language_from'] = $languageFrom;
         $options['languages'] = array_map(
@@ -646,21 +715,14 @@ class OptionService extends Component
         );
 
         $jsonBody = json_encode($options, \JSON_UNESCAPED_UNICODE);
-
         if (false === $jsonBody) {
-            return [
-                'success' => false,
-                'code' => 'json_encode_fail',
-                'message' => 'Failed to JSON encode options.',
-            ];
+            return ['success' => false, 'code' => 'json_encode_fail', 'message' => 'Failed to JSON encode options.'];
         }
 
-        $url = \sprintf('%s/projects/settings?api_key=%s', HelperApi::getApiUrl(), $publicApiKey);
-
-        $client = \Craft::createGuzzleClient();
+        $url = \sprintf('%s/projects/settings?api_key=%s', HelperApi::getApiUrl(), $apiKey);
 
         try {
-            $response = $client->request('POST', $url, [
+            $response = \Craft::createGuzzleClient()->request('POST', $url, [
                 'timeout' => 60,
                 'headers' => [
                     'technology' => 'craft',
@@ -669,37 +731,122 @@ class OptionService extends Component
                 'body' => $jsonBody,
             ]);
 
-            $status = $response->getStatusCode();
-            $body = (string) $response->getBody();
-            $decoded = json_decode($body, true);
-
-            if ($status >= 400) {
-                return [
-                    'success' => false,
-                    'code' => 'api_save_http_error',
-                    'message' => "HTTP error $status while saving Weglot.",
-                ];
-            }
-
-            \Craft::$app->getCache()->set('weglot_cache_cdn', $options, 300);
-
-            $this->optionsCdn = $options;
-            $this->optionsFromApi = null;
-            $this->_options = null;
-
-            return [
-                'success' => true,
-                'result' => \is_array($decoded) ? $decoded : ['raw' => $body],
-            ];
+            return $this->handleSaveResponse($response, $options);
         } catch (\Throwable $e) {
-            \Craft::error('Error while saving Weglot: '.$e->getMessage(), __METHOD__);
+            \Craft::error('Error while saving Weglot (v1): '.$e->getMessage(), __METHOD__);
 
-            return [
-                'success' => false,
-                'code' => 'api_save_exception',
-                'message' => 'Exception while saving Weglot options.',
-            ];
+            return ['success' => false, 'code' => 'api_save_exception', 'message' => 'Exception while saving Weglot options.'];
         }
+    }
+
+    /**
+     * @param string[] $codes
+     *
+     * @return array{success:bool, result?:array<string,mixed>, code?:string, message?:string}
+     */
+    private function saveWeglotSettingsV2(string $apiKey, string $languageFrom, array $codes): array
+    {
+        $cdn = $this->getOptionsFromApiWithApiKey($apiKey);
+
+        if (false === $cdn['success']) {
+            return ['success' => false, 'code' => 'cdn_fetch_fail', 'message' => 'Unable to retrieve options from Weglot API.'];
+        }
+
+        $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
+
+        if ('' === ($options['api_key'] ?? '')) {
+            return ['success' => false, 'code' => 'missing_private_key', 'message' => 'Weglot private key not found in options.'];
+        }
+
+        $options['language_from'] = $languageFrom;
+        $options['languages'] = array_map(
+            static fn (string $code): array => ['language_to' => $code],
+            $codes
+        );
+
+        $existingCustomSettings = $cdn['result']['custom_settings'] ?? [];
+        $customSettings = \is_array($existingCustomSettings) ? $existingCustomSettings : [];
+
+        $patchBody = json_encode([
+            'customSettings' => json_encode([
+                'translate_amp' => (bool) ($customSettings['translate_amp'] ?? false),
+                'translate_email' => (bool) ($customSettings['translate_email'] ?? false),
+                'translate_search' => (bool) ($customSettings['translate_search'] ?? false),
+            ]),
+        ], \JSON_UNESCAPED_UNICODE);
+
+        if (false === $patchBody) {
+            return ['success' => false, 'code' => 'json_encode_fail', 'message' => 'Failed to JSON encode options.'];
+        }
+
+        $url = \sprintf('%s/projects/settings', HelperApi::getApiUrl());
+
+        try {
+            $response = \Craft::createGuzzleClient()->request('PATCH', $url, [
+                'timeout' => 60,
+                'headers' => [
+                    'Authorization' => 'Key '.$apiKey,
+                    'technology' => 'craft',
+                    'Content-Type' => 'application/merge-patch+json',
+                ],
+                'body' => $patchBody,
+            ]);
+
+            return $this->handleSaveResponse($response, $options);
+        } catch (\Throwable $e) {
+            \Craft::error('Error while saving Weglot (v2): '.$e->getMessage(), __METHOD__);
+
+            return ['success' => false, 'code' => 'api_save_exception', 'message' => 'Exception while saving Weglot options.'];
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $options
+     *
+     * @return array{success:bool, result?:array<string,mixed>, code?:string, message?:string}
+     */
+    private function handleSaveResponse(ResponseInterface $response, array $options): array
+    {
+        $status = $response->getStatusCode();
+        $body = (string) $response->getBody();
+        $decoded = json_decode($body, true);
+
+        if ($status >= 400) {
+            return ['success' => false, 'code' => 'api_save_http_error', 'message' => "HTTP error $status while saving Weglot."];
+        }
+
+        \Craft::$app->getCache()->set('weglot_cache_cdn', $options, 300);
+        $this->optionsCdn = $options;
+        $this->optionsFromApi = null;
+        $this->_options = null;
+
+        return ['success' => true, 'result' => \is_array($decoded) ? $decoded : ['raw' => $body]];
+    }
+
+    /**
+     * @param array<string>|string $destinationLanguages
+     *
+     * @return string[]
+     */
+    private function normalizeLanguageCodes(array|string $destinationLanguages): array
+    {
+        $items = \is_array($destinationLanguages) ? $destinationLanguages : [$destinationLanguages];
+        $codes = [];
+
+        foreach ($items as $item) {
+            $parts = preg_split('/[|,]/', $item);
+            if (false === $parts) {
+                continue;
+            }
+            foreach ($parts as $part) {
+                $part = trim($part);
+                if ('' !== $part) {
+                    $codes[] = $part;
+                }
+            }
+        }
+
+        return array_values(array_unique($codes));
     }
 
     public function getLanguagesLimit(?string $apiKey = null): ?int
@@ -708,7 +855,7 @@ class OptionService extends Component
             $currentApiKey = $apiKey;
             if (null === $currentApiKey || '' === $currentApiKey) {
                 $settings = Plugin::getInstance()->getTypedSettings();
-                $currentApiKey = $settings->apiKey ?? '';
+                $currentApiKey = $settings->apiKey;
             }
             if ('' === $currentApiKey) {
                 return null;

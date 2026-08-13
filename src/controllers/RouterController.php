@@ -43,7 +43,7 @@ class RouterController extends Controller
                 $internalPath = trim($rest, '/');
                 if ('' !== $internalPath) {
                     $settings = Plugin::getInstance()->getTypedSettings();
-                    $apiKey = trim((string) $settings->apiKey);
+                    $apiKey = trim($settings->apiKey);
 
                     $destinationEntries = Plugin::getInstance()->getLanguage()->getDestinationLanguages();
                     $destinationCodes = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($destinationEntries, true);
@@ -61,7 +61,7 @@ class RouterController extends Controller
 
                             // Conserver la query string si présente
                             $qs = \Craft::$app->getRequest()->getQueryString();
-                            if (\is_string($qs) && '' !== $qs) {
+                            if ('' !== $qs) {
                                 $target .= '?'.$qs;
                             }
 
@@ -95,9 +95,9 @@ class RouterController extends Controller
         try {
             if (null !== $currentLanguage && '' !== $internalPath) {
                 $settings = Plugin::getInstance()->getTypedSettings();
-                $apiKey = trim((string) $settings->apiKey);
+                $apiKey = trim($settings->apiKey);
 
-                $langExternal = strtolower(trim((string) $currentLanguage->getExternalCode()));
+                $langExternal = strtolower(trim($currentLanguage->getExternalCode()));
                 $destinationCodes = ('' !== $langExternal) ? [$langExternal] : [];
 
                 if ('' !== $apiKey && [] !== $destinationCodes) {

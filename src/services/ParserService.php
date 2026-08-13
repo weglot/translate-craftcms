@@ -40,6 +40,24 @@ class ParserService extends Component
         $translationEngine = Plugin::getInstance()->getOption()->getTranslationEngine();
         $apiKey = $settings->apiKey;
 
+        if (HelperApi::isV2ApiKey($apiKey)) {
+            $apiBaseUrl = $this->optionService->getOption('api_base_url');
+            $host = \is_string($apiBaseUrl) && '' !== $apiBaseUrl ? $apiBaseUrl : HelperApi::getApiUrlV2();
+
+            $client = new Client(
+                $apiKey,
+                $translationEngine,
+                $version,
+                [
+                    'host' => $host,
+                    'live' => 1,
+                ]
+            );
+            $client->getHttpClient()->addHeader('Authorization: Key '.$apiKey);
+
+            return $client;
+        }
+
         return new Client(
             $apiKey,
             $translationEngine,
@@ -63,9 +81,9 @@ class ParserService extends Component
 
         $client = $this->getClient();
         $editorSession = \Craft::$app->getRequest()->getHeaders()->get('wg-editor-session');
-        if ($editorSession) {
+        if (\is_string($editorSession) && '' !== $editorSession) {
             $editorSession = preg_replace('/[^\w\-.]/', '', $editorSession);
-            if (!empty($editorSession)) {
+            if (null !== $editorSession && '' !== $editorSession) {
                 $client->getHttpClient()->addHeader('editor-session: '.$editorSession);
             }
         }
