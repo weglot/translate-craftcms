@@ -98,15 +98,9 @@ For `composer audit`, report any advisories found. Vulnerabilities in transitive
 
 ## WordPress Plugin as Reference Implementation
 
-When the user mentions "WP" or an implementation from the Weglot WordPress plugin, automatically look it up in:
+When the user mentions "WP" or an implementation from the Weglot WordPress plugin, look it up in a local checkout of that plugin. Use the MCP PHPStorm `search_symbol` tool to locate the relevant class or method there, then use it as the reference for porting or comparing behavior to the Craft plugin.
 
-```
-/Users/edson/local-sites/new-plugin-weglot/app/public/wp-content/plugins/weglot
-```
-
-Do not ask for the path. Use the MCP PHPStorm `search_symbol` tool to locate the relevant class or method there, then use it as the reference for porting or comparing behavior to the Craft plugin.
-
-**Before searching, verify the WP project is open in PhpStorm** — call `mcp__phpstorm__get_repositories` with that path as `projectPath`. If it does not resolve, tell the user the WP project is not open in PhpStorm and ask them to open it, rather than silently falling back to plain file reads.
+**The checkout path is machine-specific and is deliberately not recorded here** — this file is committed, so a personal path would send other contributors and CI to a directory that does not exist. Ask the user for their path the first time it is needed, then verify it with `mcp__phpstorm__get_repositories` before searching. If it does not resolve, say so and ask them to open the project in PhpStorm; never fall back to plain file reads against a guessed path, and never answer a WP question from memory when the checkout is unavailable.
 
 ### V2 lives in its own templates
 
@@ -134,7 +128,7 @@ V2 project settings carry **no `organization_slug`** and no `api_key` (they expo
 
 ### Probing the Weglot API by hand
 
-Read the consuming Craft project's `.env` first (`/Users/edson/weglot-craft-project/.env`) and use the hosts it declares. `HelperApi` resolves every host from `WEGLOT_ENV` / `WEGLOT_DEV` and the `WEGLOT_*_STAGING` variables, so a dev key only resolves against `*.weglot.dev` — querying the `.com` production hosts returns `Project settings not found` and looks like a broken key.
+Read the consuming Craft project's `.env` first and use the hosts it declares. The plugin sits at `<craft-project>/plugins/weglot`, so that file is `../../.env` from this repository root. `HelperApi` resolves every host from `WEGLOT_ENV` / `WEGLOT_DEV` and the `WEGLOT_*_STAGING` variables, so a dev key only resolves against `*.weglot.dev` — querying the `.com` production hosts returns `Project settings not found` and looks like a broken key.
 
 `auth.weglot.*` sits behind Cloudflare Access: every path, valid or not, 302s to a login. HTTP status probing cannot discover or validate its routes — read them from the WP templates instead.
 
