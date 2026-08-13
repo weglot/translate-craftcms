@@ -126,7 +126,7 @@ class SlugService extends Component
 
                 $out[$languageTo] = [
                     'forward' => $forward,
-                    'reverse' => \is_array($reverse) ? $reverse : [],
+                    'reverse' => $reverse,
                 ];
             } catch (RequestException $e) {
                 \Craft::warning('Weglot slugs API request failed: '.$e->getMessage(), __METHOD__);

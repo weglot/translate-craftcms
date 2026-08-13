@@ -192,7 +192,7 @@ final class DynamicsService
         }
 
         $current = \Craft::$app->getRequest()->getAbsoluteUrl();
-        if (!\is_string($current) || '' === $current) {
+        if ('' === $current) {
             return false;
         }
 

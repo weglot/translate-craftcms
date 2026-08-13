@@ -61,7 +61,7 @@ class RouterController extends Controller
 
                             // Conserver la query string si présente
                             $qs = \Craft::$app->getRequest()->getQueryString();
-                            if (\is_string($qs) && '' !== $qs) {
+                            if ('' !== $qs) {
                                 $target .= '?'.$qs;
                             }
 

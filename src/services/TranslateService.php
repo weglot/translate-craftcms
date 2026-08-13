@@ -309,7 +309,7 @@ class TranslateService extends Component
         }
 
         $settings = Plugin::getInstance()->getTypedSettings();
-        $apiKey = trim($settings->apiKey ?? '');
+        $apiKey = trim($settings->apiKey);
         if ('' === $apiKey) {
             return $query;
         }

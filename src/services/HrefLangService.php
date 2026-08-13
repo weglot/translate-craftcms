@@ -69,7 +69,7 @@ class HrefLangService extends Component
                     ) {
                         $parsed = parse_url($href);
                         $path = \is_array($parsed) ? ($parsed['path'] ?? '') : '';
-                        if (\is_string($path) && '' !== $path) {
+                        if ('' !== $path) {
                             $internalPath = ltrim($path, '/'); // ex: blog-fr
                             $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
                                 $apiKey,
