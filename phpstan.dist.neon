@@ -6,6 +6,20 @@ parameters:
     level: 6
     tmpDir: .cache/phpstan
 
+    # The scoped Weglot library and the selector-registration events both describe
+    # their data in PHPDoc only, and neither promise is enforced at runtime. Treating
+    # those types as certain made PHPStan report the defensive guards against that
+    # data as redundant.
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # Url::getForLanguage() declares no native param types, and PHP forbids
+        # narrowing a parameter in a subclass, so this stub cannot be typed without
+        # a fatal error. Scoped vendor code is generated and must not be edited.
+        -
+            identifier: typeCoverage.paramTypeCoverage
+            path: tests/unit/services/ReplaceLinkServiceTest.php
+
     scanFiles:
         - vendor/craftcms/cms/src/Craft.php
         - vendor/yiisoft/yii2/Yii.php
