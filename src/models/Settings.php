@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace weglot\craftweglot\models;
 
-use yii\validators\Validator;
 use craft\base\Model;
 use weglot\craftweglot\Plugin;
+use yii\validators\Validator;
 
 class Settings extends Model
 {
