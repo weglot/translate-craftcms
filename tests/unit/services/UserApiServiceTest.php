@@ -9,7 +9,7 @@ use weglot\craftweglot\services\UserApiService;
 
 final class UserApiServiceTest extends TestCase
 {
-    private const CACHE_KEY = 'weglot_workspace_slug';
+    private const V2_KEY = 'sk_abc123';
 
     private UserApiService $userApiService;
 
@@ -17,12 +17,12 @@ final class UserApiServiceTest extends TestCase
     {
         parent::setUp();
         $this->userApiService = new UserApiService();
-        \Craft::$app->getCache()->delete(self::CACHE_KEY);
+        \Craft::$app->getCache()->flush();
     }
 
     protected function tearDown(): void
     {
-        \Craft::$app->getCache()->delete(self::CACHE_KEY);
+        \Craft::$app->getCache()->flush();
         parent::tearDown();
     }
 
@@ -38,15 +38,33 @@ final class UserApiServiceTest extends TestCase
 
     public function testCachedSlugIsReturnedWithoutHittingTheApi(): void
     {
-        \Craft::$app->getCache()->set(self::CACHE_KEY, 'my-workspace');
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey(self::V2_KEY), 'my-workspace');
 
-        self::assertSame('my-workspace', $this->userApiService->getWorkspaceSlug('sk_abc123'));
+        self::assertSame('my-workspace', $this->userApiService->getWorkspaceSlug(self::V2_KEY));
     }
 
     public function testCachedEmptySlugIsHonoured(): void
     {
-        \Craft::$app->getCache()->set(self::CACHE_KEY, '');
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey(self::V2_KEY), '');
 
-        self::assertSame('', $this->userApiService->getWorkspaceSlug('sk_abc123'));
+        self::assertSame('', $this->userApiService->getWorkspaceSlug(self::V2_KEY));
+    }
+
+    /**
+     * A plain settings save never clears this cache, so a slug cached for one key
+     * must not be served after the user switches to another project.
+     */
+    public function testCacheIsScopedToTheApiKey(): void
+    {
+        self::assertNotSame(
+            UserApiService::workspaceCacheKey(self::V2_KEY),
+            UserApiService::workspaceCacheKey('sk_other')
+        );
+
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey(self::V2_KEY), 'workspace-a');
+
+        // No entry for the new key: nothing stale is served, and with no HTTP call
+        // reachable from the test bootstrap the fetch yields an empty slug.
+        self::assertSame('', $this->userApiService->getWorkspaceSlug('sk_other'));
     }
 }

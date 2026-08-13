@@ -11,9 +11,19 @@ use weglot\craftweglot\Plugin;
 
 class UserApiService extends Component
 {
-    public const WORKSPACE_CACHE_KEY = 'weglot_workspace_slug';
+    private const WORKSPACE_CACHE_PREFIX = 'weglot_workspace_slug';
 
     private const WORKSPACE_CACHE_TTL = 3600;
+
+    /**
+     * Scoped to the API key: saving the settings refreshes the option caches but never
+     * clears this entry, so a shared key would keep serving the previous project's
+     * workspace for a whole TTL after the API key changes.
+     */
+    public static function workspaceCacheKey(string $apiKey): string
+    {
+        return self::WORKSPACE_CACHE_PREFIX.'_'.substr(sha1($apiKey), 0, 16);
+    }
 
     /**
      * @return array<string, mixed>
@@ -52,14 +62,15 @@ class UserApiService extends Component
         }
 
         $cache = \Craft::$app->getCache();
-        $cached = $cache->get(self::WORKSPACE_CACHE_KEY);
+        $cacheKey = self::workspaceCacheKey($apiKey);
+        $cached = $cache->get($cacheKey);
 
         if (\is_string($cached)) {
             return $cached;
         }
 
         $slug = $this->fetchWorkspaceSlug($apiKey);
-        $cache->set(self::WORKSPACE_CACHE_KEY, $slug, self::WORKSPACE_CACHE_TTL);
+        $cache->set($cacheKey, $slug, self::WORKSPACE_CACHE_TTL);
 
         return $slug;
     }

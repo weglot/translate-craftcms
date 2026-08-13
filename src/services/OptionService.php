@@ -333,7 +333,7 @@ class OptionService extends Component
         $cache->delete('weglot_cache_cdn');
         $cache->delete('weglot_public_api_key_'.substr(sha1($seed), 0, 16));
         $cache->delete('weglot_languages_limit_'.substr(sha1($seed), 0, 16));
-        $cache->delete(UserApiService::WORKSPACE_CACHE_KEY);
+        $cache->delete(UserApiService::workspaceCacheKey($seed));
 
         $this->_options = null;
         $this->optionsCdn = null;

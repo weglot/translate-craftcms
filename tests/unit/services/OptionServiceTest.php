@@ -319,10 +319,12 @@ final class OptionServiceTest extends TestCase
 
     public function testResetOptionsClearsTheWorkspaceSlugCache(): void
     {
-        \Craft::$app->getCache()->set(UserApiService::WORKSPACE_CACHE_KEY, 'my-workspace');
+        Plugin::getInstance()->getTypedSettings()->apiKey = 'sk_abc123';
+        $cacheKey = UserApiService::workspaceCacheKey('sk_abc123');
+        \Craft::$app->getCache()->set($cacheKey, 'my-workspace');
 
         (new OptionService())->resetOptions();
 
-        self::assertFalse(\Craft::$app->getCache()->get(UserApiService::WORKSPACE_CACHE_KEY));
+        self::assertFalse(\Craft::$app->getCache()->get($cacheKey));
     }
 }

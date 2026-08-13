@@ -19,13 +19,13 @@ final class DashboardHelperTest extends TestCase
     {
         parent::setUp();
         $this->savedApiKey = Plugin::getInstance()->getTypedSettings()->apiKey;
-        \Craft::$app->getCache()->delete(UserApiService::WORKSPACE_CACHE_KEY);
+        \Craft::$app->getCache()->delete(UserApiService::workspaceCacheKey('sk_abc123'));
     }
 
     protected function tearDown(): void
     {
         Plugin::getInstance()->getTypedSettings()->apiKey = $this->savedApiKey;
-        \Craft::$app->getCache()->delete(UserApiService::WORKSPACE_CACHE_KEY);
+        \Craft::$app->getCache()->delete(UserApiService::workspaceCacheKey('sk_abc123'));
         parent::tearDown();
     }
 
@@ -54,7 +54,7 @@ final class DashboardHelperTest extends TestCase
 
     public function testV2BuildsTheFlatDashboardUrlFromTheWorkspaceSlug(): void
     {
-        \Craft::$app->getCache()->set(UserApiService::WORKSPACE_CACHE_KEY, 'my-workspace');
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey('sk_abc123'), 'my-workspace');
 
         $helper = $this->makeHelper('sk_abc123', ['project_slug' => 'my-project']);
 
@@ -70,7 +70,7 @@ final class DashboardHelperTest extends TestCase
      */
     public function testV2UrlIsBuiltEvenWhenTheOptionsCarryNoApiKey(): void
     {
-        \Craft::$app->getCache()->set(UserApiService::WORKSPACE_CACHE_KEY, 'my-workspace');
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey('sk_abc123'), 'my-workspace');
 
         $helper = $this->makeHelper('sk_abc123', [
             'api_key' => '',
@@ -83,7 +83,7 @@ final class DashboardHelperTest extends TestCase
 
     public function testV2FallsBackToPlaceholderWithoutAWorkspaceSlug(): void
     {
-        \Craft::$app->getCache()->set(UserApiService::WORKSPACE_CACHE_KEY, '');
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey('sk_abc123'), '');
 
         $helper = $this->makeHelper('sk_abc123', ['project_slug' => 'my-project']);
 
@@ -114,7 +114,7 @@ final class DashboardHelperTest extends TestCase
      */
     public function testV2QuickLinkSuffixes(): void
     {
-        \Craft::$app->getCache()->set(UserApiService::WORKSPACE_CACHE_KEY, 'my-workspace');
+        \Craft::$app->getCache()->set(UserApiService::workspaceCacheKey('sk_abc123'), 'my-workspace');
 
         $helper = $this->makeHelper('sk_abc123', ['project_slug' => 'my-project']);
         $base = 'https://auth.weglot.com/my-workspace/my-project/';
