@@ -112,13 +112,6 @@ class Plugin extends BasePlugin
         try {
             $settings = $this->getTypedSettings();
 
-            $dyn = trim($settings->dynamicsSelectors ?? '');
-            if ('' !== $dyn && $settings->dynamicsWhitelistSelectors !== $dyn) {
-                $settings->dynamicsWhitelistSelectors = $dyn;
-
-                \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
-            }
-
             $apiKey = trim($settings->apiKey);
             $languageFrom = $settings->languageFrom;
             $languages = $settings->languages;
