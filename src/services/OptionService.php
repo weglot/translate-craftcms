@@ -267,13 +267,33 @@ class OptionService extends Component
 
         $response = $this->getOptionsFromApiWithApiKey($apiKey);
 
-        if ($response['success']) {
-            $this->_options = array_merge($this->getOptionsDefault(), $response['result']);
-        } else {
-            $this->_options = $this->getOptionsDefault();
-        }
+        $this->_options = $response['success'] ? $this->mergeWithDefaults($response['result']) : $this->getOptionsDefault();
 
         return $this->_options;
+    }
+
+    /**
+     * Flat merge, except for `custom_settings`: V2 project settings always return it
+     * as an empty object, which a flat merge would use to wipe the nested defaults.
+     *
+     * @param array<string,mixed> $result
+     *
+     * @return array<string,mixed>
+     */
+    private function mergeWithDefaults(array $result): array
+    {
+        $defaults = $this->getOptionsDefault();
+        $options = array_merge($defaults, $result);
+
+        $defaultCustomSettings = $defaults['custom_settings'] ?? null;
+        $customSettings = $result['custom_settings'] ?? null;
+
+        $options['custom_settings'] = array_merge(
+            \is_array($defaultCustomSettings) ? $defaultCustomSettings : [],
+            \is_array($customSettings) ? $customSettings : []
+        );
+
+        return $options;
     }
 
     /**
@@ -313,6 +333,7 @@ class OptionService extends Component
         $cache->delete('weglot_cache_cdn');
         $cache->delete('weglot_public_api_key_'.substr(sha1($seed), 0, 16));
         $cache->delete('weglot_languages_limit_'.substr(sha1($seed), 0, 16));
+        $cache->delete(UserApiService::WORKSPACE_CACHE_KEY);
 
         $this->_options = null;
         $this->optionsCdn = null;
@@ -423,7 +444,12 @@ class OptionService extends Component
             return $cached;
         }
 
-        $value = $this->getOption('api_key');
+        // V2 project settings expose the public key as `public_key`; V1 calls it `api_key`.
+        $value = $this->getOption('public_key');
+        if (!\is_string($value) || '' === trim($value)) {
+            $value = $this->getOption('api_key');
+        }
+
         $publicKey = \is_string($value) ? trim($value) : '';
 
         if ('' !== $publicKey) {
