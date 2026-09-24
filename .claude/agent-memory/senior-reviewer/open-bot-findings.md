@@ -13,7 +13,7 @@ type: feedback
 
 Also unverified from #47 (Algolia): unpinned CDN script without SRI, a promise rejection that can hang search, `xhook` loaded in the CP. Check the current code before raising any of them.
 
-The misplaced `wg-excluded-link` lookahead (#55) was fixed on `fix/replace-url-excluded-link` and is no longer listed.
+The misplaced `wg-excluded-link` lookahead (#55) was fixed in #67 (`43ca0a0`) and is no longer listed.
 
 **Why:** #42 was approved without a comment and self-merged with the bot findings unanswered; #47, #54, #55 were merged with the findings open. Re-verified against `master` (`ef86515`) on 2026-09-24.
 **How to apply:** when a diff touches one of these files, check whether the finding still holds (`sed -n` the line) and raise it at the severity above, citing the PR. When a row is fixed, delete it in the same PR.
