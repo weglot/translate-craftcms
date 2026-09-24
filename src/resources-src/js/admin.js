@@ -3,8 +3,11 @@
     const apiKeyInput = document.querySelector('[data-weglot-api-key]');
     const statusDiv   = document.querySelector('[data-weglot-api-status]');
     const form        = apiKeyInput ? apiKeyInput.closest('form') : null;
+    const activateBtn = document.querySelector('[data-weglot-activate]');
 
     let isValid = apiKeyInput && apiKeyInput.value.trim() !== '' ? null : false;
+    let isV1Key = false;
+    let pendingCheck = null;
     let successTimeout = null;
     function setStatus(ok, message) {
         if (!statusDiv) return;
@@ -28,10 +31,10 @@
     }
     function updateSaveDisabled() {
         if (!form) return;
-        const saveBtn = form.querySelector('button[type="submit"], .btn.submit');
-        if (!saveBtn) return;
-        if (isValid === false) { saveBtn.classList.add('disabled'); saveBtn.disabled = true; }
-        else { saveBtn.classList.remove('disabled'); saveBtn.disabled = false; }
+        form.querySelectorAll('button[type="submit"]').forEach(function(saveBtn) {
+            if (isValid === false) { saveBtn.classList.add('disabled'); saveBtn.disabled = true; }
+            else { saveBtn.classList.remove('disabled'); saveBtn.disabled = false; }
+        });
     }
     function checkKey(value) {
         if (!statusDiv) return Promise.resolve(false);
@@ -57,6 +60,9 @@
                     }
                     const ok = !(response.error || (response.succeeded && parseInt(response.succeeded) !== 1));
                     if (ok) {
+                        var product = response.product != null ? String(response.product) : '';
+                        isV1Key = product.startsWith('1');
+                        setV1FieldsVisible(isV1Key);
                         setStatus(true, Craft.t('weglot', 'Success! The API key is valid.'));
                         if (apiKeyField) {
                             apiKeyField.classList.add('is-valid');
@@ -82,37 +88,93 @@
             );
         });
     }
+    function setV1FieldsVisible(show) {
+        var container = document.querySelector('[data-weglot-v1-fields]');
+        if (!container) return;
+        var wasHidden = container.style.display === 'none';
+        container.style.display = show ? '' : 'none';
+        // Selectize measures its width at init; built inside a hidden container it
+        // renders collapsed, so rebuild it the first time the fields are revealed.
+        if (show && wasHidden) {
+            initDestinationSelectize();
+        }
+    }
+
+    // Blurring the field and clicking a button both ask for a validation, so the
+    // in-flight request is shared and an already-validated key is not re-checked.
+    function validateKey(value) {
+        if (isValid === true) {
+            return Promise.resolve(true);
+        }
+        if (!pendingCheck) {
+            pendingCheck = checkKey(value).then(function(ok) {
+                pendingCheck = null;
+                if (apiKeyInput && apiKeyInput.value !== value) {
+                    return false;
+                }
+                isValid = ok;
+                updateSaveDisabled();
+                return ok;
+            });
+        }
+        return pendingCheck;
+    }
+    // Craft's own Save button is the only submit path that carries the whole CP
+    // behaviour (unsaved-changes guard, redirect resolution), so click it rather than
+    // submitting the form ourselves.
+    function submitForm() {
+        if (!form) return;
+        const saveBtn = form.querySelector('button[type="submit"].submit');
+        if (saveBtn) { saveBtn.click(); }
+        else if (form.requestSubmit) { form.requestSubmit(); }
+        else { form.submit(); }
+    }
+    function displayInvalidKeyError() {
+        (Craft.cp && Craft.cp.displayError)
+            ? Craft.cp.displayError(Craft.t('weglot', 'The API key is invalid.'))
+            : alert(Craft.t('weglot', 'The API key is invalid.'));
+    }
+
     if (apiKeyInput) {
         apiKeyInput.addEventListener('input', function() {
-            isValid = null; clearStatus(); updateSaveDisabled();
+            isValid = null; pendingCheck = null; clearStatus(); updateSaveDisabled();
+            setV1FieldsVisible(false);
         });
     }
     document.addEventListener('focusout', function(e) {
         if (e.target === apiKeyInput) {
-            checkKey(apiKeyInput.value).then(function(ok) { isValid = ok; updateSaveDisabled(); });
+            validateKey(apiKeyInput.value);
         }
     });
     if (form) {
         form.addEventListener('submit', function(e) {
             if (isValid === false) {
                 e.preventDefault();
-                (Craft.cp && Craft.cp.displayError)
-                    ? Craft.cp.displayError(Craft.t('weglot', 'The API key is invalid.'))
-                    : alert(Craft.t('weglot', 'The API key is invalid.'));
+                displayInvalidKeyError();
                 return;
             }
             if (isValid === null && apiKeyInput) {
                 e.preventDefault();
-                checkKey(apiKeyInput.value).then(function(ok) {
-                    isValid = ok; updateSaveDisabled();
-                    if (ok) { form.submit(); }
-                    else {
-                        (Craft.cp && Craft.cp.displayError)
-                            ? Craft.cp.displayError(Craft.t('weglot', 'The API key is invalid.'))
-                            : alert(Craft.t('weglot', 'The API key is invalid.'));
-                    }
+                validateKey(apiKeyInput.value).then(function(ok) {
+                    if (ok) { submitForm(); }
+                    else { displayInvalidKeyError(); }
                 });
             }
+        });
+    }
+
+    if (activateBtn && apiKeyInput) {
+        activateBtn.addEventListener('click', function() {
+            activateBtn.disabled = true;
+            validateKey(apiKeyInput.value).then(function(ok) {
+                activateBtn.disabled = false;
+                if (!ok) return;
+                // V1 keys still need the language selection, so reveal it and let the
+                // user save once it is filled. V2 keys get their languages back from
+                // the API on save, so activating is enough.
+                if (isV1Key) { setV1FieldsVisible(true); }
+                else { submitForm(); }
+            });
         });
     }
 
@@ -232,11 +294,56 @@
         document.addEventListener('keydown', escapeHandler);
     }
 
+    function initResetModal() {
+        var btn = document.querySelector('[data-weglot-reset-btn]');
+        var modal = document.querySelector('[data-weglot-reset-modal]');
+        if (!btn || !modal) { return; }
+
+        var confirmBtn = modal.querySelector('[data-weglot-reset-confirm]');
+        var cancelBtn = modal.querySelector('[data-weglot-reset-cancel]');
+        var errorEl = modal.querySelector('[data-weglot-reset-error]');
+
+        function openModal() {
+            modal.classList.remove('weglot-reset-modal--hidden');
+            if (errorEl) { errorEl.classList.add('weglot-reset-modal--hidden'); }
+        }
+        function closeModal() {
+            modal.classList.add('weglot-reset-modal--hidden');
+        }
+
+        btn.addEventListener('click', openModal);
+        if (cancelBtn) { cancelBtn.addEventListener('click', closeModal); }
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) { closeModal(); }
+        });
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function() {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = Craft.t('weglot', 'Resetting…');
+
+                Craft.postActionRequest('weglot/api/reset-settings', {}, function(response, textStatus) {
+                    if (textStatus === 'success' && response.success) {
+                        window.location.reload();
+                    } else {
+                        if (errorEl) {
+                            errorEl.textContent = Craft.t('weglot', 'An error occurred. Please try again.');
+                            errorEl.classList.remove('weglot-reset-modal--hidden');
+                        }
+                        confirmBtn.disabled = false;
+                        confirmBtn.textContent = Craft.t('weglot', 'Yes, reset');
+                    }
+                });
+            });
+        }
+    }
+
     function init() {
         initDestinationSelectize();
 
         setTimeout(function() {
             initFirstSettingsPopup();
+            initResetModal();
         }, 100);
     }
 

@@ -12,6 +12,7 @@ use craft\web\Request;
 use craft\web\UrlManager;
 use craft\web\View;
 use weglot\craftweglot\helpers\DashboardHelper;
+use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\services\DomCheckersService;
 use weglot\craftweglot\services\DynamicsService;
@@ -29,6 +30,7 @@ use weglot\craftweglot\services\RequestUrlService;
 use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
+use weglot\craftweglot\services\VersionService;
 use weglot\craftweglot\web\WeglotVirtualRequest;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use yii\base\Event;
@@ -43,6 +45,8 @@ class Plugin extends BasePlugin
 
     private ?Request $weglotOriginalRequest = null;
 
+    private static bool $savingSettings = false;
+
     /**
      * Configures and returns an array of components and their respective services.
      *
@@ -53,6 +57,9 @@ class Plugin extends BasePlugin
     public const EVENT_REGISTER_WHITELIST_SELECTORS = 'registerWhitelistSelectors';
     public const EVENT_REGISTER_DYNAMICS_SELECTORS = 'registerDynamicsSelectors';
 
+    /**
+     * @return array{components: array<string, array{class: class-string}>}
+     */
     public static function config(): array
     {
         return [
@@ -74,6 +81,7 @@ class Plugin extends BasePlugin
                 'pageViews' => ['class' => PageViewsService::class],
                 'redirectService' => ['class' => RedirectService::class],
                 'dynamics' => ['class' => DynamicsService::class],
+                'versionService' => ['class' => VersionService::class],
             ],
         ];
     }
@@ -95,15 +103,14 @@ class Plugin extends BasePlugin
     {
         parent::afterSaveSettings();
 
+        if (self::$savingSettings) {
+            return;
+        }
+
+        self::$savingSettings = true;
+
         try {
             $settings = $this->getTypedSettings();
-
-            $dyn = trim($settings->dynamicsSelectors ?? '');
-            if ('' !== $dyn && $settings->dynamicsWhitelistSelectors !== $dyn) {
-                $settings->dynamicsWhitelistSelectors = $dyn;
-
-                \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
-            }
 
             $apiKey = trim($settings->apiKey);
             $languageFrom = $settings->languageFrom;
@@ -132,6 +139,21 @@ class Plugin extends BasePlugin
                 return;
             }
 
+            if (HelperApi::isV2ApiKey($apiKey)) {
+                $apiResult = self::getInstance()->getOption()->getOptionsFromApiWithApiKey($apiKey);
+                if ($apiResult['success']) {
+                    $data = $apiResult['result'];
+                    $languageFrom = \is_string($data['language_from'] ?? null) ? $data['language_from'] : $languageFrom;
+                    $fetched = array_values(array_filter(array_column($data['languages'] ?? [], 'language_to')));
+                    if ([] !== $fetched) {
+                        $languages = $fetched;
+                    }
+                    $settings->languageFrom = $languageFrom;
+                    $settings->languages = $languages;
+                    \Craft::$app->getPlugins()->savePluginSettings($this, $settings->toArray());
+                }
+            }
+
             $result = self::getInstance()->getOption()->saveWeglotSettings(
                 $apiKey,
                 $languageFrom,
@@ -157,6 +179,8 @@ class Plugin extends BasePlugin
         } catch (\Throwable $e) {
             \Craft::error('Synchronisation Weglot après sauvegarde: '.$e->getMessage(), __METHOD__);
             \Craft::$app->getSession()->setError(\Craft::t('weglot', 'Erreur lors de la synchronisation Weglot.'));
+        } finally {
+            self::$savingSettings = false;
         }
     }
 
@@ -200,9 +224,9 @@ class Plugin extends BasePlugin
 
                 try {
                     $settings = Plugin::getInstance()->getTypedSettings();
-                    $apiKey = trim((string) $settings->apiKey);
+                    $apiKey = trim($settings->apiKey);
 
-                    $langExternal = strtolower((string) $first);
+                    $langExternal = strtolower($first);
                     if (!\in_array('', [$apiKey, $langExternal, $internalPath], true)) {
                         $rewritten = Plugin::getInstance()->getSlug()->getInternalPathIfTranslatedSlug(
                             $apiKey,
@@ -381,6 +405,7 @@ class Plugin extends BasePlugin
                 'apiSettings' => $apiSettings,
                 'cdnSettings' => $cdnSettings,
                 'showFirstSettingsPopup' => $showFirstSettingsPopup,
+                'showV1Fields' => '' !== $settings->apiKey && str_starts_with($settings->apiKey, 'wg_'),
             ]
         );
     }

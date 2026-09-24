@@ -8,19 +8,24 @@ use PHPUnit\Framework\TestCase;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\LanguageService;
 use weglot\craftweglot\services\OptionService;
+use weglot\craftweglot\services\UserApiService;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use Weglot\Vendor\Weglot\Util\Regex;
 
 final class OptionServiceTest extends TestCase
 {
+    private string $savedApiKey = '';
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->savedApiKey = Plugin::getInstance()->getTypedSettings()->apiKey;
         \Craft::$app->getCache()->flush();
     }
 
     protected function tearDown(): void
     {
+        Plugin::getInstance()->getTypedSettings()->apiKey = $this->savedApiKey;
         \Craft::$app->getCache()->flush();
         parent::tearDown();
     }
@@ -48,6 +53,31 @@ final class OptionServiceTest extends TestCase
             public function getOptions(): array
             {
                 return array_merge($this->getOptionsDefault(), $this->overrides);
+            }
+        };
+    }
+
+    /**
+     * Build an OptionService whose API call is stubbed, so the real getOptions()
+     * merge against the defaults is exercised.
+     *
+     * @param array<string,mixed> $apiResult
+     */
+    private function makeApiSvc(array $apiResult): OptionService
+    {
+        Plugin::getInstance()->getTypedSettings()->apiKey = 'sk_test';
+
+        return new class($apiResult) extends OptionService {
+            /** @param array<string,mixed> $apiResult */
+            public function __construct(private readonly array $apiResult)
+            {
+                parent::__construct();
+            }
+
+            /** @return array{success: true, result: array<string, mixed>} */
+            public function getOptionsFromApiWithApiKey(string $apiKey): array
+            {
+                return ['success' => true, 'result' => $this->apiResult];
             }
         };
     }
@@ -207,10 +237,11 @@ final class OptionServiceTest extends TestCase
     // getTranslationEngine
     // -------------------------------------------------------------------------
 
-    public function testGetTranslationEngineReturnsDefaultValueOfTwo(): void
+    public function testGetTranslationEngineFallsBackToThreeWhenTheApiOmitsIt(): void
     {
-        // Default options have 'translation_engine' => 2
-        self::assertSame(2, $this->makeSvc()->getTranslationEngine());
+        // V2 project settings never carry `translation_engine`; the WordPress plugin
+        // falls back to 3 in the same situation.
+        self::assertSame(3, $this->makeSvc()->getTranslationEngine());
     }
 
     public function testGetTranslationEngineReturnsConfiguredValue(): void
@@ -233,5 +264,68 @@ final class OptionServiceTest extends TestCase
         $svc = $this->makeSvc(['api_key' => 'wg_live_abc123']);
 
         self::assertSame('wg_live_abc123', $svc->getPublicApiKey());
+    }
+
+    public function testGetPublicApiKeyReadsTheV2PublicKeyField(): void
+    {
+        // V2 project settings carry `public_key` and no `api_key` at all.
+        $svc = $this->makeSvc(['public_key' => 'pk_live_abc123']);
+
+        self::assertSame('pk_live_abc123', $svc->getPublicApiKey());
+    }
+
+    public function testGetPublicApiKeyFallsBackToApiKeyWhenPublicKeyIsBlank(): void
+    {
+        $svc = $this->makeSvc(['public_key' => '', 'api_key' => 'wg_live_abc123']);
+
+        self::assertSame('wg_live_abc123', $svc->getPublicApiKey());
+    }
+
+    // -------------------------------------------------------------------------
+    // getOptions — merge against the defaults
+    // -------------------------------------------------------------------------
+
+    public function testEmptyCustomSettingsFromApiKeepsTheNestedDefaults(): void
+    {
+        // V2 project settings always return `custom_settings` as an empty object.
+        $customSettings = $this->makeApiSvc(['custom_settings' => []])->getOption('custom_settings');
+
+        self::assertIsArray($customSettings);
+        self::assertArrayHasKey('button_style', $customSettings);
+        self::assertArrayHasKey('ai_disclaimer_selector', $customSettings);
+    }
+
+    public function testCustomSettingsFromApiOverrideTheDefaultsWithoutDroppingThem(): void
+    {
+        $customSettings = $this->makeApiSvc([
+            'custom_settings' => ['translate_search' => true],
+        ])->getOption('custom_settings');
+
+        self::assertIsArray($customSettings);
+        self::assertTrue($customSettings['translate_search']);
+        self::assertArrayHasKey('button_style', $customSettings);
+    }
+
+    public function testTopLevelApiValuesStillOverrideTheDefaults(): void
+    {
+        $svc = $this->makeApiSvc(['language_from' => 'fr', 'media_enabled' => true]);
+
+        self::assertSame('fr', $svc->getOption('language_from'));
+        self::assertTrue($svc->getOption('media_enabled'));
+    }
+
+    // -------------------------------------------------------------------------
+    // resetOptions
+    // -------------------------------------------------------------------------
+
+    public function testResetOptionsClearsTheWorkspaceSlugCache(): void
+    {
+        Plugin::getInstance()->getTypedSettings()->apiKey = 'sk_abc123';
+        $cacheKey = UserApiService::workspaceCacheKey('sk_abc123');
+        \Craft::$app->getCache()->set($cacheKey, 'my-workspace');
+
+        (new OptionService())->resetOptions();
+
+        self::assertFalse(\Craft::$app->getCache()->get($cacheKey));
     }
 }

@@ -86,8 +86,8 @@ class ReplaceLinkService extends Component
 
         try {
             $settings = Plugin::getInstance()->getTypedSettings();
-            $apiKey = trim((string) $settings->apiKey);
-            $langExternal = strtolower(trim((string) $language->getExternalCode()));
+            $apiKey = trim($settings->apiKey);
+            $langExternal = strtolower(trim($language->getExternalCode()));
 
             if ('' !== $apiKey) {
                 $languageService = Plugin::getInstance()->getLanguage();

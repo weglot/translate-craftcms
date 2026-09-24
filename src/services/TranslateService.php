@@ -309,7 +309,7 @@ class TranslateService extends Component
         }
 
         $settings = Plugin::getInstance()->getTypedSettings();
-        $apiKey = trim($settings->apiKey ?? '');
+        $apiKey = trim($settings->apiKey);
         if ('' === $apiKey) {
             return $query;
         }
@@ -329,7 +329,7 @@ class TranslateService extends Component
             $apiKey
         );
 
-        $requestUrl = (string) \Craft::$app->getRequest()->getAbsoluteUrl();
+        $requestUrl = \Craft::$app->getRequest()->getAbsoluteUrl();
 
         $payload = [
             'l_from' => $currentLanguage->getInternalCode(),

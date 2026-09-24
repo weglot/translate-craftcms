@@ -135,10 +135,16 @@ class FrontEndScriptsService extends Component
             return;
         }
 
+        // Without a public key the integration would proxy every query with empty
+        // credentials, so ship nothing rather than a broken interceptor.
+        $apiKeyPublic = Plugin::getInstance()->getOption()->getPublicApiKey();
+        if ('' === $apiKeyPublic) {
+            return;
+        }
+
         $view = \Craft::$app->getView();
 
         // Inject weglotData object for use in algolia.js
-        $apiKeyPublic = Plugin::getInstance()->getOption()->getPublicApiKey();
         $weglotData = [
             'api_key' => $apiKeyPublic,
             'original_language' => $originalLanguage->getInternalCode(),
