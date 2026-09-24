@@ -4,7 +4,7 @@ description: Three consecutive releases fixed a URL shape the link-rewriting cod
 type: feedback
 ---
 
-- #55 (1.2.6, `3963583`) added `hx-*` attributes — and introduced the misplaced exclusion lookahead (`open-bot-findings.md` row 1).
+- #55 (1.2.6, `3963583`) added `hx-*` attributes — and inherited a misplaced exclusion lookahead from the WordPress plugin: `wg-excluded-link` was ignored on `data-*` / `hx-*`, and the page-wide replace also rewrote an excluded twin tag. Fixed on `fix/replace-url-excluded-link` with a test per pattern (`tests/unit/helpers/HelperReplaceUrlTest.php`) and an end-to-end one (`tests/services/ReplaceUrlServiceTest.php`).
 - #60 (1.2.7, `074e2e6`) — `mailto:`, `tel:`, `sms:` got a language prefix because they carry no host.
 - #63 (1.2.8, `72cf88f`) — `#anchor`, `#/spa/route`, `?q=` rebased onto the language root.
 - 1.2.3 — external hosts were rewritten.
