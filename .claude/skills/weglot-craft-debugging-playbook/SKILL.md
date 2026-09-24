@@ -29,7 +29,7 @@ Before proposing a fix, write the root-cause claim as: **hypothesis → cheapest
 | `mailto:` / `tel:` becomes `/it/a@b.com/` | URL scheme | Only `http`/`https` are rewritten | `074e2e6`, CHANGELOG 1.2.7 |
 | `#anchor`, `#/spa/route`, `?q=` rebased to `/fr/#…` | href starts with `#` or `?` | Same-document refs untouched | `72cf88f`, CHANGELOG 1.2.8 |
 | External link gets a language prefix | Host differs from the request host? | External hosts returned unchanged | CHANGELOG 1.2.3 (`ReplaceLinkService::replaceUrl()`) |
-| Element with `wg-excluded-link` still rewritten (`data-link`, `data-url`, `data-cart-url`, `hx-*`) | Which pattern in `HelperReplaceUrl::getReplaceModifyLink()` matched? | **Open bug**: lookahead placed before the attribute | `src/helpers/HelperReplaceUrl.php:16-23`, #55 review, `.claude/memory/standards/regex-and-xpath-on-html.md` |
+| Element with `wg-excluded-link` still rewritten | Which pattern in `HelperReplaceUrl::getReplaceModifyLink()` matched? Does an identical non-excluded tag with the same URL exist on the page? | Lookahead right after `<` in every pattern, trailing guard in `simpleReplace()` / `replaceForm()` | #67 (`43ca0a0`, #55 review), `.claude/memory/standards/regex-and-xpath-on-html.md` |
 | `/fr/actions/…` (CP / plugin actions) broken | Rule `<lang>/actions/<action>` registered? | Re-dispatched untouched by the router | `src/Plugin.php:283-284`, `src/controllers/RouterController.php:24-33` |
 
 ## Settings, CP, V2
@@ -69,6 +69,6 @@ Ask for, in this order: Craft and PHP versions, V1 (`wg_…`) or V2 key, the sit
 |---|---|
 | Fix commits cited | `for h in bf4e39d 4a1d6af b212972 b90ede2 074e2e6 72cf88f 0519225 aaf6281 2333c59 fa1d8d3 395479d; do git log -1 --oneline $h; done` |
 | Error comment strings | `grep -n "Weglot error" src/services/TranslateService.php` |
-| Exclusion lookahead still misplaced | `grep -c "(?!wg-excluded-link)" src/helpers/HelperReplaceUrl.php` (8 = open) |
+| Every link pattern and page-wide replace guarded | `grep -c "(?!\[^>\]\*wg-excluded-link)" src/helpers/HelperReplaceUrl.php src/services/ReplaceLinkService.php` (15 and 2) |
 | Actions rules | `grep -n "actions/<action" src/Plugin.php` |
 | Settings-save guard | `grep -n "savingSettings" src/Plugin.php` |

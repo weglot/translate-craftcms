@@ -16,11 +16,24 @@ final class ReplaceLinkServiceTest extends TestCase
     private LanguageEntry $en;
     private LanguageEntry $fr;
 
+    private ?RequestUrlService $originalRequestUrlService = null;
+
     protected function setUp(): void
     {
         parent::setUp();
+        $this->originalRequestUrlService = Plugin::getInstance()->getRequestUrlService();
         $this->en = new LanguageEntry('en', 'en', 'English', 'English', false);
         $this->fr = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
+    }
+
+    protected function tearDown(): void
+    {
+        // makeReplaceSvcWithTranslation() replaces the shared component; put it back so the
+        // stub does not leak into classes that run later in the random order.
+        if ($this->originalRequestUrlService instanceof RequestUrlService) {
+            Plugin::getInstance()->set('requestUrlService', $this->originalRequestUrlService);
+        }
+        parent::tearDown();
     }
 
     // -------------------------------------------------------------------------
