@@ -17,4 +17,6 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 
 ## Reusable verdicts (don't re-raise at the same severity)
 
-None recorded yet — no finding has an explicit, reasoned rejection in the review history. Add one here only when the dev states why a finding is accepted.
+- [Git pathspec `*` crosses `/`](git-pathspec-star-crosses-slash.md) — "`'src/*.php'` misses nested files" is false (codenudge on #66, answered with a reproduction).
+
+Add a verdict here only when the dev states why a finding is rejected or accepted.
