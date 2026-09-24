@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace weglot\craftweglot\tests\services;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use weglot\craftweglot\helpers\HelperReplaceUrl;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\ReplaceUrlService;
+use weglot\craftweglot\services\RequestUrlService;
+use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 
 class ReplaceUrlServiceTest extends TestCase
 {
@@ -15,10 +19,13 @@ class ReplaceUrlServiceTest extends TestCase
 
     private ?ReplaceLinkService $originalReplaceLinkService = null;
 
+    private ?RequestUrlService $originalRequestUrlService = null;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->originalReplaceLinkService = Plugin::getInstance()->getReplaceLinkService();
+        $this->originalRequestUrlService = Plugin::getInstance()->getRequestUrlService();
         $this->service = new ReplaceUrlService();
     }
 
@@ -29,6 +36,9 @@ class ReplaceUrlServiceTest extends TestCase
         // and PHPUnit still calls tearDown() in that case.
         if ($this->originalReplaceLinkService instanceof ReplaceLinkService) {
             Plugin::getInstance()->set('replaceLinkService', $this->originalReplaceLinkService);
+        }
+        if ($this->originalRequestUrlService instanceof RequestUrlService) {
+            Plugin::getInstance()->set('requestUrlService', $this->originalRequestUrlService);
         }
         parent::tearDown();
     }
@@ -118,5 +128,84 @@ class ReplaceUrlServiceTest extends TestCase
         $result = $this->service->modifyLink($pattern, $translatedPage, $type);
 
         self::assertSame('<form action="https://translated.com/process">', $result);
+    }
+
+    /**
+     * Patterns rewritten through a page-wide preg_replace() on the tag start and URL, where an
+     * excluded tag sharing both with a rewritten one could be rewritten too.
+     *
+     * @return array<string, array{string, string, string, string}>
+     */
+    public static function pageWideReplaceProvider(): array
+    {
+        $div = ['<div ', '<div class="wg-excluded-link" '];
+
+        return [
+            'data-link' => ['datalink', ...$div, 'data-link'],
+            'data-url' => ['dataurl', ...$div, 'data-url'],
+            'data-cart-url' => ['datacart', ...$div, 'data-cart-url'],
+            'hx-get' => ['hxget', ...$div, 'hx-get'],
+            'hx-post' => ['hxpost', ...$div, 'hx-post'],
+            'hx-put' => ['hxput', ...$div, 'hx-put'],
+            'hx-patch' => ['hxpatch', ...$div, 'hx-patch'],
+            'hx-delete' => ['hxdelete', ...$div, 'hx-delete'],
+            'form' => ['form', '<form method="post" ', '<form class="wg-excluded-link" method="post" ', 'action'],
+            'canonical' => ['canonical', '<link rel="canonical" ', '<link rel="canonical" class="wg-excluded-link" ', 'href'],
+        ];
+    }
+
+    #[DataProvider('pageWideReplaceProvider')]
+    public function testModifyLinkLeavesExcludedTwinUntouched(string $key, string $tagStart, string $excludedTagStart, string $attribute): void
+    {
+        $this->useReplaceLinkServiceTranslatingTo('/fr/about');
+
+        $plain = $tagStart.$attribute.'="/about">';
+        $excluded = $tagStart.$attribute.'="/about" class="wg-excluded-link">';
+
+        foreach ([$plain.$excluded, $excluded.$plain] as $page) {
+            $result = $this->service->modifyLink(HelperReplaceUrl::getReplaceModifyLink()[$key], $page, $key);
+
+            self::assertStringContainsString($attribute.'="/fr/about"', $result);
+            self::assertStringContainsString($attribute.'="/about" class="wg-excluded-link"', $result);
+        }
+    }
+
+    #[DataProvider('pageWideReplaceProvider')]
+    public function testModifyLinkLeavesElementExcludedBeforeTheAttributeUntouched(string $key, string $tagStart, string $excludedTagStart, string $attribute): void
+    {
+        $this->useReplaceLinkServiceTranslatingTo('/fr/about');
+
+        $page = $excludedTagStart.$attribute.'="/about">';
+
+        self::assertSame($page, $this->service->modifyLink(HelperReplaceUrl::getReplaceModifyLink()[$key], $page, $key));
+    }
+
+    private function useReplaceLinkServiceTranslatingTo(string $translatedUrl): void
+    {
+        $fr = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
+        $requestUrlService = new class($fr) extends RequestUrlService {
+            public function __construct(private readonly LanguageEntry $language)
+            {
+                parent::__construct();
+            }
+
+            public function getCurrentLanguage(): LanguageEntry
+            {
+                return $this->language;
+            }
+        };
+        Plugin::getInstance()->set('requestUrlService', $requestUrlService);
+
+        Plugin::getInstance()->set('replaceLinkService', new class($requestUrlService, $translatedUrl) extends ReplaceLinkService {
+            public function __construct(RequestUrlService $requestUrlService, private readonly string $translatedUrl)
+            {
+                parent::__construct($requestUrlService);
+            }
+
+            public function replaceUrl(string $url, LanguageEntry $language, bool $evenExcluded = true): string
+            {
+                return $this->translatedUrl;
+            }
+        });
     }
 }

@@ -125,10 +125,11 @@ class ReplaceLinkService extends Component
     {
         $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
         $newUrl = $this->replaceUrl($currentUrl, $currentLanguage);
-        $regex = '/<'.preg_quote($tag, '/').preg_quote((string) $sometags, '/').$attribute.'='.preg_quote($quote1.$currentUrl.$quote2, '/').'/';
+        // The replace runs on the whole page: the trailing guard keeps it off an identical tag whose exclusion marker comes after the URL.
+        $regex = '/<'.preg_quote($tag, '/').preg_quote((string) $sometags, '/').$attribute.'='.preg_quote($quote1.$currentUrl.$quote2, '/').'(?![^>]*wg-excluded-link)/';
         $replacement = '<'.$tag.$sometags.$attribute.'='.$quote1.$newUrl.$quote2;
 
-        return preg_replace($regex, $replacement, $translatedPage);
+        return preg_replace($regex, $replacement, $translatedPage) ?? $translatedPage;
     }
 
     /**
@@ -286,10 +287,10 @@ class ReplaceLinkService extends Component
     {
         $currentLanguage = Plugin::getInstance()->getRequestUrlService()->getCurrentLanguage();
         $newUrl = $this->replaceUrl($currentUrl, $currentLanguage, false);
-        $regex = '/<form'.preg_quote((string) $sometags, '/').'action='.preg_quote($quote1.$currentUrl.$quote2, '/').'/';
+        $regex = '/<form'.preg_quote((string) $sometags, '/').'action='.preg_quote($quote1.$currentUrl.$quote2, '/').'(?![^>]*wg-excluded-link)/';
         $replacement = '<form '.$sometags.'action='.$quote1.$newUrl.$quote2;
 
-        return preg_replace($regex, $replacement, $translatedPage);
+        return preg_replace($regex, $replacement, $translatedPage) ?? $translatedPage;
     }
 
     /**

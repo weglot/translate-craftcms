@@ -94,6 +94,65 @@ final class HelperReplaceUrlTest extends TestCase
         self::assertSame('https://example.test/rooms/book/42', $m[3][0] ?? null);
     }
 
+    /**
+     * Patterns whose tag is not fixed, so the exclusion marker can sit before or after the URL attribute.
+     *
+     * @return array<string, array{string, string}>
+     */
+    public static function anyTagPatternProvider(): array
+    {
+        return [
+            'data-link' => ['datalink', 'data-link'],
+            'data-url' => ['dataurl', 'data-url'],
+            'data-cart-url' => ['datacart', 'data-cart-url'],
+            'hx-get' => ['hxget', 'hx-get'],
+            'hx-post' => ['hxpost', 'hx-post'],
+            'hx-put' => ['hxput', 'hx-put'],
+            'hx-patch' => ['hxpatch', 'hx-patch'],
+            'hx-delete' => ['hxdelete', 'hx-delete'],
+        ];
+    }
+
+    #[DataProvider('anyTagPatternProvider')]
+    public function testAnyTagPatternCapturesUrlWithEitherQuote(string $key, string $attribute): void
+    {
+        $pattern = HelperReplaceUrl::getReplaceModifyLink()[$key];
+
+        foreach (['"', "'"] as $quote) {
+            $m = [];
+            self::assertSame(1, preg_match($pattern, '<div id="x" '.$attribute.'='.$quote.'/about'.$quote.' hx-target="#t">', $m));
+            self::assertSame($quote, $m[2]);
+            self::assertSame('/about', $m[3]);
+        }
+    }
+
+    #[DataProvider('anyTagPatternProvider')]
+    public function testAnyTagPatternSkipsExcludedElement(string $key, string $attribute): void
+    {
+        $pattern = HelperReplaceUrl::getReplaceModifyLink()[$key];
+
+        self::assertSame(0, preg_match($pattern, '<div class="wg-excluded-link" '.$attribute.'="/about">'));
+        self::assertSame(0, preg_match($pattern, '<div '.$attribute.'="/about" class="wg-excluded-link">'));
+    }
+
+    #[DataProvider('anyTagPatternProvider')]
+    public function testAnyTagPatternSkipsCraftActionUrls(string $key, string $attribute): void
+    {
+        $pattern = HelperReplaceUrl::getReplaceModifyLink()[$key];
+
+        self::assertSame(0, preg_match($pattern, '<div '.$attribute.'="/actions/weglot/api/validate-api-key">'));
+    }
+
+    #[DataProvider('anyTagPatternProvider')]
+    public function testExclusionMarkerDoesNotReachTheNextTag(string $key, string $attribute): void
+    {
+        $pattern = HelperReplaceUrl::getReplaceModifyLink()[$key];
+
+        $html = '<span class="wg-excluded-link"></span><div '.$attribute.'="/about">';
+
+        self::assertSame(1, preg_match_all($pattern, $html));
+    }
+
     public function testHxGetPatternSkipsCraftActionUrls(): void
     {
         $patterns = HelperReplaceUrl::getReplaceModifyLink();
