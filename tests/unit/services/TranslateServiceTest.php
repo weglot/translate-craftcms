@@ -406,6 +406,15 @@ final class TranslateServiceTest extends TestCase
         self::assertStringContainsString('Main &copy; &nbsp;é', $output);
     }
 
+    public function testDisclaimerInjectionKeepsAScriptInsideTheTargetIntact(): void
+    {
+        $page = '<html><body><footer id="footer"><script>var x = "</div>";</script><p>First</p></footer></body></html>';
+
+        $output = $this->translateWithDisclaimer($page, '#footer');
+
+        self::assertStringContainsString('<script>var x = "</div>";</script><p>First</p> '.self::AI_DISCLAIMER, $output);
+    }
+
     /**
      * @return array<string, array{string}>
      */
@@ -418,6 +427,7 @@ final class TranslateServiceTest extends TestCase
             'combinator only' => ['>'],
             'comma' => [','],
             'void element' => ['#logo'],
+            'script element' => ['head script'],
         ];
     }
 

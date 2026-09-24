@@ -15,8 +15,11 @@ use function Weglot\Vendor\WGSimpleHtmlDom\str_get_html;
 
 class TranslateService extends Component
 {
-    /** Elements whose content the disclaimer cannot be appended to. */
-    private const VOID_ELEMENTS = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+    /** Elements the disclaimer cannot be appended to: void elements, and raw-text ones where it would break the code or markup. */
+    private const NO_TEXT_ELEMENTS = [
+        'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr',
+        'noscript', 'script', 'style', 'template', 'textarea', 'title',
+    ];
 
     /**
      * @param array<string, mixed> $config
@@ -215,9 +218,9 @@ class TranslateService extends Component
         $selector = trim($aiDisclaimerSelector);
         $disclaimerText = 'Translated content on this website may be generated using artificial intelligence. Learn more about AI-generated translations';
 
-        // Same parser and flags as the Weglot parser that translates this page next: the selector
-        // gets its CSS support, and save() does not re-serialise the document the way
-        // DOMDocument::saveHTML() did (it truncated inline scripts containing "</div>").
+        // Same parser and flags as the Weglot parser that translates this page next, so this round trip
+        // adds no change of its own and the selector gets the same CSS support; unlike
+        // DOMDocument::saveHTML(), it keeps inline script bodies intact (they contained "</div>").
         $dom = str_get_html($html, true, true, \WG_DEFAULT_TARGET_CHARSET, false);
         if (false === $dom) {
             return $html;
@@ -229,8 +232,8 @@ class TranslateService extends Component
 
             return $html;
         }
-        if (\in_array($target->tag, self::VOID_ELEMENTS, true)) {
-            \Craft::warning(\sprintf('AI disclaimer selector "%s" matched a <%s>, which cannot hold text', $selector, $target->tag), __METHOD__);
+        if (\in_array($target->tag, self::NO_TEXT_ELEMENTS, true)) {
+            \Craft::warning(\sprintf('AI disclaimer selector "%s" matched a <%s>, which cannot take the disclaimer text', $selector, $target->tag), __METHOD__);
 
             return $html;
         }
