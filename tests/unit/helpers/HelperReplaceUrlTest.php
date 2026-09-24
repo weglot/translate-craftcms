@@ -140,7 +140,9 @@ final class HelperReplaceUrlTest extends TestCase
     {
         $pattern = HelperReplaceUrl::getReplaceModifyLink()[$key];
 
-        self::assertSame(0, preg_match($pattern, '<div '.$attribute.'="/actions/weglot/api/validate-api-key">'));
+        foreach (['/actions/', '/index.php/actions/'] as $prefix) {
+            self::assertSame(0, preg_match($pattern, '<div '.$attribute.'="'.$prefix.'weglot/api/validate-api-key">'));
+        }
     }
 
     #[DataProvider('anyTagPatternProvider')]

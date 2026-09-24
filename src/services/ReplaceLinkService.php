@@ -149,7 +149,7 @@ class ReplaceLinkService extends Component
         $regex = '/<a'.preg_quote((string) $sometags, '/').'href='.preg_quote($quote1.$currentUrl.$quote2, '/').preg_quote((string) $sometags2, '/').'>/';
         $replacement = '<a'.$sometags.'href='.$quote1.$newUrl.$quote2.$sometags2.'>';
 
-        return preg_replace($regex, $replacement, $translatedPage);
+        return preg_replace($regex, $replacement, $translatedPage) ?? $translatedPage;
     }
 
     /**
