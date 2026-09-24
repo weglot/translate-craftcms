@@ -31,3 +31,9 @@ phpstan.neon
 dist/
 
 tests/_craft
+
+###> claude ###
+.claude/settings.local.json
+.claude/worktrees/
+.claude/runs/
+###< claude ###

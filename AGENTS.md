@@ -1,487 +1,165 @@
-# CLAUDE.md
+# Weglot — Craft CMS plugin
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Craft CMS 5 plugin (`weglot/craft-translate`, handle `weglot`) distributed on the Craft Plugin Store that translates a site through the Weglot API. Single unit: PHP 8.2+ (`weglot\craftweglot\` namespace, services as Yii2 components), a small control-panel UI (Twig + JS/SCSS built by Vite). Client of Weglot's own API through php-scoper'd copies of `weglot-php`, `weglot-parser-php`, `simple_html_dom`, `weglot-translation-definitions` and `crawler-detect` (`src/vendor/weglot/`, never edited by hand).
 
----
+`CLAUDE.md` is a symlink to this file — edit `AGENTS.md`.
 
-## Workflow
+## Behavioral principles
 
-### Before Writing Any Code
+These apply before any project-specific rule. Bias toward caution over speed; on trivial tasks, use judgment.
 
-## 1. Think Before Coding
+**Think before coding.** State assumptions explicitly. If multiple interpretations exist, present them — don't pick silently. If a simpler approach exists, say so and push back when warranted. If something is unclear, stop, name what is confusing, and ask.
 
-**Don't assume. Don't hide confusion. Surface tradeoffs.**
+**Simplicity first.** Minimum code that solves the problem. No features beyond what was asked, no abstractions for single-use code, no configurability nobody requested, no error handling for impossible scenarios. If you write 200 lines and it could be 50, rewrite it. Would a senior engineer call it overcomplicated? Then simplify.
 
-Before implementing:
-- State your assumptions explicitly. If uncertain, ask.
-- If multiple interpretations exist, present them - don't pick silently.
-- If a simpler approach exists, say so. Push back when warranted.
-- If something is unclear, stop. Name what's confusing. Ask.
+**Surgical changes.** Every changed line traces to the request. Don't "improve" adjacent code, comments or formatting; don't refactor what isn't broken; match existing style. Remove the imports/variables/functions *your* change orphaned; mention unrelated dead code, don't delete it.
 
-## 2. Simplicity First
+**Goal-driven execution.** Turn tasks into verifiable goals ("add validation" → "write tests for invalid inputs, then make them pass"; "fix the bug" → "write a test that reproduces it, then make it pass"). For multi-step work, state a brief plan with a check per step and loop until verified.
 
-**Minimum code that solves the problem. Nothing speculative.**
+**Plan approval.** For any significant task (touches several files, adds a feature, or changes existing behaviour): propose a plan — files, approach, trade-offs — **run `/senior-review plan` on it**, present the plan with the reviewer's verdict, and **wait for explicit approval** before writing a single line of code. Anything beyond a trivial single-line fix or typo is significant.
 
-- No features beyond what was asked.
-- No abstractions for single-use code.
-- No "flexibility" or "configurability" that wasn't requested.
-- No error handling for impossible scenarios.
-- If you write 200 lines and it could be 50, rewrite it.
+**Review loop.** Every change goes: branch → problem stated → plan reviewed (`/senior-review plan`) → dev approval → code → diff reviewed (`/senior-review`), 🔴 / 🟠 findings fixed → `/deploy-check` → PR. Review before the gates: fixing a finding can break them.
 
-Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+## Verification before claiming
 
-## 3. Surgical Changes
+A claim that something works cites a command run in this session and its output. Never cite a self-written test or a mock as proof a behaviour exists in production code. Report failing tests with their output.
 
-**Touch only what you must. Clean up only your own mess.**
-
-When editing existing code:
-- Don't "improve" adjacent code, comments, or formatting.
-- Don't refactor things that aren't broken.
-- Match existing style, even if you'd do it differently.
-- If you notice unrelated dead code, mention it - don't delete it.
-
-When your changes create orphans:
-- Remove imports/variables/functions that YOUR changes made unused.
-- Don't remove pre-existing dead code unless asked.
-
-The test: Every changed line should trace directly to the user's request.
-
-## 4. Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
-Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
-
-For any **significant task** (touches multiple files, introduces a new feature, or changes existing behavior), Claude must:
-
-1. **Propose an action plan** — list the files to modify, the approach, and any trade-offs
-2. **Wait for explicit approval** before writing a single line of code
-3. Only then proceed with the implementation
-
-A "significant task" is anything beyond a trivial single-line fix or typo correction.
-
-### After Writing Any Code
-
-Claude must **always** run the full quality pipeline and fix any reported errors before considering the task done:
+After writing any code, run the quality gate and fix every error before calling the task done — `/deploy-check` runs all of it, or by hand:
 
 ```bash
-# Step 1 — code style check (dry-run)
-composer run check-cs
-
-# Step 2 — static analysis
-composer run phpstan
-
-# Step 3 — rector (no un-applied transformations allowed)
-composer run rector
-
-# Step 4 — dependency security audit
+composer run check-cs     # php-cs-fixer, dry run
+composer run phpstan      # level 6, 100 % type coverage — NOT run by CI
+composer run rector       # must report no un-applied transformation
+composer run test         # all of tests/ — CI runs only tests/unit/
 composer audit
 ```
 
-If any command reports errors, fix them immediately and re-run until all four pass cleanly.
+CI (`.github/workflows/code-quality.yml`) skips PHPStan and `tests/services/`: a green CI is not a green gate (`.claude/memory/gotchas/ci-gate-gaps.md`).
 
-For `composer audit`, report any advisories found. Vulnerabilities in transitive dependencies pinned by `craftcms/cms` (Twig, Symfony, Yii2) are usually resolved by a Craft upgrade rather than by this plugin — do not attempt to bump them in isolation without confirming Craft's version constraints allow it.
+For `composer audit`, report any advisory. Vulnerabilities in transitive dependencies pinned by `craftcms/cms` (Twig, Symfony, Yii2) are usually resolved by a Craft upgrade rather than by this plugin — do not bump them in isolation without confirming Craft's version constraints allow it.
 
----
+## Landmarks
 
-## WordPress Plugin as Reference Implementation
+Canonical locations, so a lookup is a read and not a repo-wide grep. Verify a path before relying on it.
 
-When the user mentions "WP" or an implementation from the Weglot WordPress plugin, look it up in a local checkout of that plugin. Use the MCP PHPStorm `search_symbol` tool to locate the relevant class or method there, then use it as the reference for porting or comparing behavior to the Craft plugin.
+| Thing | Where |
+|---|---|
+| Components (service ids), events, URL rules, settings page, settings save | `src/Plugin.php` — `config()` `:63`, `attachEventHandlers()` `:190`, `afterSaveSettings()` `:102` |
+| Public events | `Plugin::EVENT_REGISTER_WHITELIST_SELECTORS` / `EVENT_REGISTER_DYNAMICS_SELECTORS` (`src/Plugin.php:57-58`) |
+| Weglot hosts, environment, v1/v2 key detection | `src/helpers/HelperApi.php` |
+| Env vars | `WEGLOT_ENV`, `WEGLOT_DEV`, `WEGLOT_API_URL_STAGING`, `WEGLOT_CDN_URL_STAGING` — read in `HelperApi` with `App::env()`; the consuming project's `.env` is `../../.env` |
+| Settings model | `src/models/Settings.php` |
+| Link-rewriting regexes | `src/helpers/HelperReplaceUrl.php` |
+| Plugin-side DOM checkers | `src/checkers/dom/` (auto-discovered, `src/services/DomCheckersService.php`) |
+| Scoped vendor + how it is built | `src/vendor/weglot/` ← `Makefile` (pins `WEGLOT_PHP_REF`, `WEGLOT_PARSER_PHP_REF`) + `scoper.inc.php` |
+| CP template, JS/SCSS sources, compiled assets | `src/templates/_settings.twig`; `src/resources-src/`; `src/resources/` (`AdminAsset.php` lists what is loaded) |
+| French strings | `src/translations/fr/weglot.php` |
+| Test bootstrap | `tests/bootstrap.php` (headless Craft, no DB) |
+| Quality configs | `.php-cs-fixer.dist.php`, `phpstan.dist.neon`, `rector.php`, `phpunit.xml.dist` |
+| CI / release | `.github/workflows/code-quality.yml`, `.github/workflows/create-release.yml` |
+| Release notes | `CHANGELOG.md` (`## X.Y.Z - YYYY-MM-DD`, newest first — read by the Plugin Store) |
 
-**The checkout path is machine-specific and is deliberately not recorded here** — this file is committed, so a personal path would send other contributors and CI to a directory that does not exist. Ask the user for their path the first time it is needed, then verify it with `mcp__phpstorm__get_repositories` before searching. If it does not resolve, say so and ask them to open the project in PhpStorm; never fall back to plain file reads against a guessed path, and never answer a WP question from memory when the checkout is unavailable.
+## Project memory (auto-imported)
 
-### V2 lives in its own templates
+Shared knowledge — see [`.claude/memory/README.md`](.claude/memory/README.md) for the schema and the promote / retire workflow.
 
-**All V2 admin UI is under `templates/admin/v2/`** (`home.php`, `dashboard.php`, `settings.php`, `section/`). The V1 entry point `templates/admin/pages/settings.php` routes to it early:
+**Run `/audit-claude` once a month.** Outdated tooling is worse than none: an agent trusts a stale path, line number or rule and acts on it with confidence.
 
-```php
-if ( $onboarding_version !== 1 ) {
-    include_once WEGLOT_TEMPLATES . '/admin/v2/settings.php';
-    return;
-}
+Architecture:
+@.claude/memory/architecture/plugin-bootstrap.md
+@.claude/memory/architecture/translation-pipeline.md
+
+Standards:
+@.claude/memory/standards/craft-php-standards.md
+
+Testing:
+@.claude/memory/testing/writing-tests.md
+
+Cross-cutting gotchas:
+@.claude/memory/gotchas/ci-gate-gaps.md
+@.claude/memory/gotchas/weglot-dev-env-normalization.md
+@.claude/memory/gotchas/scoped-vendor-pitfalls.md
+
+## On-demand standards
+
+- `.claude/memory/architecture/weglot-api-contract.md` — read before touching an API URL, header, auth mode (v1/v2), `api_base_url` or the workspace / dashboard links. Always-on: never hardcode a Weglot host outside `HelperApi`; V2 auth is `Authorization: Key`, not `Bearer`.
+- `.claude/memory/standards/regex-and-xpath-on-html.md` — read before editing `HelperReplaceUrl`, `ReplaceUrlService`, `ReplaceLinkService`, `cssToXPath()` or a DOM checker. Always-on: exclusion lookaheads scan the whole tag, `(?![^>]*wg-excluded-link)`.
+- `.claude/memory/standards/admin-frontend-rules.md` — read before touching `src/templates/`, `src/resources-src/` or a CP controller action. Always-on: no inline JS or CSS in Twig; values go through `data-*`.
+- `.claude/memory/standards/public-extension-points-backward-compat.md` — read before touching `Plugin::EVENT_*`, `RegisterSelectorsEvent`, a `Settings` property, a URL rule or `composer.json` `extra`. Always-on: never rename or re-type them.
+- `.claude/memory/gotchas/silent-translation-cdn-fallback.md` — read on any "not translated, no Weglot error comment" report.
+- `.claude/memory/gotchas/weglot-dev-hosts.md` — read before any hand-made request to a Weglot host.
+- `.claude/memory/process/wp-reference-implementation.md` — read when the request mentions "WP" or a WordPress plugin behaviour. Always-on: never guess the checkout path; sweep all of `templates/admin/v2/` before concluding V2 lacks something.
+
+## Commands
+
+```bash
+composer install && npm install        # setup
+npm run build                          # Vite → src/resources/ (npm run dev = watch) — needs Node ≥ 20.19 / 22.12
+composer run test                      # all tests
+./vendor/bin/phpunit --filter <name>   # one test
+make all                               # re-scope the Weglot libraries (GH_PAT needed) — see /vendor-update
 ```
 
-So V1 and V2 screens are entirely separate files, and the two versions differ in structure, not just in URLs — V2 merges the block and URL exclusion cards into one and drops the Visual Editor card.
+Tech stack: PHP ≥ 8.2 (`composer.json`, `config.platform.php` 8.2, CI on 8.2), Craft CMS ^5.8.0, Yii2, Guzzle ^7.10, PHPUnit 11, PHPStan 2 (level 6 + strict rules + type coverage), Rector 2, php-cs-fixer (`@Symfony`, `@PHP82Migration`), php-scoper 0.18, Vite 7 + Sass.
 
-When answering any V2 question, **sweep the whole `templates/admin/v2/` directory before concluding anything is missing**. `admin/v2/settings.php` is only the onboarding screen; the dashboard quick links are in `admin/v2/home.php`. Concluding "V2 has no equivalent" after reading a single V2 file has already produced wrong implementations.
+## Git, branches, PRs
 
-Dashboard URLs are the clearest example of the structural split:
+- Branch off `master` as `<type>/<kebab-slug>` (`fix/replace-url-same-document-references`, `improvement/connect-to-weglot-v2`).
+- Commits and PR titles follow Conventional Commits: `type(scope): short description` — types `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style` (e.g. `fix(translate): handle empty API response gracefully`). One logical change per commit. PRs are squash-merged.
+- PR body and review etiquette: `/weglot-craft-change-control`.
+- **No AI attribution**: no `Co-Authored-By` in commit messages, no "Generated with Claude Code" or similar footer in PR descriptions.
+- Never commit code that fails the quality gate; always run `composer audit` before committing — do not commit with unresolved advisories on dependencies this plugin can update.
 
-| | shape |
-|---|---|
-| V1 | `dashboard.weglot.*/workspaces/{organization_slug}/projects/{project_slug}/translations/languages/` |
-| V2 | `auth.weglot.*/{workspace_slug}/{project_slug}/languages` |
+## Git safety
 
-V2 project settings carry **no `organization_slug`** and no `api_key` (they expose `public_key` instead). The workspace slug comes from a separate call: `GET {api_base_url}/workspaces/current` with the header `Authorization: Key <apiKey>` — `Key`, not `Bearer`.
+Before **any** `git checkout`, `git switch`, `git checkout -b` or `git stash`:
 
-### Probing the Weglot API by hand
+1. Run `git status` **and** `git log --oneline master..HEAD`, and report both to the user.
+2. Name explicitly what is uncommitted and whether the current branch has commits of its own (and whether they are pushed).
+3. **Stop and ask** what to do with that work — commit it here, stash it, or carry it over.
 
-Read the consuming Craft project's `.env` first and use the hosts it declares. The plugin sits at `<craft-project>/plugins/weglot`, so that file is `../../.env` from this repository root. `HelperApi` resolves every host from `WEGLOT_ENV` / `WEGLOT_DEV` and the `WEGLOT_*_STAGING` variables, so a dev key only resolves against `*.weglot.dev` — querying the `.com` production hosts returns `Project settings not found` and looks like a broken key.
+A branch name is not proof the work is saved. Never stage files you did not intentionally edit; before destructive commands (`checkout --`, `reset --hard`, `clean`) set staged and unstaged work aside first.
 
-`auth.weglot.*` sits behind Cloudflare Access: every path, valid or not, 302s to a login. HTTP status probing cannot discover or validate its routes — read them from the WP templates instead.
+## Formatters & codemods
 
----
+Never run `composer run fix-cs`, Rector without `--dry-run`, or any codemod on the whole tree when only a few files changed: scope them (`vendor/bin/php-cs-fixer fix <files>`, `vendor/bin/rector process <files>`). If a tool rewrites unrelated files, revert them. Never run php-scoper output into `src/vendor/weglot/` by hand — `/vendor-update`.
 
-## Language
+## Language and tone
 
-- All code, comments, commit messages, and documentation must be written in **English**
-- The user may interact in French, but all produced artifacts (code, docs, configs) are always in English
-
----
-
-## General Principles
-
-- Write clean, maintainable, and well-tested code
-- Prefer simplicity over cleverness
-- Keep functions small and focused on a single responsibility
-- Use meaningful variable and function names
-- Do not hardcode configuration values (URLs, secrets, timeouts, feature flags) — use plugin settings or a centralized config module
-- When fixing a bug found in production, update upstream guidelines or conventions to prevent recurrence
-
----
+The user may write in French; everything produced — code, comments, commit messages, PR titles, docs, `.claude/` files — is in **English**. PR bodies are terse: problem, fix, how it was verified.
 
 ## Comments
 
-- Do **not** add comments that explain *what* the code does — write code that is clear enough to be self-explanatory
-- Only add comments to explain *why* a non-obvious decision was made (e.g. a workaround for a third-party bug)
-- PHPDoc blocks (`@param`, `@return`, `@throws`) are allowed and encouraged where they aid static analysis (PHPStan)
-
----
-
-## Code Quality
-
-- All code must pass PHP-CS-Fixer, PHPStan, and Rector checks before commit (see Workflow above)
-- Write unit tests for any new functionality
-- Use PHP 8.2 type annotations throughout: typed properties, union types, return types, argument types, and `readonly` where applicable
-- Keep dependencies up to date and minimize their number — each new dependency must be justified
-
----
-
-## Git & Commits
-
-- **Do not add AI attribution markers** — no `Co-Authored-By` in commit messages, no "Generated with Claude Code" or similar footers in merge request descriptions
-- Commit messages follow the **Conventional Commits** format: `type(scope): short description`
-    - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style`
-    - Example: `fix(translate): handle empty API response gracefully`
-- Never commit code that fails linting or static analysis
-- Always run `composer audit` before committing — do not commit with unresolved security advisories on dependencies this plugin can update
-- One logical change per commit — avoid mixing unrelated fixes
-
----
-
-## Tech Stack
-
-- **PHP** 8.2+ — strict types, typed properties, readonly, enums, intersection types
-- **Craft CMS** 5.8.0+ — event system, services as Yii2 components, URL manager, view events
-- **Yii2** — dependency injection, component lifecycle, cache interface
-- **Composer** for PHP dependencies + `php-scoper` for namespace isolation
-- **Vite** for frontend JS/CSS compilation
-- **PHPStan** level 6 with 100% type coverage
-- **Rector** for code modernization
-
----
-
-## PHP / Craft Standards
-
-- Follow [Craft CMS coding standards](https://craftcms.com/docs/5.x/extend/coding-guidelines.html)
-- Always use `===` / `!==`; never `==` / `!=`
-- Always declare `declare(strict_types=1)` at the top of each file
-- Use Craft's own cache interface (`\Craft::$app->getCache()`) for caching — never roll your own
-- Use Craft's `Request` object — never access `$_SERVER`, `$_GET`, `$_POST` directly
-- Use Guzzle (already a dependency) for all outbound HTTP calls — never `file_get_contents()` or `curl_*`
-- Services must be registered as Yii2 components in `Plugin::config()` and never instantiated with `new` outside of that
-- Raise `\yii\web\NotFoundHttpException` or redirect via `\Craft::$app->getResponse()` — never `die()` or `exit()`
-- Use `\Craft::$app->getCache()` with a meaningful cache key prefix (`weglot_*`) to avoid collisions
-
----
-
-## Setup
-
-```bash
-composer install && npm install
-```
-
----
-
-## Build Assets
-
-```bash
-npm run dev     # Watch mode (Vite)
-npm run build   # Build to src/resources/
-```
-
-Source files: `src/resources-src/js/admin.js`, `src/resources-src/scss/admin.scss`
-Compiled output: `src/resources/js/`, `src/resources/css/`
-
----
-
-## Tests
-
-```bash
-composer run test                                         # All tests
-./vendor/bin/phpunit tests/unit/PluginTest.php            # Single file
-./vendor/bin/phpunit --filter testMethodName             # Single test
-```
-
-Tests bootstrap a headless Craft app (no database needed) via `tests/bootstrap.php`.
-
-- `tests/unit/` — pure unit tests (settings normalization, URL helpers, service logic)
-- `tests/services/` — service-level integration tests with full Craft bootstrap
-
-PHPUnit config: `phpunit.xml.dist`, cache in `.cache/phpunit`.
-
----
-
-## Vendor Library Update Workflow (Makefile)
-
-The `src/vendor/weglot/` directory contains **namespace-scoped** copies of external Weglot libraries — do not edit them directly.
-
-```bash
-make checkout     # Clone weglot-php, weglot-translation-definitions, simple_html_dom at latest tags
-make scoper       # Apply php-scoper (namespaces everything under Weglot\Vendor)
-make vendor-sync  # Copy scoped output to src/vendor/weglot
-make all          # Full update: checkout + scoper + vendor-sync
-make clean        # Remove all build artifacts
-```
-
-### After any vendor update — regenerate the autoloader
-
-The scoped `weglot-php` parser discovers its DOM checkers by scanning the `Parser/Check/Dom/` directory at runtime (`DomCheckerProvider::loadDefaultCheckers()` uses `scandir()`), then builds each class name from the filename. Those classes are autoloaded via the **classmap** declared in `composer.json` (`autoload.classmap`), which is a static generated list.
-
-So whenever `make vendor-sync` / `make all` **adds or removes** a checker file (or any scoped class), you MUST run `composer dump-autoload` in every project that consumes the plugin. Otherwise `scandir()` finds a file the classmap doesn't know about and the parser throws `Class "\Weglot\Vendor\Weglot\Parser\Check\Dom\..." not found` at runtime (this is exactly how a newly-added `ImageSourceSet` checker broke translation until the autoloader was regenerated).
-
-```bash
-composer dump-autoload   # run in the Craft project root after every vendor update
-```
-
----
-
-## Manual Release (GitHub)
-
-GitHub releases are created automatically by the `.github/workflows/create-release.yml` workflow, which runs **only** on a `repository_dispatch` event of type `craftcms/new-release`. That event is sent by the **Craft Plugin Store** (via id.craftcms.com) when it detects a new version tag — **pushing a git tag alone does NOT create a release.**
-
-### When the release does not appear after tagging
-
-If a tag exists (e.g. on https://github.com/weglot/translate-craftcms) but no release was created, the Craft Plugin Store did not send the dispatch. The root cause is almost always **upstream, not GitHub**:
-
-1. **GitHub authorization in the Craft Console expired/was revoked** — re-authorize the Craft CMS GitHub app on the repo at **id.craftcms.com** (this is the real fix; once repaired, releases resume automatically).
-2. **Packagist does not have the new version** — if Packagist doesn't list the tag, Craft never learns about it.
-
-Diagnose with:
-
-```bash
-gh auth status                                                                  # must be logged in with 'workflow' scope + write access to the repo
-gh run list --repo weglot/translate-craftcms --workflow=create-release.yml --event=repository_dispatch --limit 5
-gh release list --repo weglot/translate-craftcms --limit 10                     # compare against tags
-gh api repos/weglot/translate-craftcms/tags --jq '.[].name' | head
-```
-
-### Workaround — fire the dispatch manually
-
-When Craft support is unresponsive, send the same `repository_dispatch` Craft would have sent. This creates the GitHub Release attached to the **already-existing** tag (it does not touch or move the tag).
-
-**Prerequisites:** `gh` logged in with the `workflow` scope + write access to the repo, and the tag must already exist (otherwise `ncipollo/release-action` would create the tag on the default branch).
-
-```bash
-# Build the payload (notes come from the matching CHANGELOG.md section)
-cat > dispatch.json <<'EOF'
-{
-  "event_type": "craftcms/new-release",
-  "client_payload": {
-    "version": "1.2.5",
-    "tag": "1.2.5",
-    "latest": true,
-    "prerelease": false,
-    "notes": "- Fix: ...\n- Fix: ..."
-  }
-}
-EOF
-
-# Send it (HTTP 204, no output = success)
-gh api repos/weglot/translate-craftcms/dispatches --input dispatch.json
-
-# Verify
-gh run list --repo weglot/translate-craftcms --workflow=create-release.yml --event=repository_dispatch --limit 1
-gh release view 1.2.5 --repo weglot/translate-craftcms
-```
-
-The workflow maps each `client_payload` field to `ncipollo/release-action`: `version`→`name`, `tag`→`tag`, `notes`→`body`, `latest`→`makeLatest`, `prerelease`→`prerelease`. This is a workaround only — the durable fix is restoring the Craft↔GitHub connection.
-
----
-
-## Architecture
-
-### Project Structure
-
-```
-weglot/
-├── src/
-│   ├── Plugin.php                       # Entry point — services, events, URL rules
-│   ├── controllers/
-│   │   ├── RouterController.php         # Language-prefixed URL routing (weglot/router/forward)
-│   │   └── ApiController.php            # Admin API endpoints (weglot/api/*)
-│   ├── services/                        # 16 services (see Service Layer below)
-│   ├── models/
-│   │   └── Settings.php                 # Plugin settings model with validation
-│   ├── helpers/
-│   │   ├── HelperApi.php                # API/CDN URL configuration
-│   │   ├── HelperFlagType.php           # Language flag styles
-│   │   ├── HelperReplaceUrl.php         # URL replacement regex patterns
-│   │   ├── HelperSwitcher.php           # Language switcher HTML builder
-│   │   └── DashboardHelper.php          # Dashboard utilities
-│   ├── checkers/dom/                    # Custom DOM checkers (9 classes extending Weglot's base)
-│   ├── events/
-│   │   └── RegisterSelectorsEvent.php   # Event for selector registration
-│   ├── web/
-│   │   └── WeglotVirtualRequest.php     # Virtual request wrapper for language routing
-│   ├── resources/
-│   │   ├── AdminAsset.php               # Yii2 asset bundle (registers CSS/JS with Craft CP)
-│   │   ├── js/                          # Compiled JS (Vite output)
-│   │   ├── css/                         # Compiled CSS (Vite output)
-│   │   ├── vendor/                      # select2, selectize
-│   │   └── img/                         # SVG icons
-│   ├── resources-src/
-│   │   ├── js/admin.js                  # Admin JavaScript source
-│   │   └── scss/admin.scss              # Admin SCSS source
-│   ├── templates/
-│   │   └── _settings.twig               # Plugin settings template (Craft CP)
-│   └── vendor/weglot/                   # Scoped Weglot libraries (do not edit directly)
-│       └── build/vendor-src/
-│           ├── weglot-php/              # Weglot API client & HTML parser
-│           ├── simple_html_dom/         # HTML parsing library
-│           └── weglot-translation-definitions/
-├── tests/
-│   ├── bootstrap.php                    # PHPUnit bootstrap (Craft app, no DB)
-│   ├── unit/                            # Pure unit tests
-│   └── services/                        # Integration tests with Craft bootstrap
-├── build/                               # Build artifacts (gitignored)
-│   ├── vendor-src/                      # Downloaded library sources
-│   └── scoped-vendor/                   # php-scoper output
-├── composer.json
-├── phpstan.dist.neon                    # PHPStan level 6, 100% type coverage
-├── .php-cs-fixer.dist.php               # PHP 8.2 + Symfony code style
-├── rector.php                           # Rector PHP 8.2 upgrade + dead code
-├── scoper.inc.php                       # php-scoper: namespace prefix Weglot\Vendor
-├── vite.config.js                       # Vite config for admin assets
-├── package.json
-└── Makefile                             # Vendor update workflow
-```
-
-### Plugin Bootstrap Flow
-
-1. **`Plugin::init()`** — sets alias `@weglot/craftweglot`, calls `attachEventHandlers()`
-2. **`Plugin::config()`** — declares all 16 services as Yii2 components (lazy-instantiated)
-3. **`attachEventHandlers()`** — registers all Craft event listeners:
-    - `UrlManager::EVENT_REGISTER_SITE_URL_RULES` — language-prefixed URL rules
-    - `View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE` — detect language, wrap request
-    - `View::EVENT_AFTER_RENDER_PAGE_TEMPLATE` — pass HTML through translation pipeline
-    - `View::EVENT_BEGIN_PAGE` — inject hrefLang, switcher, analytics scripts
-4. **`Plugin::afterSaveSettings()`** — normalizes language codes, syncs settings to Weglot API
-
-### Request Translation Pipeline
-
-1. **URL Routing** — `UrlManager::EVENT_REGISTER_SITE_URL_RULES` registers patterns like `<lang:(fr|de|...)>/<rest:.+>` → `weglot/router/forward`
-2. **Virtual Request** — `RouterController::actionForward()` creates a `WeglotVirtualRequest` that strips the language prefix and resolves the Craft-canonical route
-3. **Template Rendering** — `View::EVENT_BEFORE_RENDER_PAGE_TEMPLATE` detects language; `View::EVENT_AFTER_RENDER_PAGE_TEMPLATE` passes rendered HTML through `TranslateService::processResponse()`
-4. **HTML Processing** — `ParserService` instantiates the scoped Weglot PHP parser with DOM checkers and regex checkers; the parser sends content to the Weglot API/CDN and returns translated HTML
-5. **Post-Processing** — `ReplaceUrlService` rewrites internal links to include the language prefix; `ReplaceLinkService` rewrites individual `href`/`src` attributes
-6. **Injection** — `View::EVENT_BEGIN_PAGE` injects `<link rel="alternate" hreflang>` tags, language switcher widget CSS/JS, Weglot JS, and page views script
-
-### Service Layer (`src/services/`)
-
-All services are registered as Yii2 components in `Plugin::config()`. Access them via `Plugin::getInstance()->{serviceName}`.
-
-| Service | Component key | Responsibility |
-|---|---|---|
-| `TranslateService` | `translateService` | Core translation engine; auto-detects HTML/JSON/XML, orchestrates parser + URL rewriting |
-| `LanguageService` | `language` | Fetches/caches available languages from API; resolves internal↔external codes |
-| `OptionService` | `option` | Reads/writes plugin settings; syncs with Weglot API/CDN; manages exclusion rules |
-| `RequestUrlService` | `requestUrlService` | Detects current language from URL; creates Weglot URL objects; checks eligibility |
-| `ParserService` | `parserService` | Instantiates scoped Weglot parser with DOM/regex checkers and API client |
-| `ReplaceUrlService` | `replaceUrlService` | Rewrites internal links in HTML to include language prefix |
-| `ReplaceLinkService` | `replaceLinkService` | Rewrites individual URLs (href/src) using Weglot URL helpers |
-| `SlugService` | `slug` | Handles translated URL slugs via API; caches slug maps with TTL=0 |
-| `HrefLangService` | `hrefLangService` | Generates and injects `<link rel="alternate" hreflang>` SEO tags |
-| `FrontEndScriptsService` | `frontEndScripts` | Injects Weglot JS (CDN), switcher CSS/JS, and frontend config |
-| `DomCheckersService` | `domCheckersService` | Registry of custom DOM element selectors from `src/checkers/dom/` |
-| `RegexCheckersService` | `regexCheckersService` | Registry of regex-based content checkers (currently extensible via future events) |
-| `RedirectService` | `redirectService` | Browser language auto-detection redirects via Accept-Language / Cloudflare headers |
-| `DynamicsService` | `dynamics` | Detects dynamically-rendered DOM content; extends via `EVENT_REGISTER_DYNAMICS_SELECTORS` |
-| `PageViewsService` | `pageViews` | Injects JS that POSTs page view events to Weglot analytics endpoint |
-| `UserApiService` | `userApi` | Validates API keys via Weglot API; used by settings validation and `ApiController` |
-
-### Controllers
-
-- **`RouterController`** (`weglot/router/forward`, `allowAnonymous = ['forward']`) — resolves language-prefixed URLs; handles slug canonicalization and exclusion redirects; falls through to Craft routing
-- **`ApiController`** (`weglot/api/*`, requires admin + POST) — `actionValidateApiKey()` proxies to `UserApiService::getUserInfo()`
-
-### Custom Events
-
-| Constant | Class | When fired |
-|---|---|---|
-| `Plugin::EVENT_REGISTER_WHITELIST_SELECTORS` | `RegisterSelectorsEvent` | `DynamicsService::addDynamics()` — extend language-switcher whitelist CSS selectors |
-| `Plugin::EVENT_REGISTER_DYNAMICS_SELECTORS` | `RegisterSelectorsEvent` | `DynamicsService::addDynamics()` — register CSS selectors for dynamic content translation |
-
-Listen to these events from a third-party plugin to extend Weglot's behavior without modifying this plugin.
-
-### Plugin Settings (`src/models/Settings.php`)
-
-| Property | Type | Default | Description |
-|---|---|---|---|
-| `apiKey` | `string` | `''` | Weglot private API key (required, validated via API) |
-| `languageFrom` | `string` | `'en'` | Source language code |
-| `languages` | `string[]` | `[]` | Destination language codes |
-| `hasFirstSettings` | `bool` | `false` | First-time setup flag |
-| `showBoxFirstSettings` | `bool` | `true` | Show onboarding popup |
-| `enableDynamics` | `bool` | `false` | Enable dynamic content translation |
-| `enableAlgolia` | `bool` | `false` | Enable Algolia integration |
-| `dynamicsWhitelistSelectors` | `string` | `''` | Comma-separated CSS selectors for switcher whitelist |
-| `dynamicsAllowedUrls` | `string` | `''` | Regex patterns for URLs where dynamics is active |
-
-Language codes are normalized in `Plugin::afterSaveSettings()` before syncing to the Weglot API.
-
-### Namespace Scoping
-
-External Weglot libraries (`weglot-php`, `weglot-translation-definitions`, `simple_html_dom`) are scoped under the `Weglot\Vendor` namespace via `php-scoper` to prevent version conflicts with other Craft plugins. Configuration in `scoper.inc.php`. The scoped output lives in `src/vendor/weglot/` and is committed to the repo — never edit it directly; use the Makefile workflow.
-
-### Namespace & File Naming
-
-| Layer | Namespace | Example |
-|---|---|---|
-| Plugin entry | `weglot\craftweglot\` | `Plugin` |
-| Services | `weglot\craftweglot\services\` | `TranslateService` |
-| Models | `weglot\craftweglot\models\` | `Settings` |
-| Controllers | `weglot\craftweglot\controllers\` | `RouterController` |
-| Checkers | `weglot\craftweglot\checkers\dom\` | `MetaFacebookImage` |
-| Helpers | `weglot\craftweglot\helpers\` | `HelperApi` |
-| Events | `weglot\craftweglot\events\` | `RegisterSelectorsEvent` |
-| Scoped vendor | `Weglot\Vendor\Weglot\*` | `Weglot\Vendor\Weglot\Client\Api\…` |
-
-Files follow PSR-4: namespace hierarchy maps directly to directory structure under `src/`.
-
----
-
-## Frontend Assets
-
-Vite entry points in `src/resources-src/js/` and `src/resources-src/scss/`. Compiled output in `src/resources/`. The `AdminAsset` class (extends `\craft\web\AssetBundle`) registers compiled files with the Craft control panel.
-
-Language switcher and Weglot JS are loaded from the Weglot CDN at runtime — they are not part of the Vite build.
-
-### Rules
-
-- **No inline JS or CSS in Twig templates** — all JavaScript goes in `admin.js`, all styles go in `admin.scss`. Twig templates must contain only HTML markup.
-- Pass server-side values (action URLs, CSRF tokens, translated strings) to JS via `data-*` attributes on HTML elements — never embed them in `<script>` blocks or inline `style=""` attributes.
-- Use `Craft.postActionRequest()` for admin API calls — it handles CSRF automatically.
-- Use `Craft.t('weglot', '...')` for translated strings in JS — never hardcode UI text.
+Comments explain *why* a non-obvious decision was made (a workaround for a third-party bug, a Craft quirk), never *what* the code does. PHPDoc blocks (`@param`, `@return`, `@throws`) are encouraged where they aid PHPStan.
+
+## General principles
+
+- Small functions with one responsibility; meaningful names.
+- No hardcoded configuration (URLs, secrets, timeouts, feature flags) — plugin settings, `HelperApi` constants or env vars.
+- Minimise dependencies; justify each new one.
+- Unit tests for any new functionality.
+- When a production bug is fixed, record the lesson where it prevents recurrence (a memory file, a standard, a playbook row).
+
+## Tooling
+
+Prefer the **PhpStorm MCP** tools over `grep` / raw Bash for exploration when they are available: `mcp__phpstorm__get_file_text_by_path`, `find_files_by_name_keyword`, `find_files_by_glob`, `search_in_files_by_text`, `search_in_files_by_regex`, `search_symbol`, `get_symbol_info`, `list_directory_tree`. Fall back to `grep` only when no MCP equivalent exists. Exclude `src/vendor/` from searches unless the question is about the scoped libraries.
+
+## Skills
+
+Invoke with `/skill-name` instead of running the steps by hand. Pick the repo skill over a generic one.
+
+| Need | Skill |
+|---|---|
+| Review an approach before coding ("avis sur l'approche", "relis mon plan") | `/senior-review plan` |
+| Code review before a PR ("fais une review", "review my code") | `/senior-review` — mandatory before every PR; built-in `/code-review` only for a pure bug hunt, `/security-review` for security only |
+| Run the quality gates before a PR | `/deploy-check` — once, after `/senior-review`, just before opening the PR |
+| A plugin-specific bug, error string or customer report | `/weglot-craft-debugging-playbook` before any generic debug skill |
+| Setup, Vite assets, tests, env vars, staging | `/weglot-craft-build-and-qa` |
+| Craft events, CP controllers and security, supported versions, public API | `/weglot-craft-host-platform` |
+| Branch / commit / PR / review-bot conventions | `/weglot-craft-change-control` |
+| Update the scoped Weglot libraries | `/vendor-update` |
+| Ship a version (CHANGELOG, tag, Plugin Store release) | `/release` |
+| Audit this `.claude/` config | `/audit-claude` |
+| Prune merged branches | `/cleanup` |
+
+Subagent models: read-only locate / explore fan-outs run with `model: sonnet`; review (`senior-reviewer`), planning and anything that writes stay on the session model.
