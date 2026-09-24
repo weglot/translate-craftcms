@@ -15,17 +15,17 @@ We follow the official [Craft CMS coding standards](https://craftcms.com/docs/5.
 
 Before submitting your code, make sure it passes our tool checks.
 
-- **Easy Coding Standard (ECS)**: We use ECS to enforce a consistent code style. You can run the checks with the following command:
+- **PHP-CS-Fixer**: We use PHP-CS-Fixer to enforce a consistent code style (`.php-cs-fixer.dist.php`). You can run the checks with the following command:
   ```bash
-  vendor/bin/ecs check src
+  composer run check-cs
   ```
-- **PHPStan**: We use it to detect potential errors without having to run the code. The configuration is located in `phpstan.neon`. Run it via:
+- **PHPStan**: We use it to detect potential errors without having to run the code. The configuration is located in `phpstan.dist.neon`. Run it via:
   ```bash
-  vendor/bin/phpstan analyse -c phpstan.neon src --memory-limit=-1
+  composer run phpstan
   ```
 - **Rector**: We use Rector for automated refactoring and to keep the code modern. You can check for possible upgrades with:
     ```bash
-    vendor/bin/rector process src --dry-run
+    vendor/bin/rector process --dry-run
     ```
 
 Even though these tools are here to help, manual vigilance is always required.
@@ -69,6 +69,10 @@ All data, whether from a user or the database, must be systematically validated 
 
 - **Validation (Input):** Use model validation rules on your setting models or any other model that handles user input.
 - **Escaping (Output):** Twig templates in Craft auto-escape output by default, which prevents most XSS vulnerabilities. When generating HTML manually in PHP, use helpers like `craft\helpers\Html::encode()` to escape content. Be extremely careful when using `\craft\helpers\Html::tag()` or `Template::raw()`.
+
+## Claude Code
+
+The repository ships shared Claude Code tooling: `AGENTS.md` (read as `CLAUDE.md`), `.claude/memory/`, `.claude/skills/` and `.claude/agents/`. `.claude/settings.json` enables the `claude-tooling` plugin from the `weglot/engineering` marketplace, which is internal to Weglot: external contributors can ignore the resulting "marketplace not found" notice, as the repository's own skills work without it.
 
 ## Unit Tests
 

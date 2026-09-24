@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "extraKnownMarketplaces": {
+    "weglot-engineering": {
+      "source": {
+        "source": "github",
+        "repo": "weglot/engineering"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "claude-tooling@weglot-engineering": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(composer run check-cs:*)",
+      "Bash(composer run phpstan:*)",
+      "Bash(composer run test:*)",
+      "Bash(composer run check-dependency:*)",
+      "Bash(composer audit:*)",
+      "Bash(composer validate:*)",
+      "Bash(composer show:*)",
+      "Bash(vendor/bin/phpstan:*)",
+      "Bash(vendor/bin/phpunit:*)",
+      "Bash(./vendor/bin/phpunit:*)",
+      "Bash(vendor/bin/php-cs-fixer fix --dry-run:*)",
+      "Bash(vendor/bin/rector process --dry-run:*)",
+      "Bash(php -l:*)",
+      "Bash(npm run build:*)",
+      "Bash(bash .claude/skills/deploy-check/scripts/deploy-check.sh:*)",
+      "Bash(python3 .claude/skills/audit-claude/scripts/claude-lint.py:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh run view:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh release list:*)",
+      "Bash(gh release view:*)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push * --force*)",
+      "Bash(git push -f*)",
+      "Bash(git push * -f*)",
+      "Bash(git push +*)",
+      "Bash(git push * +*)",
+      "Bash(git push * master)",
+      "Bash(git push * master *)",
+      "Bash(git push *:master)",
+      "Bash(git push *:master *)"
+    ]
+  }
+}

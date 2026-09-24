@@ -25,10 +25,20 @@ auth.json
 phpstan.neon
 /phpunit.xml
 ###< local ###
-/Makefile
+
+# Makefile scratch area (vendor sources and php-scoper output)
+/build/
 
 # Vite
 .vite/
 dist/
 
 tests/_craft
+
+###> claude ###
+.claude/settings.local.json
+CLAUDE.local.md
+AGENTS.local.md
+.claude/worktrees/
+.claude/runs/
+###< claude ###
