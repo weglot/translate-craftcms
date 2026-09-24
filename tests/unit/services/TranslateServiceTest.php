@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace weglot\craftweglot\tests\unit\services;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use weglot\craftweglot\services\DomCheckersService;
@@ -154,12 +155,22 @@ final class TranslateServiceTest extends TestCase
         };
     }
 
-    /** OptionService stub: no AI disclaimer, no API calls. */
-    private function makeOptionStub(): OptionService
+    /** OptionService stub: no API calls; an AI disclaimer only when a selector is given. */
+    private function makeOptionStub(?string $aiDisclaimerSelector = null): OptionService
     {
-        return new class extends OptionService {
-            public function getOption(string $key): string|array|null
+        return new class($aiDisclaimerSelector) extends OptionService {
+            public function __construct(private readonly ?string $aiDisclaimerSelector)
             {
+                parent::__construct();
+            }
+
+            /** @return array<string, string>|null */
+            public function getOption(string $key): ?array
+            {
+                if ('custom_settings' === $key && null !== $this->aiDisclaimerSelector) {
+                    return ['ai_disclaimer_selector' => $this->aiDisclaimerSelector];
+                }
+
                 return null;
             }
         };
@@ -176,13 +187,14 @@ final class TranslateServiceTest extends TestCase
         bool $parserThrowsApiError = false,
         bool $parserThrowsException = false,
         ?ReplaceUrlService $replaceUrlStub = null,
+        ?string $aiDisclaimerSelector = null,
     ): TranslateService {
         return new TranslateService(
             languageService: $this->makeLangStub($original),
             requestUrlService: $this->makeRequestUrlStub($current, $this->makeUrlStub()),
             parserService: $this->makeParserStub($parserThrowsApiError, $parserThrowsException),
             replaceUrlService: $replaceUrlStub ?? new ReplaceUrlService(),
-            optionService: $this->makeOptionStub(),
+            optionService: $this->makeOptionStub($aiDisclaimerSelector),
         );
     }
 
@@ -337,6 +349,85 @@ final class TranslateServiceTest extends TestCase
             ->weglotRenderDom('<html><body>Hello</body></html>');
 
         self::assertFalse($spy->wasCalled);
+    }
+
+    // -------------------------------------------------------------------------
+    // processResponse — AI disclaimer
+    // -------------------------------------------------------------------------
+
+    private const AI_DISCLAIMER = 'Translated content on this website may be generated using artificial intelligence.';
+
+    private const DISCLAIMER_PAGE = '<html><head><script>if (a<b) { x="</div>"; }</script></head><body>'
+        .'<main><p class="footer">Main &copy; &nbsp;é</p></main>'
+        .'<footer id="footer" class="footer" data-ai="1"><p>First</p></footer>'
+        .'<footer class="footer"><p>Second</p></footer><img id="logo" src="/logo.png"></body></html>';
+
+    private function translateWithDisclaimer(string $html, ?string $selector): string
+    {
+        $identity = new class extends ReplaceUrlService {
+            public function replaceLinkInDom(string $dom): string
+            {
+                return $dom;
+            }
+        };
+
+        return $this->makeService($this->en, $this->fr, replaceUrlStub: $identity, aiDisclaimerSelector: $selector)
+            ->processResponse($html);
+    }
+
+    /**
+     * @return array<string, array{string, string}>
+     */
+    public static function matchingDisclaimerSelectorProvider(): array
+    {
+        return [
+            'id' => ['#footer', 'First'],
+            'class' => ['.footer', 'Main'],
+            'tag' => ['footer', 'First'],
+            'attribute' => ['[data-ai="1"]', 'First'],
+            'descendant' => ['body footer', 'First'],
+        ];
+    }
+
+    #[DataProvider('matchingDisclaimerSelectorProvider')]
+    public function testDisclaimerIsAppendedOnceToTheFirstMatch(string $selector, string $firstMatchText): void
+    {
+        $output = $this->translateWithDisclaimer(self::DISCLAIMER_PAGE, $selector);
+
+        self::assertSame(1, substr_count($output, self::AI_DISCLAIMER));
+        self::assertMatchesRegularExpression('/'.preg_quote($firstMatchText, '/').'[^<]*(<\/p>)?\s*'.preg_quote(self::AI_DISCLAIMER, '/').'/', $output);
+    }
+
+    public function testDisclaimerInjectionKeepsInlineScriptsAndEntitiesIntact(): void
+    {
+        $output = $this->translateWithDisclaimer(self::DISCLAIMER_PAGE, '#footer');
+
+        self::assertStringContainsString('<script>if (a<b) { x="</div>"; }</script>', $output);
+        self::assertStringContainsString('Main &copy; &nbsp;é', $output);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function unusableDisclaimerSelectorProvider(): array
+    {
+        return [
+            'no match' => ['#missing'],
+            'quote' => ["#a'b"],
+            'garbage' => ['>>>'],
+            'combinator only' => ['>'],
+            'comma' => [','],
+            'void element' => ['#logo'],
+        ];
+    }
+
+    #[DataProvider('unusableDisclaimerSelectorProvider')]
+    public function testUnusableDisclaimerSelectorLeavesThePageAsWithoutDisclaimer(string $selector): void
+    {
+        self::assertSame(
+            $this->translateWithDisclaimer(self::DISCLAIMER_PAGE, null),
+            $this->translateWithDisclaimer(self::DISCLAIMER_PAGE, $selector),
+        );
     }
 
     // -------------------------------------------------------------------------

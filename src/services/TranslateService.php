@@ -9,9 +9,15 @@ use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
+use Weglot\Vendor\WGSimpleHtmlDom\simple_html_dom_node;
+
+use function Weglot\Vendor\WGSimpleHtmlDom\str_get_html;
 
 class TranslateService extends Component
 {
+    /** Elements whose content the disclaimer cannot be appended to. */
+    private const VOID_ELEMENTS = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+
     /**
      * @param array<string, mixed> $config
      */
@@ -209,74 +215,31 @@ class TranslateService extends Component
         $selector = trim($aiDisclaimerSelector);
         $disclaimerText = 'Translated content on this website may be generated using artificial intelligence. Learn more about AI-generated translations';
 
-        $dom = new \DOMDocument();
-        libxml_use_internal_errors(true);
-
-        $dom->loadHTML('<?xml encoding="utf-8" ?>'.$html, \LIBXML_HTML_NOIMPLIED | \LIBXML_HTML_NODEFDTD);
-        libxml_clear_errors();
-
-        $xpath = new \DOMXPath($dom);
-
-        $xpathQuery = $this->cssToXPath($selector);
-
-        try {
-            $elements = $xpath->query($xpathQuery);
-
-            if ($elements && $elements->length > 0) {
-                $targetElement = $elements->item(0);
-
-                $disclaimerNode = $dom->createTextNode($disclaimerText);
-
-                $targetElement->appendChild($disclaimerNode);
-
-                $html = $dom->saveHTML();
-
-                $html = preg_replace('/<\?xml encoding="utf-8" \?>\s*/', '', $html);
-            }
-        } catch (\Exception) {
-            // Silently fail - don't block the site if disclaimer injection fails
+        // Same parser and flags as the Weglot parser that translates this page next: the selector
+        // gets its CSS support, and save() does not re-serialise the document the way
+        // DOMDocument::saveHTML() did (it truncated inline scripts containing "</div>").
+        $dom = str_get_html($html, true, true, \WG_DEFAULT_TARGET_CHARSET, false);
+        if (false === $dom) {
+            return $html;
         }
 
-        return $html;
-    }
+        $target = $dom->find($selector, 0);
+        if (!$target instanceof simple_html_dom_node || 'root' === $target->tag) {
+            \Craft::warning(\sprintf('AI disclaimer selector "%s" matched no element', $selector), __METHOD__);
 
-    /**
-     * Converts a basic CSS selector to XPath.
-     *
-     * @param string $selector the CSS selector to convert
-     *
-     * @return string the XPath query
-     */
-    private function cssToXPath(string $selector): string
-    {
-        // Handle ID selector
-        if (str_starts_with($selector, '#')) {
-            $id = substr($selector, 1);
+            return $html;
+        }
+        if (\in_array($target->tag, self::VOID_ELEMENTS, true)) {
+            \Craft::warning(\sprintf('AI disclaimer selector "%s" matched a <%s>, which cannot hold text', $selector, $target->tag), __METHOD__);
 
-            return "//*[@id='$id']";
+            return $html;
         }
 
-        // Handle class selector
-        if (str_starts_with($selector, '.')) {
-            $class = substr($selector, 1);
+        $target->innertext .= ' '.htmlspecialchars($disclaimerText, \ENT_QUOTES, 'UTF-8');
+        $translated = $dom->save();
+        $dom->clear();
 
-            return "//*[contains(concat(' ', normalize-space(@class), ' '), ' $class ')]";
-        }
-
-        // Handle attribute selector
-        if (preg_match('/\[([^\]=]+)(?:=["\']?([^"\'\]]+)["\']?)?\]/', $selector, $matches)) {
-            $attr = $matches[1];
-            if (isset($matches[2])) {
-                $value = $matches[2];
-
-                return "//*[@$attr='$value']";
-            }
-
-            return "//*[@$attr]";
-        }
-
-        // Default: element selector
-        return "//$selector";
+        return $translated;
     }
 
     /**
