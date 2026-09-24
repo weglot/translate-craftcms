@@ -70,6 +70,10 @@ All data, whether from a user or the database, must be systematically validated 
 - **Validation (Input):** Use model validation rules on your setting models or any other model that handles user input.
 - **Escaping (Output):** Twig templates in Craft auto-escape output by default, which prevents most XSS vulnerabilities. When generating HTML manually in PHP, use helpers like `craft\helpers\Html::encode()` to escape content. Be extremely careful when using `\craft\helpers\Html::tag()` or `Template::raw()`.
 
+## Claude Code
+
+The repository ships shared Claude Code tooling: `AGENTS.md` (read as `CLAUDE.md`), `.claude/memory/`, `.claude/skills/` and `.claude/agents/`. `.claude/settings.json` enables the `claude-tooling` plugin from the `weglot/engineering` marketplace, which is internal to Weglot: external contributors can ignore the resulting "marketplace not found" notice, as the repository's own skills work without it.
+
 ## Unit Tests
 
 Quality is our priority. All new code (services, methods) should be covered by unit tests using PHPUnit. If you modify an existing portion of code that is not tested, please consider adding the corresponding tests in the `/tests` directory.

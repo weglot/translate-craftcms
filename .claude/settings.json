@@ -15,7 +15,6 @@
     "allow": [
       "Bash(composer run check-cs:*)",
       "Bash(composer run phpstan:*)",
-      "Bash(composer run rector:*)",
       "Bash(composer run test:*)",
       "Bash(composer run check-dependency:*)",
       "Bash(composer audit:*)",

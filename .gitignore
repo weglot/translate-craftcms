@@ -37,6 +37,8 @@ tests/_craft
 
 ###> claude ###
 .claude/settings.local.json
+CLAUDE.local.md
+AGENTS.local.md
 .claude/worktrees/
 .claude/runs/
 ###< claude ###

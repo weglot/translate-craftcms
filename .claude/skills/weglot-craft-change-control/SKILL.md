@@ -17,7 +17,7 @@ Conventional Commits, `type(scope): short description`, lower-case, English: `fi
 
 ## Pull request
 
-- Title = the Conventional Commit of the squash; GitHub appends ` (#N)`. Since #54 titles follow this; older free-form titles (`Improvement/connect to weglot v2`) are not the model.
+- Title = a Conventional Commit: GitHub uses it as the merge commit subject and appends ` (#N)` (repo setting `merge_commit_title: PR_TITLE`). Every branch commit also lands on `master` — keep each one clean and green. Since #54 titles follow this; older free-form titles (`Improvement/connect to weglot v2`) are not the model.
 - No template file, no labels, no CODEOWNERS. Body, on the model of #63:
 
 ```markdown

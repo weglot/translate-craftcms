@@ -46,10 +46,10 @@ if [ "$LOCAL_PHP" != "8.2" ]; then
 	WARNED+=("local PHP is $LOCAL_PHP, CI runs 8.2: 8.3+ functions pass here and fail for 8.2 users")
 fi
 
-BASE="$(git merge-base HEAD master 2>/dev/null || true)"
+BASE="$(git merge-base HEAD origin/master 2>/dev/null || git merge-base HEAD master 2>/dev/null || true)"
 if [ -n "$BASE" ]; then
 	ADDED="$(git diff "$BASE" -- 'src/*.php' 'tests/*.php' ':!src/vendor' | grep -E '^\+' | grep -vE '^\+\+\+' || true)"
-	for pattern in '\b(var_dump|print_r|dd|dump)\(' '\bempty\(' '\$_(SERVER|GET|POST|COOKIE)\b' 'new \\?(GuzzleHttp\\)?Client\(' '\b(file_get_contents|curl_[a-z_]+)\('; do
+	for pattern in '(^|[^>:$[:alnum:]_])(var_dump|print_r|dd|dump)\(' '\bempty\(' '\$_(SERVER|GET|POST|COOKIE)\b' 'new \\?(GuzzleHttp\\)?Client\(' '\b(file_get_contents|curl_[a-z_]+)\('; do
 		HITS="$(printf '%s\n' "$ADDED" | grep -nE "$pattern" || true)"
 		if [ -n "$HITS" ]; then
 			WARNED+=("added in the branch diff, banned by .claude/memory/standards/craft-php-standards.md ($pattern):"$'\n'"$HITS")

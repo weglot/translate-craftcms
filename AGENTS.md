@@ -29,7 +29,7 @@ After writing any code, run the quality gate and fix every error before calling 
 ```bash
 composer run check-cs     # php-cs-fixer, dry run
 composer run phpstan      # level 6, 100 % type coverage — NOT run by CI
-composer run rector       # must report no un-applied transformation
+vendor/bin/rector process --dry-run   # must report no un-applied transformation — `composer run rector` WRITES
 composer run test         # all of tests/ — CI runs only tests/unit/
 composer audit
 ```
@@ -105,7 +105,7 @@ Tech stack: PHP ≥ 8.2 (`composer.json`, `config.platform.php` 8.2, CI on 8.2),
 ## Git, branches, PRs
 
 - Branch off `master` as `<type>/<kebab-slug>` (`fix/replace-url-same-document-references`, `improvement/connect-to-weglot-v2`).
-- Commits and PR titles follow Conventional Commits: `type(scope): short description` — types `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style` (e.g. `fix(translate): handle empty API response gracefully`). One logical change per commit. PRs are squash-merged.
+- Commits and PR titles follow Conventional Commits: `type(scope): short description` — types `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `style` (e.g. `fix(translate): handle empty API response gracefully`). One logical change per commit. PRs land as a merge commit titled after the PR (`Title (#N)`), so **every branch commit reaches `master`** and must meet these rules on its own.
 - PR body and review etiquette: `/weglot-craft-change-control`.
 - **No AI attribution**: no `Co-Authored-By` in commit messages, no "Generated with Claude Code" or similar footer in PR descriptions.
 - Never commit code that fails the quality gate; always run `composer audit` before committing — do not commit with unresolved advisories on dependencies this plugin can update.
@@ -118,7 +118,7 @@ Before **any** `git checkout`, `git switch`, `git checkout -b` or `git stash`:
 2. Name explicitly what is uncommitted and whether the current branch has commits of its own (and whether they are pushed).
 3. **Stop and ask** what to do with that work — commit it here, stash it, or carry it over.
 
-A branch name is not proof the work is saved. Never stage files you did not intentionally edit; before destructive commands (`checkout --`, `reset --hard`, `clean`) set staged and unstaged work aside first.
+The `deny` rules in `.claude/settings.json` (force-push, push to `master`) are guard-rails against slips, not a guarantee; `master` itself is branch-protected on GitHub. A branch name is not proof the work is saved. Never stage files you did not intentionally edit; before destructive commands (`checkout --`, `reset --hard`, `clean`) set staged and unstaged work aside first.
 
 ## Formatters & codemods
 
@@ -162,4 +162,4 @@ Invoke with `/skill-name` instead of running the steps by hand. Pick the repo sk
 | Audit this `.claude/` config | `/audit-claude` |
 | Prune merged branches | `/cleanup` |
 
-Subagent models: read-only locate / explore fan-outs run with `model: sonnet`; review (`senior-reviewer`), planning and anything that writes stay on the session model.
+Subagent models: read-only locate / explore fan-outs run with `model: sonnet`; planning and anything that writes stay on the session model; `senior-reviewer` is pinned to `model: opus` in its frontmatter.

@@ -19,15 +19,15 @@ type: testing
 ## Isolating a test
 
 - **Replace a collaborator** with an anonymous subclass registered on the plugin: `Plugin::getInstance()->set('userApi', $stub)` (`tests/unit/models/SettingsTest.php:64-72`). The key is the component id from `Plugin::config()`, not the class name.
-- **Restore it in `tearDown()`**, guarded because `tearDown()` runs even when `setUp()` threw — reference: `tests/services/ReplaceUrlServiceTest.php:18-34`. Six classes (`SettingsTest`, `RequestUrlServiceTest`, `LanguageServiceLegacyFallbackTest`, `ReplaceLinkServiceTest`, `HrefLangServiceTest`, `LanguageServiceAdditionalTest`) still set components without restoring them; don't copy them.
+- **Restore it in `tearDown()`**, guarded because `tearDown()` runs even when `setUp()` threw — reference: `tests/services/ReplaceUrlServiceTest.php:18-34`. Most classes that set a component do **not** restore it yet (e.g. `SettingsTest`, `PluginTest`, `OptionServiceTest`, `RedirectServiceTest`); don't copy them. Find candidates with `grep -rl -- "->set('" tests`, then check that each class's `tearDown()` puts back every component its tests replace.
 - **Never hit the network.** Either seed the Craft cache under the exact key the service reads (`UserApiService::workspaceCacheKey()`, `tests/unit/services/UserApiServiceTest.php:37-41`) and flush it in `setUp()` / `tearDown()`, or subclass the service and override its `protected` fetch method (`fetchWorkspaceSlug()`, `src/services/UserApiService.php:107`). Make a fetch method `protected` rather than `private` when a test needs that seam.
 - **Env vars**: snapshot with `getenv()`, clear with `putenv($key)`, restore in `tearDown()` — `tests/unit/helpers/HelperApiTest.php:17-36`. `App::env()` normalises values: see `.claude/memory/gotchas/weglot-dev-env-normalization.md`.
 - **Request URL**: code reading the absolute URL needs `\Craft::$app->getRequest()->setUrl('/')` in `setUp()` (`tests/unit/services/TranslateServiceTest.php:36-43`).
-- `$_SERVER` keys a test sets are unset in `tearDown()` (`tests/unit/services/RedirectServiceTest.php:36-39`).
+- `$_SERVER` keys a test sets are unset in `tearDown()` (`tests/unit/services/RedirectServiceTest.php:36-39` — a reference for `$_SERVER` only; the same class leaks its `language` stub).
 
 ## What a test must prove
 
 Assert the behaviour and the branch taken (a value changed, the stub was called), not only "nothing changed" — a wrong component id or cache key makes a no-op assertion pass for the wrong reason.
 
-**Why:** the shared app + random order combination has already produced one order-dependent failure (`395479d`), and the component-leak pattern exists in six classes.
+**Why:** the shared app + random order combination has already produced one order-dependent failure (`395479d`), and most component-stubbing classes still leak their stub.
 **How to apply:** every new or edited test class.

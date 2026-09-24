@@ -20,7 +20,7 @@ make clean-build && make all   # checkout → composer run php-scoper → vendor
 
 `make clean-build` is required to pick up new refs: the checkout targets are directories under `build/vendor-src/` and are skipped when they already exist. Avoid plain `make clean`: it also deletes `src/vendor/weglot/` (`clean-src`), leaving the plugin broken if the checkout then fails (`git restore src/vendor/weglot` recovers it).
 
-The Makefile reads the token from `GH_PAT` (`TOKEN ?= $(GH_PAT)`); never write it in the file. `build/` is the scratch area and is not committed.
+The Makefile passes `GH_PAT` to git through a one-shot credential helper (`GIT_AUTH`), so the token is neither echoed by make nor stored in `build/vendor-src/*/.git/config` (`9bb7ba2`). Never put it in a clone URL or in the file. `build/` is the scratch area and is not committed.
 
 ## 3. Re-check what scoping does not handle
 

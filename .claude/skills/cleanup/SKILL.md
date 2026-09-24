@@ -14,9 +14,9 @@ allowed-tools: Bash, Read, AskUserQuestion
 - Keeps every stash (`git stash list`) — report them, never drop one.
 - Shows the table of every candidate, kept ones included, and waits for confirmation.
 
-## Why not `git branch --merged`
+## Why GitHub decides, not only `git branch --merged`
 
-PRs are squash-merged (one commit per PR on `master`, e.g. `ef86515 Improvement/connect to weglot v2 (#59)`), so a merged branch's commits never appear in `master`'s history and `--merged` reports it as unmerged. Only GitHub knows.
+PRs land as merge commits (`ef86515 Improvement/connect to weglot v2 (#59)` has two parents), so `git branch --merged origin/master` does list merged branches. It cannot tell a branch whose PR was merged from one that was merged by hand or never had a PR, nor spot commits added after the merge — hence the GitHub state check below.
 
 ## C1 — Scan (read-only)
 
@@ -43,7 +43,7 @@ Then ask: delete every `delete` row, a subset, or abort.
 
 ## C3 — Apply (confirmed rows only)
 
-Worktrees first (`git worktree remove <path>`), then `git branch -D <branch>` (`-d` refuses squash-merged branches), then `git worktree prune`. Remote branches: if one survived the merge, ask before `git push origin --delete`.
+Worktrees first (`git worktree remove <path>`), then `git branch -d <branch>` (a refusal means commits are not on `origin/master`: stop and report, never escalate to `-D` without the dev's word), then `git worktree prune`. Remote branches: if one survived the merge, ask before `git push origin --delete`.
 
 ## C4 — Report
 
@@ -53,5 +53,5 @@ Deleted rows, kept rows with their reason, stashes found, any command that faile
 
 | Fact | Re-verify |
 |---|---|
-| Squash-merge is the default | `git log --oneline -5 master` — one `(#N)` commit per PR |
+| PRs land as merge commits | `git log --first-parent --format='%h %p %s' -5 master` — two parents per `(#N)` line |
 | Default branch | `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name` |

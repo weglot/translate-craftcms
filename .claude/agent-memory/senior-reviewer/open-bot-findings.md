@@ -14,5 +14,5 @@ type: feedback
 
 Also unverified from #47 (Algolia): unpinned CDN script without SRI, a promise rejection that can hang search, `xhook` loaded in the CP. Check the current code before raising any of them.
 
-**Why:** #42 had no human review and was self-merged; #47, #54, #55 were merged with the findings open. Re-verified against `master` (`ef86515`) on 2026-09-24.
+**Why:** #42 was approved without a comment and self-merged with the bot findings unanswered; #47, #54, #55 were merged with the findings open. Re-verified against `master` (`ef86515`) on 2026-09-24.
 **How to apply:** when a diff touches one of these files, check whether the finding still holds (`sed -n` the line) and raise it at the severity above, citing the PR. When a row is fixed, delete it in the same PR.
