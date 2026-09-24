@@ -29,7 +29,8 @@ Not enforced by any tool:
 | `src/services/RedirectService.php:23-33,123` | reads `$_SERVER['HTTP_ACCEPT_LANGUAGE']` / `HTTP_CF_IPCOUNTRY` directly | open; fix with `getRequest()->getHeaders()` in its own PR |
 | `src/Plugin.php:335` | reads `$_COOKIE['weglot_allow_private']` directly | open |
 | `src/Plugin.php:174-181`, `src/models/Settings.php:68` | French source strings in `\Craft::t()` / log messages | open |
-| `src/services/TranslateService.php:210` | hardcoded English AI-disclaimer text, not translatable | open (PR #42 review) |
+
+The English AI-disclaimer text in `TranslateService::injectAiDisclaimer()` is deliberate, not debt: it is injected before `$parser->translate()`, so Weglot translates it, and it is appended to the target's last text node with no wrapper, as the WordPress plugin does (`add_ai_disclaimer()`). It stays English inside an excluded block and is sent as source text when `languageFrom` is not `en`.
 
 **Why:** these are the rules of `CONTRIBUTING.md` and the previous `CLAUDE.md` that no configured tool checks; the debt rows were found while writing this file (2026-09-24).
 **How to apply:** every PHP change; grep your diff for `empty(`, `$_SERVER`, `new Client` and unprefixed cache keys. Touching a debt row's file does not oblige you to fix it — mention it.

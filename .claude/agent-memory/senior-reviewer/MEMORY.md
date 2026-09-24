@@ -8,7 +8,7 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 
 ## Recurring findings (raise them)
 
-- [Open bot findings still on master](open-bot-findings.md) — five findings merged unaddressed; raise at their severity when a diff touches the same code, don't re-raise on unrelated diffs.
+- [Open bot findings still on master](open-bot-findings.md) — three findings merged unaddressed; raise at their severity when a diff touches the same code, don't re-raise on unrelated diffs.
 - [Link-rewriting edge cases](link-rewriting-cluster.md) — #55, #60, #63 each fixed one URL shape the regexes missed; demand a test per shape.
 - [V1 / V2 host and endpoint pairs](api-version-host-pairs.md) — #59 drew five wrong-pair findings and two cache follow-ups.
 - [PRs land as merge commits, not squash](merge-commits-not-squash.md) — every branch commit reaches `master`.
@@ -17,6 +17,8 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 
 ## Reusable verdicts (don't re-raise at the same severity)
 
+- [simple_html_dom `save()` lower-cases names](simple-html-dom-save-lowercases.md) — not a mutation when the parser's own flags are used.
+- [Cost of a full-page parse](full-page-parse-cost.md) — +1.5 ms at 60 KB, +93 ms at 345 KB; the disclaimer's parse is accepted.
 - [Git pathspec `*` crosses `/`](git-pathspec-star-crosses-slash.md) — "`'src/*.php'` misses nested files" is false (codenudge on #66, answered with a reproduction).
 
 Add a verdict here only when the dev states why a finding is rejected or accepted.
