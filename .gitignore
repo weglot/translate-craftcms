@@ -26,6 +26,9 @@ phpstan.neon
 /phpunit.xml
 ###< local ###
 
+# Makefile scratch area (vendor sources and php-scoper output)
+/build/
+
 # Vite
 .vite/
 dist/
