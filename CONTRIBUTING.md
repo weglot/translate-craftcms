@@ -15,17 +15,17 @@ We follow the official [Craft CMS coding standards](https://craftcms.com/docs/5.
 
 Before submitting your code, make sure it passes our tool checks.
 
-- **Easy Coding Standard (ECS)**: We use ECS to enforce a consistent code style. You can run the checks with the following command:
+- **PHP-CS-Fixer**: We use PHP-CS-Fixer to enforce a consistent code style (`.php-cs-fixer.dist.php`). You can run the checks with the following command:
   ```bash
-  vendor/bin/ecs check src
+  composer run check-cs
   ```
-- **PHPStan**: We use it to detect potential errors without having to run the code. The configuration is located in `phpstan.neon`. Run it via:
+- **PHPStan**: We use it to detect potential errors without having to run the code. The configuration is located in `phpstan.dist.neon`. Run it via:
   ```bash
-  vendor/bin/phpstan analyse -c phpstan.neon src --memory-limit=-1
+  composer run phpstan
   ```
 - **Rector**: We use Rector for automated refactoring and to keep the code modern. You can check for possible upgrades with:
     ```bash
-    vendor/bin/rector process src --dry-run
+    vendor/bin/rector process --dry-run
     ```
 
 Even though these tools are here to help, manual vigilance is always required.
