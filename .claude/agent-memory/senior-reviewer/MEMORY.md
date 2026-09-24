@@ -17,6 +17,8 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 
 ## Reusable verdicts (don't re-raise at the same severity)
 
+- [simple_html_dom `save()` lower-cases names](simple-html-dom-save-lowercases.md) — not a mutation when the parser's own flags are used.
+- [Cost of a full-page parse](full-page-parse-cost.md) — +1.5 ms at 60 KB, +93 ms at 345 KB; the disclaimer's parse is accepted.
 - [Git pathspec `*` crosses `/`](git-pathspec-star-crosses-slash.md) — "`'src/*.php'` misses nested files" is false (codenudge on #66, answered with a reproduction).
 
 Add a verdict here only when the dev states why a finding is rejected or accepted.
