@@ -20,7 +20,9 @@ make clean-build && make all   # checkout → composer run php-scoper → vendor
 
 `make clean-build` is required to pick up new refs: the checkout targets are directories under `build/vendor-src/` and are skipped when they already exist. Avoid plain `make clean`: it also deletes `src/vendor/weglot/` (`clean-src`), leaving the plugin broken if the checkout then fails (`git restore src/vendor/weglot` recovers it).
 
-The Makefile passes `GH_PAT` to git through a one-shot credential helper (`GIT_AUTH`), so the token is neither echoed by make nor stored in `build/vendor-src/*/.git/config` (`9bb7ba2`). Never put it in a clone URL or in the file. `build/` is the scratch area and is not committed.
+The Makefile passes `GH_PAT` to git through a one-shot credential helper (`GIT_AUTH`), so the token is neither echoed by make nor stored in `build/vendor-src/*/.git/config` (`9bb7ba2`). Never put it in a clone URL or in the file. `make` stops with `GH_PAT is not set` before any clone when the variable is missing (`require-gh-pat`); without that guard GitHub answers a misleading "Repository not found".
+
+Ran the Makefile before `9bb7ba2`? Those clones still carry `https://<token>@github.com` as their `origin` in `build/vendor-src/*/.git/config`: run `make clean-build`, and rotate the token if the old make output was captured anywhere (a Claude transcript, a CI log, a shared terminal). `build/` is the scratch area and is not committed.
 
 ## 3. Re-check what scoping does not handle
 

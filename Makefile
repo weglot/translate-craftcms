@@ -35,16 +35,20 @@ WEGLOT_PARSER_PHP_REF := 0.1.1
 # =========
 # Targets
 # =========
-.PHONY: all checkout scoper vendor-sync clean clean-src clean-build
+.PHONY: all checkout scoper vendor-sync clean clean-src clean-build require-gh-pat
 
 all: checkout scoper vendor-sync
 
 # ---------------------------
 # 1) Checkout (latest tag)
 # ---------------------------
+# Without the token GitHub answers "Repository not found", which points at the wrong cause.
+require-gh-pat:
+	@test -n "$$GH_PAT" || { echo "❌ GH_PAT is not set: export GH_PAT=<token with read access to the private weglot/* repositories>"; exit 1; }
+
 checkout: $(BUILD_VENDOR_SRC)/weglot-php $(BUILD_VENDOR_SRC)/weglot-parser-php $(BUILD_VENDOR_SRC)/weglot-translation-definitions $(BUILD_VENDOR_SRC)/simple_html_dom $(BUILD_VENDOR_SRC)/crawler-detect
 
-$(BUILD_VENDOR_SRC)/weglot-php:
+$(BUILD_VENDOR_SRC)/weglot-php: | require-gh-pat
 	mkdir -p $(BUILD_VENDOR_SRC)
 ifneq ($(WEGLOT_PHP_REF),)
 	@echo "➡️  Cloning weglot-php (ref: $(WEGLOT_PHP_REF))..."
@@ -66,7 +70,7 @@ else
 	$(GIT_AUTH) fetch --depth 1 origin $$LATEST && git checkout $$LATEST
 endif
 
-$(BUILD_VENDOR_SRC)/weglot-parser-php:
+$(BUILD_VENDOR_SRC)/weglot-parser-php: | require-gh-pat
 	mkdir -p $(BUILD_VENDOR_SRC)
 ifneq ($(WEGLOT_PARSER_PHP_REF),)
 	@echo "➡️  Cloning weglot-parser-php (ref: $(WEGLOT_PARSER_PHP_REF))..."
@@ -80,7 +84,7 @@ else
 	$(GIT_AUTH) fetch --depth 1 origin $$LATEST && git checkout $$LATEST
 endif
 
-$(BUILD_VENDOR_SRC)/weglot-translation-definitions:
+$(BUILD_VENDOR_SRC)/weglot-translation-definitions: | require-gh-pat
 	@echo "➡️  Cloning weglot-translation-definitions (latest tag)..."
 	mkdir -p $(BUILD_VENDOR_SRC)
 	$(GIT_AUTH) clone --depth 1 $(WEGLOT_TRANSLATION_DEFINITIONS_REPO) $(BUILD_VENDOR_SRC)/weglot-translation-definitions
@@ -97,7 +101,7 @@ $(BUILD_VENDOR_SRC)/weglot-translation-definitions:
 	fi; \
 	$(GIT_AUTH) fetch --depth 1 origin $$LATEST && git checkout $$LATEST
 
-$(BUILD_VENDOR_SRC)/simple_html_dom:
+$(BUILD_VENDOR_SRC)/simple_html_dom: | require-gh-pat
 	@echo "➡️  Cloning simple_html_dom (latest tag)..."
 	mkdir -p $(BUILD_VENDOR_SRC)
 	$(GIT_AUTH) clone --depth 1 $(SIMPLE_HTML_DOM_REPO) $(BUILD_VENDOR_SRC)/simple_html_dom
