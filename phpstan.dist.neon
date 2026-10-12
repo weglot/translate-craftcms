@@ -37,6 +37,7 @@ parameters:
         - phpstan/stubs/yii/BaseYii.stub
         - phpstan/stubs/craft/console/Application.stub
         - phpstan/stubs/craft/web/Application.stub
+        - phpstan/stubs/weglot/simple_html_dom_node.stub
 
     strictRules:
         strictArrayFilter: false
