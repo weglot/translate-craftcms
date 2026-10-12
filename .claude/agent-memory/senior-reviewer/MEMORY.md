@@ -22,3 +22,8 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 - [Git pathspec `*` crosses `/`](git-pathspec-star-crosses-slash.md) — "`'src/*.php'` misses nested files" is false (codenudge on #66, answered with a reproduction).
 
 Add a verdict here only when the dev states why a finding is rejected or accepted.
+
+## Review routine
+
+- [Check the Craft floor on a lock bump](craft-floor-check-on-lock-bump.md) — CI only tests the locked Craft; run 5.8.0 in a throwaway copy (#69 baseline).
+- [Compare against `origin/master`](compare-against-origin-master.md) — local `master` is often stale and inflates the diff.
