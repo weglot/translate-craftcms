@@ -1,0 +1,12 @@
+<?php
+
+namespace Weglot\Vendor\WGSimpleHtmlDom;
+
+/**
+ * The scoped simple_html_dom resolves innertext through __get() / __set().
+ *
+ * @property string $innertext
+ */
+class simple_html_dom_node
+{
+}
