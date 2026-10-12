@@ -19,11 +19,12 @@ Every base URL is a constant in `src/helpers/HelperApi.php:18-34` — production
 | Call | V1 | V2 | Where |
 |---|---|---|---|
 | Read project settings | `GET {api}/projects/settings?api_key=` | `GET {api}/project-settings?api_key=` | `src/services/OptionService.php:201`, `:219` |
-| Save settings | `POST {api}/projects/settings?api_key=` | `PATCH {api}/projects/settings`, header `Authorization: Key <key>` | `OptionService.php:722`, `:782-788` |
+| Save settings | `POST {api}/projects/settings?api_key=` | none — the save only re-reads the project settings (see below) | `OptionService.php:722`, `saveWeglotSettingsV2()` |
 | Validate key (settings form) | `GET {api}/project-settings?api_key=` | same | `src/services/UserApiService.php:48` |
 | Translate | scoped `Client`, host `HelperApi::getApiUrl()` | host = `api_base_url` option, else `HelperApi::getApiUrlV2()`; header `Authorization: Key <key>` | `src/services/ParserService.php:43-56` |
 | Workspace slug (V2 dashboard links) | — | `GET {api_base_url}/workspaces/current`, `Authorization: Key <key>` | `UserApiService.php:109-122` |
 
+- **V2 settings are never pushed.** Craft edits none of them (no UI for `custom_settings`, languages are read from the API), so `saveWeglotSettingsV2()` succeeds once the read does. Its earlier PATCH never ran — a guard on the V1-only `api_key` field always returned `missing_private_key` — and would have replaced the whole `customSettings` string with three flags. WP PATCHes `{api_base_url}/projects/settings` with the **full** `custom_settings` (`save_options_to_weglot_v2()`); port that, in its own PR, only once Craft gets a V2 custom-settings UI.
 - The auth scheme is **`Key`, not `Bearer`**.
 - `api_base_url` comes from the V2 project settings and carries the project's region; `getApiUrlV2()` is only the fallback (`HelperApi.php:113-122`).
 - V2 project settings carry **no `organization_slug`** and no `api_key` (they expose `public_key`); the workspace slug needs the separate `workspaces/current` call. Its cache is keyed by API key and a failed lookup is not cached for the full TTL (`aaf6281`, `2333c59`).
