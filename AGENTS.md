@@ -83,7 +83,7 @@ Cross-cutting gotchas:
 ## On-demand standards
 
 - `.claude/memory/architecture/weglot-api-contract.md` — read before touching an API URL, header, auth mode (v1/v2), `api_base_url` or the workspace / dashboard links. Always-on: never hardcode a Weglot host outside `HelperApi`; V2 auth is `Authorization: Key`, not `Bearer`.
-- `.claude/memory/standards/regex-and-xpath-on-html.md` — read before editing `HelperReplaceUrl`, `ReplaceUrlService`, `ReplaceLinkService`, `cssToXPath()` or a DOM checker. Always-on: exclusion lookaheads scan the whole tag, `(?![^>]*wg-excluded-link)`.
+- `.claude/memory/standards/regex-and-xpath-on-html.md` — read before editing `HelperReplaceUrl`, `ReplaceUrlService`, `ReplaceLinkService`, `TranslateService::injectAiDisclaimer()` or a DOM checker. Always-on: exclusion lookaheads scan the whole tag, `(?![^>]*wg-excluded-link)`.
 - `.claude/memory/standards/admin-frontend-rules.md` — read before touching `src/templates/`, `src/resources-src/` or a CP controller action. Always-on: no inline JS or CSS in Twig; values go through `data-*`.
 - `.claude/memory/standards/public-extension-points-backward-compat.md` — read before touching `Plugin::EVENT_*`, `RegisterSelectorsEvent`, a `Settings` property, a URL rule or `composer.json` `extra`. Always-on: never rename or re-type them.
 - `.claude/memory/gotchas/silent-translation-cdn-fallback.md` — read on any "not translated, no Weglot error comment" report.
