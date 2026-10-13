@@ -680,13 +680,11 @@ class OptionService extends Component
      */
     public function saveWeglotSettings(string $apiKey, string $languageFrom, array|string $destinationLanguages): array
     {
-        $codes = $this->normalizeLanguageCodes($destinationLanguages);
-
         if (HelperApi::isV2ApiKey($apiKey)) {
-            return $this->saveWeglotSettingsV2($apiKey, $languageFrom, $codes);
+            return $this->saveWeglotSettingsV2($apiKey);
         }
 
-        return $this->saveWeglotSettingsV1($apiKey, $languageFrom, $codes);
+        return $this->saveWeglotSettingsV1($apiKey, $languageFrom, $this->normalizeLanguageCodes($destinationLanguages));
     }
 
     /**
@@ -740,11 +738,9 @@ class OptionService extends Component
     }
 
     /**
-     * @param string[] $codes
-     *
      * @return array{success:bool, result?:array<string,mixed>, code?:string, message?:string}
      */
-    private function saveWeglotSettingsV2(string $apiKey, string $languageFrom, array $codes): array
+    private function saveWeglotSettingsV2(string $apiKey): array
     {
         $cdn = $this->getOptionsFromApiWithApiKey($apiKey);
 
@@ -752,52 +748,8 @@ class OptionService extends Component
             return ['success' => false, 'code' => 'cdn_fetch_fail', 'message' => 'Unable to retrieve options from Weglot API.'];
         }
 
-        $options = array_replace_recursive($this->getOptionsDefault(), $cdn['result']);
-
-        if ('' === ($options['api_key'] ?? '')) {
-            return ['success' => false, 'code' => 'missing_private_key', 'message' => 'Weglot private key not found in options.'];
-        }
-
-        $options['language_from'] = $languageFrom;
-        $options['languages'] = array_map(
-            static fn (string $code): array => ['language_to' => $code],
-            $codes
-        );
-
-        $existingCustomSettings = $cdn['result']['custom_settings'] ?? [];
-        $customSettings = \is_array($existingCustomSettings) ? $existingCustomSettings : [];
-
-        $patchBody = json_encode([
-            'customSettings' => json_encode([
-                'translate_amp' => (bool) ($customSettings['translate_amp'] ?? false),
-                'translate_email' => (bool) ($customSettings['translate_email'] ?? false),
-                'translate_search' => (bool) ($customSettings['translate_search'] ?? false),
-            ]),
-        ], \JSON_UNESCAPED_UNICODE);
-
-        if (false === $patchBody) {
-            return ['success' => false, 'code' => 'json_encode_fail', 'message' => 'Failed to JSON encode options.'];
-        }
-
-        $url = \sprintf('%s/projects/settings', HelperApi::getApiUrl());
-
-        try {
-            $response = \Craft::createGuzzleClient()->request('PATCH', $url, [
-                'timeout' => 60,
-                'headers' => [
-                    'Authorization' => 'Key '.$apiKey,
-                    'technology' => 'craft',
-                    'Content-Type' => 'application/merge-patch+json',
-                ],
-                'body' => $patchBody,
-            ]);
-
-            return $this->handleSaveResponse($response, $options);
-        } catch (\Throwable $e) {
-            \Craft::error('Error while saving Weglot (v2): '.$e->getMessage(), __METHOD__);
-
-            return ['success' => false, 'code' => 'api_save_exception', 'message' => 'Exception while saving Weglot options.'];
-        }
+        // V2 project settings are owned by the Weglot dashboard and Craft edits none of them, so nothing is pushed back.
+        return ['success' => true, 'result' => $cdn['result']];
     }
 
     /**
