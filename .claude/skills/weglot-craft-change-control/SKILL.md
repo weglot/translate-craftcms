@@ -39,7 +39,7 @@ Conventional Commits, `type(scope): short description`, lower-case, English: `fi
 
 ## Review
 
-Review comes almost entirely from bots: Cursor Bugbot and codenudge comment on every PR; a human approval (usually without comments) follows. **Answer every bot finding** — fix it, or reply why not. A finding merged without either is not a decision: several were (#42, #47, #54, #55) and are still open bugs, listed in `.claude/agent-memory/senior-reviewer/open-bot-findings.md`. Run `/senior-review` before asking for the human approval.
+Review comes almost entirely from bots: Cursor Bugbot and codenudge comment on every PR; a human approval (usually without comments) follows. **Answer every bot finding** — fix it, or reply why not. A finding merged without either is not a decision: several were (#42, #47, #54, #55); #42 and #55 were only fixed later (#68, #67), and the ones still open are listed in `.claude/agent-memory/senior-reviewer/open-bot-findings.md`. Run `/senior-review` before asking for the human approval.
 
 ## Merge gates
 
