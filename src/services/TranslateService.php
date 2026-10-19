@@ -6,6 +6,7 @@ namespace weglot\craftweglot\services;
 
 use craft\base\Component;
 use weglot\craftweglot\helpers\HelperApi;
+use weglot\craftweglot\helpers\HelperQueryString;
 use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\Exception\ApiError;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
@@ -160,6 +161,8 @@ class TranslateService extends Component
             $canonicalUrl = $weglotUrl->getForLanguage($originalLanguage, true);
         }
         if (\is_string($canonicalUrl) && '' !== $canonicalUrl) {
+            // Same full-page cache leak as the switcher links, and the canonical is read by crawlers.
+            $canonicalUrl = HelperQueryString::removeTrackingParamsFromUrl($canonicalUrl);
             $canonicalTag = '<link rel="canonical" href="'.htmlspecialchars($canonicalUrl, \ENT_QUOTES, 'UTF-8').'" />';
 
             $replaced = 0;
