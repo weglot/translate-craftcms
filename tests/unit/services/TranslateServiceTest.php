@@ -188,10 +188,11 @@ final class TranslateServiceTest extends TestCase
         bool $parserThrowsException = false,
         ?ReplaceUrlService $replaceUrlStub = null,
         ?string $aiDisclaimerSelector = null,
+        ?Url $url = null,
     ): TranslateService {
         return new TranslateService(
             languageService: $this->makeLangStub($original),
-            requestUrlService: $this->makeRequestUrlStub($current, $this->makeUrlStub()),
+            requestUrlService: $this->makeRequestUrlStub($current, $url ?? $this->makeUrlStub()),
             parserService: $this->makeParserStub($parserThrowsApiError, $parserThrowsException),
             replaceUrlService: $replaceUrlStub ?? new ReplaceUrlService(),
             optionService: $this->makeOptionStub($aiDisclaimerSelector),
@@ -307,6 +308,15 @@ final class TranslateServiceTest extends TestCase
         $html = '<html><body>No head close tag</body></html>';
         $output = $this->makeService($this->en, $this->en)->weglotRenderDom($html);
         self::assertStringStartsWith('<link rel="canonical"', trim($output));
+    }
+
+    public function testWeglotRenderDomDropsTrackingParamsFromCanonical(): void
+    {
+        $url = new Url('https://example.com/page?page=2&gclid=abc&gad_source=1', $this->en, [$this->fr], '', [], []);
+        $output = $this->makeService($this->en, $this->en, url: $url)
+            ->weglotRenderDom('<html><head></head><body></body></html>');
+
+        self::assertStringContainsString('<link rel="canonical" href="https://example.com/page?page=2" />', $output);
     }
 
     // -------------------------------------------------------------------------

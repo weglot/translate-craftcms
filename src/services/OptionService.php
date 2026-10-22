@@ -12,6 +12,7 @@ use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\ResponseInterface;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\helpers\HelperFlagType;
+use weglot\craftweglot\helpers\HelperQueryString;
 use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use Weglot\Vendor\Weglot\Util\Regex;
@@ -631,8 +632,10 @@ class OptionService extends Component
 
         $link = $requestUrl->getHost().$path;
 
-        $query = $requestUrl->getQuery();
-        if (null !== $query && '' !== $query) {
+        // Tracking params belong to the visitor who landed here: a full-page cache would serve
+        // them to every later visitor through the switcher links.
+        $query = HelperQueryString::removeTrackingParams($requestUrl->getQuery() ?? '');
+        if ('' !== $query) {
             $link .= '?'.$query;
         }
 

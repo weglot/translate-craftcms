@@ -14,6 +14,7 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 - [PRs land as merge commits, not squash](merge-commits-not-squash.md) — every branch commit reaches `master`.
 - [`composer run rector` writes](composer-rector-writes.md) — not a check; only `rector process --dry-run` is.
 - [Token in a clone URL](token-in-clone-url.md) — echoed by make and stored in `.git/config`; use a credential helper.
+- [Full-page cache freezes request data](full-page-cache-freezes-request-data.md) — request-derived values in the HTML reach every visitor behind Blitz (BUL-359).
 
 ## Reusable verdicts (don't re-raise at the same severity)
 
