@@ -7,7 +7,9 @@ namespace weglot\craftweglot\controllers;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\web\Controller;
+use craft\web\Response;
 use weglot\craftweglot\Plugin;
+use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\web\WeglotVirtualRequest; // AJOUT
 use yii\base\Event;
 use yii\web\NotFoundHttpException;
@@ -51,42 +53,25 @@ class RouterController extends Controller
                     $destinationCodes = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($destinationEntries, true);
 
                     if ('' !== $apiKey && [] !== $destinationCodes) {
-                        $slugService = Plugin::getInstance()->getSlug();
-                        $corrected = $slugService->getRedirectPathIfUntranslated(
+                        $slugRedirect = self::resolveSlugRedirect(
+                            Plugin::getInstance()->getSlug(),
                             $apiKey,
                             $destinationCodes,
                             $currentLanguage->getExternalCode(),
-                            $internalPath
+                            $internalPath,
+                            \Craft::$app->getRequest()->getIsAjax()
                         );
 
-                        if (null !== $corrected && $corrected !== $internalPath) {
-                            return $this->redirect(self::buildLanguageRedirectTarget(
-                                $this->languageRedirectBasePath(),
-                                $lang,
-                                $corrected,
-                                \Craft::$app->getRequest()->getQueryString()
-                            ), 301);
-                        }
-
-                        // After the original-slug redirect, as in the WordPress plugin: an original
-                        // slug that is also a former translated slug goes to its own page.
-                        $current = \Craft::$app->getRequest()->getIsAjax() ? null : $slugService->getRedirectPathIfFormerSlug(
-                            $apiKey,
-                            $destinationCodes,
-                            $currentLanguage->getExternalCode(),
-                            $internalPath
-                        );
-
-                        if (null !== $current) {
+                        if (null !== $slugRedirect) {
                             $response = $this->redirect(self::buildLanguageRedirectTarget(
                                 $this->languageRedirectBasePath(),
                                 $lang,
-                                $current,
+                                $slugRedirect['path'],
                                 \Craft::$app->getRequest()->getQueryString()
                             ), 301);
-                            // Not cached for good by browsers: a slug renamed back to a former one
-                            // would otherwise loop on the old 301.
-                            $response->getHeaders()->set('Cache-Control', 'max-age='.self::FORMER_SLUG_REDIRECT_MAX_AGE);
+                            if (null !== $slugRedirect['maxAge'] && $response instanceof Response) {
+                                $response->setCacheHeaders($slugRedirect['maxAge']);
+                            }
 
                             return $response;
                         }
@@ -190,6 +175,35 @@ class RouterController extends Controller
         } finally {
             \Craft::$app->set('request', $originalRequest);
         }
+    }
+
+    /**
+     * The original-slug redirect comes first, as in the WordPress plugin: an original slug that is
+     * also a former translated slug goes to its own page. The former-slug lookup runs on the path as
+     * requested, never on the path mapped back to original slugs.
+     *
+     * @param array<int, string> $destinationCodes
+     *
+     * @return array{path: string, maxAge: int|null}|null
+     */
+    public static function resolveSlugRedirect(SlugService $slugService, string $apiKey, array $destinationCodes, string $languageTo, string $requestedPath, bool $isAjax): ?array
+    {
+        $translated = $slugService->getRedirectPathIfUntranslated($apiKey, $destinationCodes, $languageTo, $requestedPath);
+        if (null !== $translated && $translated !== $requestedPath) {
+            return ['path' => $translated, 'maxAge' => null];
+        }
+
+        // Former slugs are links followed by visitors and crawlers; an AJAX call to one is a script
+        // that would get a redirected response it did not ask for.
+        if ($isAjax) {
+            return null;
+        }
+
+        $current = $slugService->getRedirectPathIfFormerSlug($apiKey, $destinationCodes, $languageTo, $requestedPath);
+
+        // Cached for a day only: a slug renamed back to a former one would otherwise loop on the
+        // browser's cached 301.
+        return null !== $current ? ['path' => $current, 'maxAge' => self::FORMER_SLUG_REDIRECT_MAX_AGE] : null;
     }
 
     /**
