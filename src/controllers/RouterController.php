@@ -16,6 +16,8 @@ class RouterController extends Controller
 {
     protected array|int|bool $allowAnonymous = ['forward'];
 
+    private const FORMER_SLUG_REDIRECT_MAX_AGE = 86400;
+
     /**
      * @throws NotFoundHttpException if the path starts with "actions/" or no valid route/template is resolved
      */
@@ -49,7 +51,8 @@ class RouterController extends Controller
                     $destinationCodes = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($destinationEntries, true);
 
                     if ('' !== $apiKey && [] !== $destinationCodes) {
-                        $corrected = Plugin::getInstance()->getSlug()->getRedirectPathIfUntranslated(
+                        $slugService = Plugin::getInstance()->getSlug();
+                        $corrected = $slugService->getRedirectPathIfUntranslated(
                             $apiKey,
                             $destinationCodes,
                             $currentLanguage->getExternalCode(),
@@ -63,6 +66,29 @@ class RouterController extends Controller
                                 $corrected,
                                 \Craft::$app->getRequest()->getQueryString()
                             ), 301);
+                        }
+
+                        // After the original-slug redirect, as in the WordPress plugin: an original
+                        // slug that is also a former translated slug goes to its own page.
+                        $current = \Craft::$app->getRequest()->getIsAjax() ? null : $slugService->getRedirectPathIfFormerSlug(
+                            $apiKey,
+                            $destinationCodes,
+                            $currentLanguage->getExternalCode(),
+                            $internalPath
+                        );
+
+                        if (null !== $current) {
+                            $response = $this->redirect(self::buildLanguageRedirectTarget(
+                                $this->languageRedirectBasePath(),
+                                $lang,
+                                $current,
+                                \Craft::$app->getRequest()->getQueryString()
+                            ), 301);
+                            // Not cached for good by browsers: a slug renamed back to a former one
+                            // would otherwise loop on the old 301.
+                            $response->getHeaders()->set('Cache-Control', 'max-age='.self::FORMER_SLUG_REDIRECT_MAX_AGE);
+
+                            return $response;
                         }
                     }
                 }
