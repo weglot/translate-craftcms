@@ -57,16 +57,12 @@ class RouterController extends Controller
                         );
 
                         if (null !== $corrected && $corrected !== $internalPath) {
-                            $target = '/'.trim($lang, '/').'/'.ltrim($corrected, '/');
-
-                            // Conserver la query string si présente
-                            $qs = \Craft::$app->getRequest()->getQueryString();
-                            if ('' !== $qs) {
-                                $target .= '?'.$qs;
-                            }
-
-                            \Craft::$app->getResponse()->redirect($target, 301)->send();
-                            exit;
+                            return $this->redirect(self::buildLanguageRedirectTarget(
+                                $this->languageRedirectBasePath(),
+                                $lang,
+                                $corrected,
+                                \Craft::$app->getRequest()->getQueryString()
+                            ), 301);
                         }
                     }
                 }
@@ -168,5 +164,32 @@ class RouterController extends Controller
         } finally {
             \Craft::$app->set('request', $originalRequest);
         }
+    }
+
+    /**
+     * Root-relative, so Response::redirect() keeps it as is: the base path must already carry the
+     * subdirectory the site is installed in, or the visitor lands outside the site.
+     */
+    public static function buildLanguageRedirectTarget(string $basePath, string $lang, string $path, string $query): string
+    {
+        $target = rtrim($basePath, '/').'/'.trim($lang, '/').'/'.ltrim($path, '/');
+
+        return '' !== $query ? $target.'?'.$query : $target;
+    }
+
+    /**
+     * The `<lang>/<rest>` rule matches the path after the current site's base path, so a
+     * path-based multisite (`/uk/`) needs the current site's, not the primary site's.
+     */
+    private function languageRedirectBasePath(): string
+    {
+        $siteBaseUrl = \Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
+        if (null === $siteBaseUrl) {
+            return \Craft::$app->getRequest()->getBaseUrl();
+        }
+
+        $basePath = parse_url($siteBaseUrl, \PHP_URL_PATH);
+
+        return \is_string($basePath) ? $basePath : '';
     }
 }
