@@ -7,9 +7,11 @@ namespace weglot\craftweglot\tests\unit\services;
 use craft\base\Component;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
@@ -41,8 +43,8 @@ final class SlugV2ServiceTest extends TestCase
     /** @var list<array{request: RequestInterface, options: array<string, mixed>}> */
     private array $requests = [];
 
-    /** @var array{held: bool, timeouts: list<int>, released: int} */
-    private array $lock = ['held' => false, 'timeouts' => [], 'released' => 0];
+    /** @var array{held: bool, timeouts: list<int>, released: int, whileWaiting: (\Closure(): void)|null} */
+    private array $lock = ['held' => false, 'timeouts' => [], 'released' => 0, 'whileWaiting' => null];
 
     protected function setUp(): void
     {
@@ -271,6 +273,19 @@ final class SlugV2ServiceTest extends TestCase
         self::assertSame([], $maps);
     }
 
+    public function testColdRequestThatWaitedServesWhatTheHolderWrote(): void
+    {
+        $this->lock['held'] = true;
+        $this->lock['whileWaiting'] = function (): void {
+            $this->seedCache(self::API_KEY, ['fr' => $this->entry('1000', time(), ['guestbook' => 'livre-de-bronze'])]);
+        };
+
+        $maps = $this->service([])->getSlugMaps(self::API_KEY, ['fr']);
+
+        self::assertSame([], $this->requests);
+        self::assertSame(['livre-de-bronze' => 'guestbook'], $maps['fr']['reverse']);
+    }
+
     public function testLockIsReleasedAfterARefresh(): void
     {
         $this->service([$this->ok(['guestbook' => 'livre-de-bronze'])])->getSlugMaps(self::API_KEY, ['fr']);
@@ -308,6 +323,23 @@ final class SlugV2ServiceTest extends TestCase
 
         $this->service([])->getSlugMaps(self::API_KEY, ['fr', 'de']);
         self::assertCount(2, $this->requests);
+    }
+
+    public function testUnreachableApiPostponesEveryRemainingLanguage(): void
+    {
+        $this->languages[] = new LanguageEntry('de', 'de', 'German', 'Deutsch', false);
+        $this->seedCache(self::API_KEY, [
+            'fr' => $this->entry('999', time(), ['guestbook' => 'livre-d-or']),
+            'de' => $this->entry('999', time(), ['guestbook' => 'gaestebuch']),
+        ]);
+        $unreachable = new ConnectException('cURL error 28: timed out', new Request('GET', self::API_BASE_URL));
+
+        $maps = $this->service([$unreachable, $this->ok(['guestbook' => 'not-reached'])])->getSlugMaps(self::API_KEY, ['fr', 'de']);
+        self::assertCount(1, $this->requests);
+        self::assertSame(['gaestebuch' => 'guestbook'], $maps['de']['reverse']);
+
+        $this->service([])->getSlugMaps(self::API_KEY, ['fr', 'de']);
+        self::assertCount(1, $this->requests);
     }
 
     public function testResetOptionsDropsTheCache(): void
@@ -360,7 +392,7 @@ final class SlugV2ServiceTest extends TestCase
 
         $lock = &$this->lock;
         \Craft::$app->set('mutex', new class($lock) extends Mutex {
-            /** @param array{held: bool, timeouts: list<int>, released: int} $lock */
+            /** @param array{held: bool, timeouts: list<int>, released: int, whileWaiting: (\Closure(): void)|null} $lock */
             public function __construct(private array &$lock)
             {
                 parent::__construct();
@@ -375,6 +407,9 @@ final class SlugV2ServiceTest extends TestCase
             protected function acquireLock($name, $timeout = 0): bool
             {
                 $this->lock['timeouts'][] = $timeout;
+                if (null !== $this->lock['whileWaiting']) {
+                    ($this->lock['whileWaiting'])();
+                }
 
                 return !$this->lock['held'];
             }
@@ -414,7 +449,7 @@ final class SlugV2ServiceTest extends TestCase
     /**
      * A new service is a new request: nothing memoised.
      *
-     * @param list<Response> $responses
+     * @param list<Response|ConnectException> $responses
      */
     private function service(array $responses): SlugV2Service
     {

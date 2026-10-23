@@ -7,6 +7,7 @@ namespace weglot\craftweglot\services;
 use craft\base\Component;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Exception\RequestException;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
@@ -109,7 +110,7 @@ class SlugV2Service extends Component
         $languages = [];
         foreach (Plugin::getInstance()->getLanguage()->getDestinationLanguages() as $entry) {
             $externalCode = '' !== $entry->getExternalCode() ? $entry->getExternalCode() : $entry->getInternalCode();
-            $languages[$this->apiLanguageCode($entry)] = strtolower(str_replace('_', '-', $externalCode));
+            $languages[$this->apiLanguageCode($entry)] = strtolower($externalCode);
         }
 
         return $languages;
@@ -144,7 +145,8 @@ class SlugV2Service extends Component
         $isCold = [] !== array_diff($languages, array_keys($entries));
         $mutex = \Craft::$app->getMutex();
         if (!$mutex->acquire($cacheKey, $isCold ? self::FETCH_BUDGET : 0)) {
-            return $entries;
+            // A cold request waited: the holder may have written the cache meanwhile.
+            return $isCold ? $this->readCache($cacheKey) : $entries;
         }
 
         try {
@@ -229,20 +231,27 @@ class SlugV2Service extends Component
         $host = \is_string($apiBaseUrl) && '' !== $apiBaseUrl ? rtrim($apiBaseUrl, '/') : HelperApi::getApiUrlV2();
 
         $started = microtime(true);
-        foreach ($languages as $language) {
+        foreach ($languages as $index => $language) {
             $remaining = self::FETCH_BUDGET - (microtime(true) - $started);
             if ($remaining <= 0) {
                 break;
             }
 
-            $fetched = $this->fetch($host, $apiKey, $language, min(self::REQUEST_TIMEOUT, $remaining));
+            try {
+                $fetched = $this->fetch($host, $apiKey, $language, min(self::REQUEST_TIMEOUT, $remaining));
+            } catch (GuzzleException $e) {
+                \Craft::warning('Weglot 2 slugs could not be fetched, API unreachable: '.$e->getMessage(), __METHOD__);
+
+                // The host is down or too slow: the next languages would only spend the rest of the
+                // budget on the page render, and again on every request until they are postponed.
+                foreach (\array_slice($languages, $index) as $pending) {
+                    $entries[$pending] = $this->postpone($entries[$pending] ?? null, $now);
+                }
+                break;
+            }
 
             if (null === $fetched) {
-                // Keeps the previous slugs, if any, until the next attempt.
-                $entries[$language] = array_merge(
-                    $entries[$language] ?? ['version' => null, 'fetched_at' => 0, 'slugs' => [], 'redirects' => []],
-                    ['retry_after' => $now + self::RETRY_DELAY]
-                );
+                $entries[$language] = $this->postpone($entries[$language] ?? null, $now);
                 continue;
             }
 
@@ -259,7 +268,24 @@ class SlugV2Service extends Component
     }
 
     /**
-     * @return array{slugs: array<string, string>, redirects: array<string, string>}|null null on failure
+     * Keeps the previous slugs, if any, until the next attempt.
+     *
+     * @param SlugEntry|null $entry
+     *
+     * @return SlugEntry
+     */
+    private function postpone(?array $entry, int $now): array
+    {
+        $entry ??= ['version' => null, 'fetched_at' => 0, 'retry_after' => 0, 'slugs' => [], 'redirects' => []];
+        $entry['retry_after'] = $now + self::RETRY_DELAY;
+
+        return $entry;
+    }
+
+    /**
+     * @return array{slugs: array<string, string>, redirects: array<string, string>}|null null when this language failed
+     *
+     * @throws GuzzleException when the API could not be reached at all
      */
     private function fetch(string $host, string $apiKey, string $language, float $timeout): ?array
     {
@@ -270,7 +296,7 @@ class SlugV2Service extends Component
                 'timeout' => $timeout,
                 'http_errors' => false,
             ]);
-        } catch (GuzzleException $e) {
+        } catch (RequestException $e) {
             \Craft::warning(\sprintf('Weglot 2 slugs for "%s" could not be fetched: %s', $language, $e->getMessage()), __METHOD__);
 
             return null;
