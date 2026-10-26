@@ -28,6 +28,10 @@ class SlugService extends Component
      */
     public function getSlugMapsFromCacheWithApiKey(string $apiKey, array $destinationLanguages): array
     {
+        if (!Plugin::getInstance()->getTypedSettings()->enableTranslatedSlugs) {
+            return [];
+        }
+
         // Weglot 2 only: a project migrated from Weglot 1 can still hold Weglot 1 slugs in its cache,
         // which must never be mixed with the Weglot 2 ones.
         if (HelperApi::isV2ApiKey($apiKey)) {

@@ -56,6 +56,7 @@ class ApiController extends Controller
             'showBoxFirstSettings' => true,
             'enableDynamics' => false,
             'enableAlgolia' => false,
+            'enableTranslatedSlugs' => true,
             'dynamicsWhitelistSelectors' => '',
             'dynamicsAllowedUrls' => '',
         ]);

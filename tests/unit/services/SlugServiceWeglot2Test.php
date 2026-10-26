@@ -6,6 +6,7 @@ namespace weglot\craftweglot\tests\unit\services;
 
 use craft\base\Component;
 use PHPUnit\Framework\TestCase;
+use weglot\craftweglot\models\Settings;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\services\SlugV2Service;
@@ -16,15 +17,25 @@ final class SlugServiceWeglot2Test extends TestCase
 
     private ?Component $originalSlugV2 = null;
 
+    private int $weglot2Calls = 0;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->originalSlugV2 = Plugin::getInstance()->getSlugV2();
         \Craft::$app->getCache()->flush();
 
-        Plugin::getInstance()->set('slugV2', new class extends SlugV2Service {
+        $calls = &$this->weglot2Calls;
+        Plugin::getInstance()->set('slugV2', new class($calls) extends SlugV2Service {
+            public function __construct(private int &$calls)
+            {
+                parent::__construct();
+            }
+
             public function getSlugMaps(string $apiKey, array $externalCodes): array
             {
+                ++$this->calls;
+
                 return [
                     'fr' => [
                         'forward' => ['guestbook' => 'livre-de-bronze', 'contact' => 'contact-c-fr', 'blog' => 'blog-fr'],
@@ -47,6 +58,7 @@ final class SlugServiceWeglot2Test extends TestCase
         if ($this->originalSlugV2 instanceof SlugV2Service) {
             Plugin::getInstance()->set('slugV2', $this->originalSlugV2);
         }
+        Plugin::getInstance()->getTypedSettings()->enableTranslatedSlugs = true;
         \Craft::$app->getCache()->flush();
         parent::tearDown();
     }
@@ -104,6 +116,28 @@ final class SlugServiceWeglot2Test extends TestCase
         \Craft::$app->getCache()->set($this->weglot1CacheKey($service, 'wg_v1key'), [], 0);
 
         self::assertNull($service->getRedirectPathIfFormerSlug('wg_v1key', ['fr'], 'fr', 'livre-dargent'));
+    }
+
+    public function testTranslatedSlugsTurnedOffServeNoSlugForEitherKeyVersion(): void
+    {
+        $service = new SlugService();
+        $weglot1Maps = ['fr' => ['forward' => ['guestbook' => 'livre-v1'], 'reverse' => ['livre-v1' => 'guestbook']]];
+        \Craft::$app->getCache()->set($this->weglot1CacheKey($service, 'wg_v1key'), $weglot1Maps, 0);
+        Plugin::getInstance()->getTypedSettings()->enableTranslatedSlugs = false;
+
+        self::assertSame([], $service->getSlugMapsFromCacheWithApiKey(self::V2_KEY, ['fr']));
+        self::assertSame(0, $this->weglot2Calls);
+        self::assertSame([], $service->getSlugMapsFromCacheWithApiKey('wg_v1key', ['fr']));
+        self::assertNull($service->getRedirectPathIfUntranslated(self::V2_KEY, ['fr'], 'fr', 'guestbook'));
+    }
+
+    public function testTranslatedSlugsAreOnByDefault(): void
+    {
+        $service = new SlugService();
+
+        self::assertTrue((new Settings())->enableTranslatedSlugs);
+        self::assertSame('livre-de-bronze', $service->getRedirectPathIfUntranslated(self::V2_KEY, ['fr'], 'fr', 'guestbook'));
+        self::assertSame(1, $this->weglot2Calls);
     }
 
     private function weglot1CacheKey(SlugService $service, string $apiKey): string
