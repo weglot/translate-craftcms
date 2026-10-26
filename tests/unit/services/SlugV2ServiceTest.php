@@ -104,7 +104,7 @@ final class SlugV2ServiceTest extends TestCase
         foreach (['fr', 'de'] as $i => $code) {
             $request = $this->requests[$i]['request'];
             self::assertSame('GET', $request->getMethod());
-            self::assertSame(self::API_BASE_URL.SlugV2Service::ROUTE.'?language='.$code, (string) $request->getUri());
+            self::assertSame(self::API_BASE_URL.SlugV2Service::ROUTE.'?language='.$code.'&v=1000', (string) $request->getUri());
             self::assertSame('Key '.self::API_KEY, $request->getHeaderLine('Authorization'));
             self::assertLessThanOrEqual(3.0, $this->requests[$i]['options']['timeout']);
         }
@@ -116,8 +116,18 @@ final class SlugV2ServiceTest extends TestCase
 
         $maps = $this->service([$this->ok(['about' => 'sobre'])])->getSlugMaps(self::API_KEY, ['br']);
 
-        self::assertSame('language=pt-br', $this->requests[0]['request']->getUri()->getQuery());
+        self::assertSame('language=pt-br&v=1000', $this->requests[0]['request']->getUri()->getQuery());
         self::assertSame(['sobre' => 'about'], $maps['br']['reverse']);
+    }
+
+    public function testUnknownVersionIsNotSent(): void
+    {
+        $this->options['versions'] = [];
+
+        $this->service([$this->ok(['guestbook' => 'livre-de-bronze'])])->getSlugMaps(self::API_KEY, ['fr']);
+
+        parse_str($this->requests[0]['request']->getUri()->getQuery(), $query);
+        self::assertSame(['language' => 'fr'], $query);
     }
 
     public function testMixedCaseExternalCodeIsMatched(): void

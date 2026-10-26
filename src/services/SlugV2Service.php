@@ -240,7 +240,7 @@ class SlugV2Service extends Component
             }
 
             try {
-                $fetched = $this->fetch($host, $apiKey, $language, min(self::REQUEST_TIMEOUT, $remaining));
+                $fetched = $this->fetch($host, $apiKey, $language, $version, min(self::REQUEST_TIMEOUT, $remaining));
             } catch (GuzzleException $e) {
                 \Craft::warning('Weglot 2 slugs could not be fetched, API unreachable: '.$e->getMessage(), __METHOD__);
 
@@ -289,11 +289,18 @@ class SlugV2Service extends Component
      *
      * @throws GuzzleException when the API could not be reached at all
      */
-    private function fetch(string $host, string $apiKey, string $language, float $timeout): ?array
+    private function fetch(string $host, string $apiKey, string $language, ?string $version, float $timeout): ?array
     {
+        // v is ignored by the API today; it will key an edge cache, where an unknown version must not
+        // share an entry with a known one.
+        $query = ['language' => $language];
+        if (null !== $version) {
+            $query['v'] = $version;
+        }
+
         try {
             $response = $this->createHttpClient()->request('GET', $host.self::ROUTE, [
-                'query' => ['language' => $language],
+                'query' => $query,
                 'headers' => ['Authorization' => 'Key '.$apiKey],
                 'timeout' => $timeout,
                 'http_errors' => false,
