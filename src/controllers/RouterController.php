@@ -212,7 +212,13 @@ class RouterController extends Controller
      */
     public static function buildLanguageRedirectTarget(string $basePath, string $lang, string $path, string $query): string
     {
-        $target = rtrim($basePath, '/').'/'.trim($lang, '/').'/'.ltrim($path, '/');
+        // The requested segments arrive decoded while a slug from the API may already be encoded:
+        // decoding first keeps an encoded slug from being encoded twice.
+        $segments = array_map(
+            static fn (string $segment): string => rawurlencode(rawurldecode($segment)),
+            explode('/', ltrim($path, '/'))
+        );
+        $target = rtrim($basePath, '/').'/'.trim($lang, '/').'/'.implode('/', $segments);
 
         return '' !== $query ? $target.'?'.$query : $target;
     }

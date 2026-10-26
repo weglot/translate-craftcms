@@ -32,6 +32,24 @@ final class RouterControllerTest extends TestCase
         );
     }
 
+    public function testRedirectTargetPercentEncodesSlugSegmentsOnly(): void
+    {
+        self::assertSame(
+            '/shop/fr/caf%C3%A9/livre-d%27or?q=caf%C3%A9&page=2',
+            RouterController::buildLanguageRedirectTarget('/shop', 'fr', "café/livre-d'or", 'q=caf%C3%A9&page=2')
+        );
+    }
+
+    public function testRedirectTargetDoesNotEncodeAnEncodedSlugTwice(): void
+    {
+        self::assertSame('/fr/caf%C3%A9', RouterController::buildLanguageRedirectTarget('', 'fr', 'caf%c3%a9', ''));
+    }
+
+    public function testRedirectTargetLeavesAsciiPathsAndTrailingSlashUnchanged(): void
+    {
+        self::assertSame('/fr/blog-fr/my_post-2/', RouterController::buildLanguageRedirectTarget('', 'fr', 'blog-fr/my_post-2/', ''));
+    }
+
     public function testOriginalSlugRedirectsToItsTranslationWithoutCacheCap(): void
     {
         self::assertSame(
