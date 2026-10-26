@@ -59,7 +59,6 @@ final class SlugV2ServiceTest extends TestCase
         \Craft::$app->getCache()->flush();
 
         $this->options = [
-            'auto_slug_translation_enabled' => true,
             'api_base_url' => self::API_BASE_URL,
             'versions' => ['slugTranslations' => 1000],
         ];
@@ -130,15 +129,19 @@ final class SlugV2ServiceTest extends TestCase
         self::assertSame(['sobre' => 'about'], $maps['pt-br']['reverse']);
     }
 
-    public function testNothingIsRequestedWhenTheFeatureIsOff(): void
+    public function testSlugsAreServedWhateverTheAutoTranslationSetting(): void
     {
         $this->options['auto_slug_translation_enabled'] = false;
-        self::assertSame([], $this->service([])->getSlugMaps(self::API_KEY, ['fr']));
+        $maps = $this->service([$this->ok(['guestbook' => 'livre-de-bronze'])])->getSlugMaps(self::API_KEY, ['fr']);
+        self::assertCount(1, $this->requests);
+        self::assertSame(['livre-de-bronze' => 'guestbook'], $maps['fr']['reverse']);
 
+        // Flushed, or the second case would be served by the cache the first one wrote.
+        \Craft::$app->getCache()->flush();
         unset($this->options['auto_slug_translation_enabled']);
-        self::assertSame([], $this->service([])->getSlugMaps(self::API_KEY, ['fr']));
-
-        self::assertSame([], $this->requests);
+        $maps = $this->service([$this->ok(['guestbook' => 'livre-de-bronze'])])->getSlugMaps(self::API_KEY, ['fr']);
+        self::assertCount(2, $this->requests);
+        self::assertSame(['livre-de-bronze' => 'guestbook'], $maps['fr']['reverse']);
     }
 
     public function testNothingIsRequestedForAWeglot1Key(): void

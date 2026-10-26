@@ -81,7 +81,9 @@ class SlugV2Service extends Component
      */
     private function loadMaps(string $apiKey): array
     {
-        if (!HelperApi::isV2ApiKey($apiKey) || true !== Plugin::getInstance()->getOption()->getOption('auto_slug_translation_enabled')) {
+        // Not gated on auto_slug_translation_enabled: that setting only drives the AI translation of
+        // new slugs, and manual or earlier translations stay served when it is off.
+        if (!HelperApi::isV2ApiKey($apiKey)) {
             return [];
         }
 
