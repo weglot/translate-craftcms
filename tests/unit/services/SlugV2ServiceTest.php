@@ -110,6 +110,15 @@ final class SlugV2ServiceTest extends TestCase
         }
     }
 
+    public function testPercentEncodedSlugsAreDecodedToMatchTheRequestPath(): void
+    {
+        $maps = $this->service([$this->ok(['cafe' => 'caf%C3%A9'], ['ancien-caf%C3%A9' => 'caf%C3%A9'])])
+            ->getSlugMaps(self::API_KEY, ['fr']);
+
+        self::assertSame(['café' => 'cafe'], $maps['fr']['reverse']);
+        self::assertSame(['ancien-café' => 'café'], $maps['fr']['redirects']);
+    }
+
     public function testCustomExternalCodeSendsTheInternalCode(): void
     {
         $this->languages = [new LanguageEntry('pt-br', 'br', 'Portuguese (Brazil)', 'Português', false)];

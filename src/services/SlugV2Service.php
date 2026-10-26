@@ -325,7 +325,8 @@ class SlugV2Service extends Component
     }
 
     /**
-     * Keeps the pairs that can stand for one path segment.
+     * Keeps the pairs that can stand for one path segment, decoded: Craft hands the router a decoded
+     * path, so a percent-encoded slug would never match it.
      *
      * @return array<string, string>
      */
@@ -337,8 +338,12 @@ class SlugV2Service extends Component
 
         $clean = [];
         foreach ($map as $from => $to) {
-            $from = (string) $from;
-            if (!\is_string($to) || '' === $from || '' === $to || $from === $to || str_contains($from.$to, '/')) {
+            if (!\is_string($to)) {
+                continue;
+            }
+            $from = rawurldecode((string) $from);
+            $to = rawurldecode($to);
+            if ('' === $from || '' === $to || $from === $to || str_contains($from.$to, '/')) {
                 continue;
             }
             $clean[$from] = $to;
