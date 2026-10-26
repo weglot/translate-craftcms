@@ -50,11 +50,19 @@ final class RouterControllerTest extends TestCase
         self::assertSame('/fr/blog-fr/my_post-2/', RouterController::buildLanguageRedirectTarget('', 'fr', 'blog-fr/my_post-2/', ''));
     }
 
-    public function testOriginalSlugRedirectsToItsTranslationWithoutCacheCap(): void
+    public function testWeglot2OriginalSlugRedirectsToItsTranslationForADay(): void
+    {
+        self::assertSame(
+            ['path' => 'livre-de-bronze', 'maxAge' => 86400],
+            RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'guestbook', true)
+        );
+    }
+
+    public function testWeglot1OriginalSlugRedirectKeepsNoCacheCap(): void
     {
         self::assertSame(
             ['path' => 'livre-de-bronze', 'maxAge' => null],
-            RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'guestbook', false)
+            RouterController::resolveSlugRedirect($this->slugs(), 'wg_key', ['fr'], 'fr', 'guestbook', true)
         );
     }
 
@@ -62,7 +70,7 @@ final class RouterControllerTest extends TestCase
     {
         self::assertSame(
             ['path' => 'livre-de-bronze', 'maxAge' => 86400],
-            RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'livre-dargent', false)
+            RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'livre-dargent', true)
         );
     }
 
@@ -73,19 +81,41 @@ final class RouterControllerTest extends TestCase
     public function testOriginalSlugRedirectComesBeforeTheFormerSlugOne(): void
     {
         self::assertSame(
-            ['path' => 'contact-c-fr', 'maxAge' => null],
-            RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'contact', false)
+            ['path' => 'contact-c-fr', 'maxAge' => 86400],
+            RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'contact', true)
         );
     }
 
     public function testCurrentTranslatedSlugIsServed(): void
     {
-        self::assertNull(RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'contact-c-fr', false));
+        self::assertNull(RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'contact-c-fr', true));
     }
 
-    public function testFormerSlugIsNotRedirectedForAjax(): void
+    public function testFormerSlugIsNotRedirectedForAScriptOrAForm(): void
     {
-        self::assertNull(RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'livre-dargent', true));
+        self::assertNull(RouterController::resolveSlugRedirect($this->slugs(), 'key', ['fr'], 'fr', 'livre-dargent', false));
+    }
+
+    public function testOnlyNonAjaxGetAndHeadRequestsFollowLinks(): void
+    {
+        $request = \Craft::$app->getRequest();
+        $originalMethod = $_SERVER['REQUEST_METHOD'] ?? null;
+        try {
+            foreach (['GET' => true, 'HEAD' => true, 'POST' => false] as $method => $expected) {
+                $_SERVER['REQUEST_METHOD'] = $method;
+                self::assertSame($expected, RouterController::isLinkFollow($request), $method);
+            }
+            $_SERVER['REQUEST_METHOD'] = 'GET';
+            $request->getHeaders()->set('X-Requested-With', 'XMLHttpRequest');
+            self::assertFalse(RouterController::isLinkFollow($request));
+        } finally {
+            $request->getHeaders()->remove('X-Requested-With');
+            if (null === $originalMethod) {
+                unset($_SERVER['REQUEST_METHOD']);
+            } else {
+                $_SERVER['REQUEST_METHOD'] = $originalMethod;
+            }
+        }
     }
 
     private function slugs(): SlugService

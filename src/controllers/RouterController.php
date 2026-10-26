@@ -7,7 +7,9 @@ namespace weglot\craftweglot\controllers;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\web\Controller;
+use craft\web\Request;
 use craft\web\Response;
+use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\web\WeglotVirtualRequest; // AJOUT
@@ -18,7 +20,7 @@ class RouterController extends Controller
 {
     protected array|int|bool $allowAnonymous = ['forward'];
 
-    private const FORMER_SLUG_REDIRECT_MAX_AGE = 86400;
+    private const SLUG_REDIRECT_MAX_AGE = 86400;
 
     /**
      * @throws NotFoundHttpException if the path starts with "actions/" or no valid route/template is resolved
@@ -59,7 +61,7 @@ class RouterController extends Controller
                             $destinationCodes,
                             $currentLanguage->getExternalCode(),
                             $internalPath,
-                            \Craft::$app->getRequest()->getIsAjax()
+                            self::isLinkFollow(\Craft::$app->getRequest())
                         );
 
                         if (null !== $slugRedirect) {
@@ -186,16 +188,18 @@ class RouterController extends Controller
      *
      * @return array{path: string, maxAge: int|null}|null
      */
-    public static function resolveSlugRedirect(SlugService $slugService, string $apiKey, array $destinationCodes, string $languageTo, string $requestedPath, bool $isAjax): ?array
+    public static function resolveSlugRedirect(SlugService $slugService, string $apiKey, array $destinationCodes, string $languageTo, string $requestedPath, bool $isLinkFollow): ?array
     {
         $translated = $slugService->getRedirectPathIfUntranslated($apiKey, $destinationCodes, $languageTo, $requestedPath);
         if (null !== $translated && $translated !== $requestedPath) {
-            return ['path' => $translated, 'maxAge' => null];
+            // Weglot 2 slugs are edited in the dashboard: an uncapped 301 would keep sending browsers
+            // to a translation that has since been removed.
+            return ['path' => $translated, 'maxAge' => HelperApi::isV2ApiKey($apiKey) ? self::SLUG_REDIRECT_MAX_AGE : null];
         }
 
-        // Former slugs are links followed by visitors and crawlers; an AJAX call to one is a script
-        // that would get a redirected response it did not ask for.
-        if ($isAjax) {
+        // Former slugs are links followed by visitors and crawlers; a script or a form posting to one
+        // would get a redirected response it did not ask for, and a 301 turns a POST into a GET.
+        if (!$isLinkFollow) {
             return null;
         }
 
@@ -203,7 +207,12 @@ class RouterController extends Controller
 
         // Cached for a day only: a slug renamed back to a former one would otherwise loop on the
         // browser's cached 301.
-        return null !== $current ? ['path' => $current, 'maxAge' => self::FORMER_SLUG_REDIRECT_MAX_AGE] : null;
+        return null !== $current ? ['path' => $current, 'maxAge' => self::SLUG_REDIRECT_MAX_AGE] : null;
+    }
+
+    public static function isLinkFollow(Request $request): bool
+    {
+        return !$request->getIsAjax() && ($request->getIsGet() || $request->getIsHead());
     }
 
     /**
