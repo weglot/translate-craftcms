@@ -42,9 +42,9 @@ class SlugV2Service extends Component
     private const REQUEST_TIMEOUT = 3.0;
 
     /**
-     * @var array<string, SlugMaps>|null
+     * @var array<string, array<string, SlugMaps>> keyed by API key
      */
-    private ?array $maps = null;
+    private array $maps = [];
 
     public static function cacheKey(string $apiKey): string
     {
@@ -58,13 +58,13 @@ class SlugV2Service extends Component
      */
     public function getSlugMaps(string $apiKey, array $externalCodes): array
     {
-        $this->maps ??= $this->loadMaps($apiKey);
+        $this->maps[$apiKey] ??= $this->loadMaps($apiKey);
 
         $maps = [];
         foreach ($externalCodes as $code) {
             $code = strtolower($code);
-            if (isset($this->maps[$code])) {
-                $maps[$code] = $this->maps[$code];
+            if (isset($this->maps[$apiKey][$code])) {
+                $maps[$code] = $this->maps[$apiKey][$code];
             }
         }
 

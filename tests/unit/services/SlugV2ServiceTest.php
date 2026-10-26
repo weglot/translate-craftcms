@@ -119,6 +119,17 @@ final class SlugV2ServiceTest extends TestCase
         self::assertSame(['ancien-café' => 'café'], $maps['fr']['redirects']);
     }
 
+    public function testMapsAreMemoisedPerApiKey(): void
+    {
+        $service = $this->service([$this->ok(['guestbook' => 'livre-d-or']), $this->ok(['guestbook' => 'livre-de-bronze'])]);
+
+        $service->getSlugMaps(self::API_KEY, ['fr']);
+        $maps = $service->getSlugMaps('other-v2-key', ['fr']);
+
+        self::assertCount(2, $this->requests);
+        self::assertSame(['livre-de-bronze' => 'guestbook'], $maps['fr']['reverse']);
+    }
+
     public function testCustomExternalCodeSendsTheInternalCode(): void
     {
         $this->languages = [new LanguageEntry('pt-br', 'br', 'Portuguese (Brazil)', 'Português', false)];
