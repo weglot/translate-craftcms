@@ -17,6 +17,12 @@ class Settings extends Model
     public bool $enableDynamics = false;
     public bool $enableAlgolia = false;
 
+    /**
+     * Not shown in the control panel: the opt-out from translated slugs is set per environment in
+     * config/weglot.php.
+     */
+    public bool $enableTranslatedSlugs = true;
+
     public string $dynamicsWhitelistSelectors = '';
 
     public string $dynamicsAllowedUrls = '';
@@ -39,6 +45,7 @@ class Settings extends Model
             ['languages', 'each', 'rule' => ['string']],
             ['enableDynamics', 'boolean'],
             ['enableAlgolia', 'boolean'],
+            ['enableTranslatedSlugs', 'boolean'],
             ['dynamicsWhitelistSelectors', 'string'],
             ['dynamicsAllowedUrls', 'string'],
         ];

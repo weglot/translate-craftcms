@@ -7,7 +7,11 @@ namespace weglot\craftweglot\controllers;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\web\Controller;
+use craft\web\Request;
+use craft\web\Response;
+use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
+use weglot\craftweglot\services\SlugService;
 use weglot\craftweglot\web\WeglotVirtualRequest; // AJOUT
 use yii\base\Event;
 use yii\web\NotFoundHttpException;
@@ -15,6 +19,8 @@ use yii\web\NotFoundHttpException;
 class RouterController extends Controller
 {
     protected array|int|bool $allowAnonymous = ['forward'];
+
+    private const SLUG_REDIRECT_MAX_AGE = 86400;
 
     /**
      * @throws NotFoundHttpException if the path starts with "actions/" or no valid route/template is resolved
@@ -49,24 +55,27 @@ class RouterController extends Controller
                     $destinationCodes = Plugin::getInstance()->getLanguage()->codesFromDestinationEntries($destinationEntries, true);
 
                     if ('' !== $apiKey && [] !== $destinationCodes) {
-                        $corrected = Plugin::getInstance()->getSlug()->getRedirectPathIfUntranslated(
+                        $slugRedirect = self::resolveSlugRedirect(
+                            Plugin::getInstance()->getSlug(),
                             $apiKey,
                             $destinationCodes,
                             $currentLanguage->getExternalCode(),
-                            $internalPath
+                            $internalPath,
+                            self::isLinkFollow(\Craft::$app->getRequest())
                         );
 
-                        if (null !== $corrected && $corrected !== $internalPath) {
-                            $target = '/'.trim($lang, '/').'/'.ltrim($corrected, '/');
-
-                            // Conserver la query string si présente
-                            $qs = \Craft::$app->getRequest()->getQueryString();
-                            if ('' !== $qs) {
-                                $target .= '?'.$qs;
+                        if (null !== $slugRedirect) {
+                            $response = $this->redirect(self::buildLanguageRedirectTarget(
+                                $this->languageRedirectBasePath(),
+                                $lang,
+                                $slugRedirect['path'],
+                                \Craft::$app->getRequest()->getQueryString()
+                            ), 301);
+                            if (null !== $slugRedirect['maxAge'] && $response instanceof Response) {
+                                $response->setCacheHeaders($slugRedirect['maxAge']);
                             }
 
-                            \Craft::$app->getResponse()->redirect($target, 301)->send();
-                            exit;
+                            return $response;
                         }
                     }
                 }
@@ -168,5 +177,74 @@ class RouterController extends Controller
         } finally {
             \Craft::$app->set('request', $originalRequest);
         }
+    }
+
+    /**
+     * The original-slug redirect comes first, as in the WordPress plugin: an original slug that is
+     * also a former translated slug goes to its own page. The former-slug lookup runs on the path as
+     * requested, never on the path mapped back to original slugs.
+     *
+     * @param array<int, string> $destinationCodes
+     *
+     * @return array{path: string, maxAge: int|null}|null
+     */
+    public static function resolveSlugRedirect(SlugService $slugService, string $apiKey, array $destinationCodes, string $languageTo, string $requestedPath, bool $isLinkFollow): ?array
+    {
+        $translated = $slugService->getRedirectPathIfUntranslated($apiKey, $destinationCodes, $languageTo, $requestedPath);
+        if (null !== $translated && $translated !== $requestedPath) {
+            // Weglot 2 slugs are edited in the dashboard: an uncapped 301 would keep sending browsers
+            // to a translation that has since been removed.
+            return ['path' => $translated, 'maxAge' => HelperApi::isV2ApiKey($apiKey) ? self::SLUG_REDIRECT_MAX_AGE : null];
+        }
+
+        // Former slugs are links followed by visitors and crawlers; a script or a form posting to one
+        // would get a redirected response it did not ask for, and a 301 turns a POST into a GET.
+        if (!$isLinkFollow) {
+            return null;
+        }
+
+        $current = $slugService->getRedirectPathIfFormerSlug($apiKey, $destinationCodes, $languageTo, $requestedPath);
+
+        // Cached for a day only: a slug renamed back to a former one would otherwise loop on the
+        // browser's cached 301.
+        return null !== $current ? ['path' => $current, 'maxAge' => self::SLUG_REDIRECT_MAX_AGE] : null;
+    }
+
+    public static function isLinkFollow(Request $request): bool
+    {
+        return !$request->getIsAjax() && ($request->getIsGet() || $request->getIsHead());
+    }
+
+    /**
+     * Root-relative, so Response::redirect() keeps it as is: the base path must already carry the
+     * subdirectory the site is installed in, or the visitor lands outside the site.
+     */
+    public static function buildLanguageRedirectTarget(string $basePath, string $lang, string $path, string $query): string
+    {
+        // The requested segments arrive decoded while a slug from the API may already be encoded:
+        // decoding first keeps an encoded slug from being encoded twice.
+        $segments = array_map(
+            static fn (string $segment): string => rawurlencode(rawurldecode($segment)),
+            explode('/', ltrim($path, '/'))
+        );
+        $target = rtrim($basePath, '/').'/'.trim($lang, '/').'/'.implode('/', $segments);
+
+        return '' !== $query ? $target.'?'.$query : $target;
+    }
+
+    /**
+     * The `<lang>/<rest>` rule matches the path after the current site's base path, so a
+     * path-based multisite (`/uk/`) needs the current site's, not the primary site's.
+     */
+    private function languageRedirectBasePath(): string
+    {
+        $siteBaseUrl = \Craft::$app->getSites()->getCurrentSite()->getBaseUrl();
+        if (null === $siteBaseUrl) {
+            return \Craft::$app->getRequest()->getBaseUrl();
+        }
+
+        $basePath = parse_url($siteBaseUrl, \PHP_URL_PATH);
+
+        return \is_string($basePath) ? $basePath : '';
     }
 }

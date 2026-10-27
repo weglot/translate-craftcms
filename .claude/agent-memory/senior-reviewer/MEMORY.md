@@ -16,6 +16,12 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 - [Token in a clone URL](token-in-clone-url.md) — echoed by make and stored in `.git/config`; use a credential helper.
 - [Full-page cache freezes request data](full-page-cache-freezes-request-data.md) — request-derived values in the HTML reach every visitor behind Blitz (BUL-359).
 
+- [Cache-hit masking in tests](cache-hit-masking-in-tests.md) — a second call to a caching service is served from cache; reset it or the test cannot fail (BUL-341).
+- [Time-unit fixtures from a real payload](time-unit-fixture-from-real-payload.md) — fail-safe unit guards fail silently; test with a real value (BUL-341).
+
+- [Decoded request paths](decoded-request-paths.md) — Craft routes on the decoded path; decode external data on ingest, encode once (BUL-341).
+- [Gate off equals failure](gate-off-equals-failure.md) — a guard returning the failure value can't be tested by return value (BUL-341).
+
 ## Reusable verdicts (don't re-raise at the same severity)
 
 - [simple_html_dom `save()` lower-cases names](simple-html-dom-save-lowercases.md) — not a mutation when the parser's own flags are used.
