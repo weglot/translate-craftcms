@@ -380,6 +380,41 @@ class Plugin extends BasePlugin
     }
 
     /**
+     * The first destination language's home, so the admin lands on a translated page. Uses the codes
+     * the `<lang>` URL rule is built from, so the link always matches it.
+     *
+     * @param list<string> $destinationCodes
+     */
+    public static function buildFrontPageUrl(string $siteBaseUrl, array $destinationCodes): string
+    {
+        $code = $destinationCodes[0] ?? '';
+        if ('' === $code) {
+            return $siteBaseUrl;
+        }
+
+        return rtrim($siteBaseUrl, '/').'/'.$code.'/';
+    }
+
+    protected function onboardingFrontPageUrl(string $siteBaseUrl, bool $optionsLoaded): string
+    {
+        // A failed options fetch is not memoised: reading the languages would wait for the API again.
+        if (!$optionsLoaded || '' === $siteBaseUrl) {
+            return $siteBaseUrl;
+        }
+
+        try {
+            $language = $this->getLanguage();
+            $codes = $language->codesFromDestinationEntries($language->getDestinationLanguages(), true);
+        } catch (\Throwable $e) {
+            \Craft::warning('Weglot destination languages could not be read for the onboarding link: '.$e->getMessage(), __METHOD__);
+
+            return $siteBaseUrl;
+        }
+
+        return self::buildFrontPageUrl($siteBaseUrl, array_values($codes));
+    }
+
+    /**
      * Renders the settings HTML for the plugin configuration page.
      */
     protected function settingsHtml(): ?string
@@ -396,8 +431,13 @@ class Plugin extends BasePlugin
         $session = \Craft::$app->getSession();
         $showFirstSettingsPopup = $session->get('weglot_show_first_settings_popup', false);
 
+        $frontPageUrl = '';
         if ($showFirstSettingsPopup) {
             $session->remove('weglot_show_first_settings_popup');
+            $frontPageUrl = $this->onboardingFrontPageUrl(
+                \Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? '',
+                true === ($apiSettings['success'] ?? false)
+            );
         }
 
         return \Craft::$app->getView()->renderTemplate(
@@ -407,6 +447,7 @@ class Plugin extends BasePlugin
                 'apiSettings' => $apiSettings,
                 'cdnSettings' => $cdnSettings,
                 'showFirstSettingsPopup' => $showFirstSettingsPopup,
+                'frontPageUrl' => $frontPageUrl,
                 'showV1Fields' => '' !== $settings->apiKey && str_starts_with($settings->apiKey, 'wg_'),
             ]
         );
