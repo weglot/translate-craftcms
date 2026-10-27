@@ -22,6 +22,7 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 - [Gate off equals failure](gate-off-equals-failure.md) — a guard returning the failure value can't be tested by return value (BUL-341).
 - [Guzzle `ConnectException` is no `RequestException`](guzzle-connect-exception.md) — a `catch (RequestException)` lets DNS / timeout / TLS failures through (`c810340`).
 - [Redact V1 Guzzle messages](redact-v1-guzzle-messages.md) — the URI in the message carries `?api_key=`; never log or return it raw.
+- [CP assets through their bundle](cp-assets-through-bundle.md) — Craft Cloud only pre-publishes bundle sourcePaths; a file published alone with `getPublishedUrl()` 404s there.
 
 ## Reusable verdicts (don't re-raise at the same severity)
 
