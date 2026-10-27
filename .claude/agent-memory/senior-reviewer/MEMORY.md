@@ -8,14 +8,14 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 
 ## Recurring findings (raise them)
 
-- [Open bot findings still on master](open-bot-findings.md) — three findings merged unaddressed; raise at their severity when a diff touches the same code, don't re-raise on unrelated diffs.
+- [Open bot findings still on master](open-bot-findings.md) — two findings merged unaddressed; raise at their severity when a diff touches the same code, don't re-raise on unrelated diffs.
 - [Link-rewriting edge cases](link-rewriting-cluster.md) — #55, #60, #63 each fixed one URL shape the regexes missed; demand a test per shape.
 - [V1 / V2 host and endpoint pairs](api-version-host-pairs.md) — #59 drew five wrong-pair findings and two cache follow-ups.
 - [PRs land as merge commits, not squash](merge-commits-not-squash.md) — every branch commit reaches `master`.
 - [`composer run rector` writes](composer-rector-writes.md) — not a check; only `rector process --dry-run` is.
 - [Token in a clone URL](token-in-clone-url.md) — echoed by make and stored in `.git/config`; use a credential helper.
 - [Full-page cache freezes request data](full-page-cache-freezes-request-data.md) — request-derived values in the HTML reach every visitor behind Blitz (BUL-359).
-
+- [Regexes inherited from WordPress](wp-inherited-regex.md) — "same as WP" is not evidence; the #67 lookahead bug came from there.
 - [Cache-hit masking in tests](cache-hit-masking-in-tests.md) — a second call to a caching service is served from cache; reset it or the test cannot fail (BUL-341).
 - [Time-unit fixtures from a real payload](time-unit-fixture-from-real-payload.md) — fail-safe unit guards fail silently; test with a real value (BUL-341).
 - [Decoded request paths](decoded-request-paths.md) — Craft routes on the decoded path; decode external data on ingest, encode once (BUL-341).
