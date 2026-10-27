@@ -3,7 +3,6 @@
 ## 1.2.9 - 2026-10-27
 
 - Improvement: Adds Weglot 2 support: a Weglot 2 API key connects the site to the Weglot 2 API and CDN, the languages are pulled from the project when the settings are saved, and the control-panel links open the Weglot 2 dashboard. Weglot 1 (`wg_`) keys keep working as before.
-- Improvement: Weglot 2 projects: translated slugs saved in the Weglot dashboard are now served, the untranslated URL redirects (301) to the translated one and a former translated slug redirects to the current one, whether or not AI slug translation is enabled. Slug edits show on the next page view. Opt out with `'enableTranslatedSlugs' => false` in `config/weglot.php`.
 - Fix: Slug redirects keep the subdirectory the site is installed in and percent-encode non-ASCII slugs.
 - Fix: Tracking parameters (`utm_*`, `gclid`, `fbclid`, `msclkid`…) are no longer copied into the language switcher links and the canonical URL, where a full-page cache such as Blitz could serve them to every visitor.
 - Fix: Elements marked `wg-excluded-link` are no longer rewritten when their URL is in a `data-link`, `data-url`, `data-cart-url` or `hx-*` attribute, or when an identical non-excluded link, form or meta tag on the page is rewritten.
