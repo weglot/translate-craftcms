@@ -392,7 +392,8 @@ class Plugin extends BasePlugin
             return $siteBaseUrl;
         }
 
-        return rtrim($siteBaseUrl, '/').'/'.$code.'/';
+        // codesFromDestinationEntries() writes regional codes as pt-BR; the URL rule matches them lowercased.
+        return rtrim($siteBaseUrl, '/').'/'.strtolower($code).'/';
     }
 
     protected function onboardingFrontPageUrl(string $siteBaseUrl, bool $optionsLoaded): string
