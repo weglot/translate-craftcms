@@ -96,6 +96,11 @@ final class PluginTest extends TestCase
         self::assertSame('https://x.test/shop/br/', Plugin::buildFrontPageUrl('https://x.test/shop/', ['br']));
     }
 
+    public function testFrontPageUrlLowercasesRegionalCodesLikeTheUrlRule(): void
+    {
+        self::assertSame('https://x.test/pt-br/', Plugin::buildFrontPageUrl('https://x.test', ['pt-BR']));
+    }
+
     public function testFrontPageUrlFallsBackToTheSiteHomeWithoutDestinationLanguage(): void
     {
         self::assertSame('https://x.test/', Plugin::buildFrontPageUrl('https://x.test/', []));
