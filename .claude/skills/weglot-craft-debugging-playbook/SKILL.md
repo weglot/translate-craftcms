@@ -38,6 +38,7 @@ Before proposing a fix, write the root-cause claim as: **hypothesis → cheapest
 |---|---|---|---|
 | Dynamics dead / Algolia sends empty credentials on a V2 project | `getPublicApiKey()` reads `public_key` (V2) or `api_key` (V1)? | Read `public_key` for V2 | `0519225` |
 | V2 switcher `button_style` / custom settings lost | `custom_settings` is `{}` in the V2 response and wiped the defaults by `array_merge` | Nested merge | `0519225` |
+| CP settings page or API-key check answers 500 while the Weglot API is down (`cURL error 6/28/35` in `storage/logs`); since the fix: blank dashboard links, `Weglot project-settings request failed: …ConnectException (cURL errno …)` | Does the `catch` take `GuzzleException`? In Guzzle 7 `ConnectException` (DNS, timeout, TLS) is no `RequestException` | `UserApiService::getUserInfo()` / `fetchWorkspaceSlug()` catch `GuzzleException`; tests inject failures through `createHttpClient()` | `c810340` |
 | V2 dashboard link on another project's workspace | Workspace slug cache keyed by the API key? | `UserApiService::workspaceCacheKey()` | `aaf6281` |
 | Dashboard link stays broken for the cache TTL after one API hiccup | Failed lookup cached? | Not cached for the full TTL | `2333c59` |
 | "Activate Weglot" saves and leaves for `/admin/settings` | Plain submit? Craft's plugin settings layout hardcodes that redirect | Override the redirect, click the real submit | `fa1d8d3` |

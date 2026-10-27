@@ -16,6 +16,9 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 - [Token in a clone URL](token-in-clone-url.md) — echoed by make and stored in `.git/config`; use a credential helper.
 - [Full-page cache freezes request data](full-page-cache-freezes-request-data.md) — request-derived values in the HTML reach every visitor behind Blitz (BUL-359).
 
+- [Guzzle `ConnectException` is no `RequestException`](guzzle-connect-exception.md) — a `catch (RequestException)` lets DNS / timeout / TLS failures through (`c810340`).
+- [Redact V1 Guzzle messages](redact-v1-guzzle-messages.md) — the URI in the message carries `?api_key=`; never log or return it raw.
+
 ## Reusable verdicts (don't re-raise at the same severity)
 
 - [simple_html_dom `save()` lower-cases names](simple-html-dom-save-lowercases.md) — not a mutation when the parser's own flags are used.
