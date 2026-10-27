@@ -1,5 +1,5 @@
 {% do craft.app.plugins.getPlugin('weglot').language.injectLanguagesJsonScript() %}
-{% do craft.app.view.registerAssetBundle('weglot\\craftweglot\\resources\\AdminAsset') %}
+{% set adminAsset = craft.app.view.registerAssetBundle('weglot\\craftweglot\\resources\\AdminAsset') %}
 
 {# Craft's plugin settings layout hardcodes a redirect to the settings index; this
    overrides it so saving keeps the user on the Weglot settings page. #}
@@ -98,7 +98,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/pencils.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/pencils.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
@@ -116,7 +116,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/puzzle.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/puzzle.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
@@ -133,7 +133,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/puzzle.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/puzzle.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
@@ -152,7 +152,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/rocket.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/rocket.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
@@ -170,7 +170,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/laptop.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/laptop.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
@@ -189,7 +189,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/language.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/language.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
@@ -207,7 +207,7 @@
                     <div class="menu-card">
                         <div class="card-top">
                             <img
-                                src="{{ view.getAssetManager().getPublishedUrl('@weglot/craftweglot/resources/img/diamond.svg', true) }}"
+                                src="{{ view.getAssetManager().getAssetUrl(adminAsset, 'img/diamond.svg') }}"
                                 width="32"
                                 height="32"
                                 alt=""/>
