@@ -233,6 +233,45 @@ final class OptionServiceTest extends TestCase
         self::assertSame('missing_private_key', $result['code'] ?? null);
     }
 
+    public function testSaveWeglotSettingsV2SucceedsWithoutAPrivateKeyInOptions(): void
+    {
+        $fetched = ['public_key' => 'pk_test', 'api_base_url' => 'https://eu.api.weglot.dev', 'language_from' => 'en'];
+        $svc = new class($fetched) extends OptionService {
+            /** @param array<string, mixed> $fetched */
+            public function __construct(private readonly array $fetched)
+            {
+                parent::__construct();
+            }
+
+            /** @return array{success: true, result: array<string, mixed>}|array{success: false, result: array<string, mixed>} */
+            public function getOptionsFromApiWithApiKey(string $apiKey): array
+            {
+                return ['success' => true, 'result' => $this->fetched];
+            }
+        };
+
+        $result = $svc->saveWeglotSettings('v2_test_key', 'en', ['fr']);
+
+        self::assertTrue($result['success']);
+        self::assertSame($fetched, $result['result'] ?? null);
+    }
+
+    public function testSaveWeglotSettingsV2ReturnsFalseWhenCdnFetchFails(): void
+    {
+        $svc = new class extends OptionService {
+            /** @return array{success: true, result: array<string, mixed>}|array{success: false, result: array<string, mixed>} */
+            public function getOptionsFromApiWithApiKey(string $apiKey): array
+            {
+                return ['success' => false, 'result' => []];
+            }
+        };
+
+        $result = $svc->saveWeglotSettings('v2_test_key', 'en', ['fr']);
+
+        self::assertFalse($result['success']);
+        self::assertSame('cdn_fetch_fail', $result['code'] ?? null);
+    }
+
     // -------------------------------------------------------------------------
     // getTranslationEngine
     // -------------------------------------------------------------------------

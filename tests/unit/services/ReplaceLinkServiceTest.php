@@ -229,6 +229,46 @@ final class ReplaceLinkServiceTest extends TestCase
         ];
     }
 
+    /**
+     * Tracking params are stripped from the switcher links only: a link an editor tagged in the
+     * content keeps them.
+     */
+    public function testReplaceUrlKeepsTrackingParamsOfAContentLink(): void
+    {
+        $en = $this->en;
+        $fr = $this->fr;
+        $rus = new class($en, $fr) extends RequestUrlService {
+            public function __construct(
+                private readonly LanguageEntry $original,
+                private readonly LanguageEntry $destination,
+            ) {
+                parent::__construct();
+            }
+
+            public function getFullUrl(bool $useForwardedHost = false): string
+            {
+                return 'https://example.com/page';
+            }
+
+            public function createUrlObject(string $url): Url
+            {
+                return new Url($url, $this->original, [$this->destination], '', [], []);
+            }
+        };
+
+        // An empty key skips the slug lookup, which would otherwise reach the API.
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $savedApiKey = $settings->apiKey;
+        $settings->apiKey = '';
+        try {
+            $replaced = (new ReplaceLinkService($rus))->replaceUrl('https://example.com/promo?utm_source=newsletter&gclid=abc', $fr);
+        } finally {
+            $settings->apiKey = $savedApiKey;
+        }
+
+        self::assertSame('https://example.com/fr/promo/?utm_source=newsletter&gclid=abc', $replaced);
+    }
+
     // -------------------------------------------------------------------------
     // replaceA — regex substitution
     // -------------------------------------------------------------------------

@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace weglot\craftweglot\services;
 
 use craft\base\Component;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use weglot\craftweglot\helpers\HelperApi;
 use weglot\craftweglot\Plugin;
@@ -54,10 +57,10 @@ class UserApiService extends Component
         ];
 
         try {
-            $response = \Craft::createGuzzleClient()->request('GET', $url, $requestOptions);
+            $response = $this->createHttpClient()->request('GET', $url, $requestOptions);
 
             return $this->decodeResponse($response->getBody()->getContents());
-        } catch (RequestException $e) {
+        } catch (GuzzleException $e) {
             return $this->requestError($e);
         }
     }
@@ -104,6 +107,11 @@ class UserApiService extends Component
         return $slug;
     }
 
+    protected function createHttpClient(): ClientInterface
+    {
+        return \Craft::createGuzzleClient();
+    }
+
     protected function fetchWorkspaceSlug(string $apiKey): string
     {
         $apiBaseUrl = Plugin::getInstance()->getOption()->getOption('api_base_url');
@@ -119,9 +127,9 @@ class UserApiService extends Component
         ];
 
         try {
-            $response = \Craft::createGuzzleClient()->request('GET', $host.'/workspaces/current', $requestOptions);
+            $response = $this->createHttpClient()->request('GET', $host.'/workspaces/current', $requestOptions);
             $decoded = json_decode($response->getBody()->getContents(), true);
-        } catch (RequestException $e) {
+        } catch (GuzzleException $e) {
             \Craft::error('Error retrieving Weglot workspace info: '.$e->getMessage(), __METHOD__);
 
             return '';
@@ -155,9 +163,17 @@ class UserApiService extends Component
     /**
      * @return array<string, mixed>
      */
-    private function requestError(RequestException $e): array
+    private function requestError(GuzzleException $e): array
     {
-        if ($e->hasResponse()) {
+        // ConnectException is no RequestException: a timeout, DNS or TLS failure has no response. Its
+        // message is neither returned nor logged, as it carries the URL and so the ?api_key= query.
+        \Craft::warning(\sprintf(
+            'Weglot project-settings request failed: %s%s',
+            $e::class,
+            $e instanceof ConnectException ? ' (cURL errno '.($e->getHandlerContext()['errno'] ?? '?').')' : ''
+        ), __METHOD__);
+
+        if ($e instanceof RequestException && $e->hasResponse()) {
             $statusCode = $e->getResponse()->getStatusCode();
             $reason = $e->getResponse()->getReasonPhrase();
 

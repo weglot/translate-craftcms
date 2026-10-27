@@ -10,7 +10,7 @@ type: architecture
 src/
 ├── Plugin.php              # Entry point — components, events, URL rules, settings page, afterSaveSettings()
 ├── controllers/            # RouterController (language-prefixed site URLs), ApiController (CP JSON endpoints)
-├── services/               # 17 services, all craft\base\Component
+├── services/               # 18 services, all craft\base\Component
 ├── helpers/                # HelperApi (hosts, env), HelperReplaceUrl (link regexes), HelperSwitcher, HelperFlagType, DashboardHelper (a component too)
 ├── checkers/dom/           # Plugin-side DOM checkers, discovered by scandir() in DomCheckersService
 ├── models/Settings.php     # Plugin settings model + validation (API key validated live)
@@ -26,7 +26,7 @@ PSR-4: `weglot\craftweglot\` → `src/` (sub-namespace = directory: `services\`,
 
 ## Components
 
-`Plugin::config()` (`src/Plugin.php:63-84`) declares **18 components**: the 17 services plus `DashboardHelper`. 16 of them have a typed getter on `Plugin` (`src/Plugin.php:518-597`, e.g. `getOption()`, `getLanguage()`, `getTranslateService()`); `dashboardHelper` and `versionService` are reached with `Plugin::getInstance()->get('<key>')`. The component key is not the class name (`option` → `OptionService`, `slug` → `SlugService`, `dynamics` → `DynamicsService`) — read the array before guessing.
+`Plugin::config()` (`src/Plugin.php:64-89`) declares **19 components**: the 18 services plus `DashboardHelper`. 17 of them have a typed getter on `Plugin` (`src/Plugin.php:520-604`, e.g. `getOption()`, `getLanguage()`, `getTranslateService()`); `dashboardHelper` and `versionService` are reached with `Plugin::getInstance()->get('<key>')`. The component key is not the class name (`option` → `OptionService`, `slug` → `SlugService`, `slugV2` → `SlugV2Service`, `dynamics` → `DynamicsService`) — read the array before guessing.
 
 A new service = one line in `config()` + a typed getter, in the same commit. Never `new` a service in `src/` (tests do it to inject stubs).
 

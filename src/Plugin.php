@@ -28,6 +28,7 @@ use weglot\craftweglot\services\ReplaceLinkService;
 use weglot\craftweglot\services\ReplaceUrlService;
 use weglot\craftweglot\services\RequestUrlService;
 use weglot\craftweglot\services\SlugService;
+use weglot\craftweglot\services\SlugV2Service;
 use weglot\craftweglot\services\TranslateService;
 use weglot\craftweglot\services\UserApiService;
 use weglot\craftweglot\services\VersionService;
@@ -69,6 +70,7 @@ class Plugin extends BasePlugin
                 'userApi' => ['class' => UserApiService::class],
                 'option' => ['class' => OptionService::class],
                 'slug' => ['class' => SlugService::class],
+                'slugV2' => ['class' => SlugV2Service::class],
                 'language' => ['class' => LanguageService::class],
                 'translateService' => ['class' => TranslateService::class],
                 'parserService' => ['class' => ParserService::class],
@@ -538,6 +540,11 @@ class Plugin extends BasePlugin
     public function getSlug(): SlugService
     {
         return $this->get('slug');
+    }
+
+    public function getSlugV2(): SlugV2Service
+    {
+        return $this->get('slugV2');
     }
 
     public function getReplaceUrlService(): ReplaceUrlService

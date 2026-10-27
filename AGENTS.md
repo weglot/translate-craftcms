@@ -122,7 +122,7 @@ The `deny` rules in `.claude/settings.json` (force-push, push to `master`) are g
 
 ## Formatters & codemods
 
-Never run `composer run fix-cs`, Rector without `--dry-run`, or any codemod on the whole tree when only a few files changed: scope them (`vendor/bin/php-cs-fixer fix <files>`, `vendor/bin/rector process <files>`). If a tool rewrites unrelated files, revert them. Never run php-scoper output into `src/vendor/weglot/` by hand — `/vendor-update`.
+Never run `composer run fix-cs`, Rector without `--dry-run`, or any codemod on the whole tree when only a few files changed: scope them (`vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.dist.php <files>` — with more than one path php-cs-fixer refuses to run without `--config` — and `vendor/bin/rector process <files>`). If a tool rewrites unrelated files, revert them. Never run php-scoper output into `src/vendor/weglot/` by hand — `/vendor-update`.
 
 ## Language and tone
 

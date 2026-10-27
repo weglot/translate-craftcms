@@ -33,16 +33,16 @@ npm run dev     # vite build --watch
 
 Vite 7 needs **Node ≥ 20.19 or ≥ 22.12**; on older Node (22.5 measured) the build dies with `ERR_REQUIRE_ESM … vite.config.js`. Compiled files are **committed** in `src/resources/`.
 
-What the build produces vs what is served (checked 2026-09-24):
+What the build produces vs what is served (checked 2026-09-24; `admin.scss` row re-measured 2026-10-12):
 
 | Source | Vite output (`vite.config.js`) | File actually loaded | Loaded by |
 |---|---|---|---|
 | `src/resources-src/js/admin.js` | `js/admin.js` | `js/admin.js` | `src/resources/AdminAsset.php` |
-| `src/resources-src/scss/admin.scss` | `css/admin.css` | **`css/style.css`** | `AdminAsset.php:27` |
+| `src/resources-src/scss/admin.scss` | `css/style.css` | `css/style.css` | `AdminAsset.php:27` |
 | `src/resources-src/js/algolia.js` | **not a Vite entry** | `js/algolia.js` | `src/services/FrontEndScriptsService.php:168` (frontend, when `enableAlgolia`) |
 
 So:
-- A SCSS change reaches the CP only once its compiled CSS is in `css/style.css`; the build writes `css/admin.css`, and the step that turns one into the other is not in the repo. `css/style.css` does contain the compiled `admin.scss` (e.g. `.weglot-hidden`, `fa1d8d3`). Ask the maintainer before changing the build.
+- `npm run build` writes `css/style.css` directly, despite the `css/admin.css` branch in `assetFileNames`: with `cssCodeSplit: false` Vite emits the merged bundle under the name `style.css`, which does not contain `admin` (measured 2026-10-12, Vite 7: no `admin.css` created). Check that the compiled diff contains only your change before committing it.
 - `src/resources/js/algolia.js` is maintained separately from `src/resources-src/js/algolia.js`, and the two differ today (flagged on #47). Edit the served file, and keep the source in step.
 - `css/admin-bak.css` is loaded by nothing.
 - `src/resources/vendor/` (selectize, select2, xhook) is vendored by hand.

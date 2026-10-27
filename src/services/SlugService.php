@@ -7,26 +7,37 @@ namespace weglot\craftweglot\services;
 use craft\base\Component;
 use GuzzleHttp\Exception\RequestException;
 use weglot\craftweglot\helpers\HelperApi;
+use weglot\craftweglot\Plugin;
 
 class SlugService extends Component
 {
     /**
-     * @var array<string, array<string, array{forward: array<string,string>, reverse: array<string,string>}>>
+     * @var array<string, array<string, array{forward: array<string,string>, reverse: array<string,string>, redirects?: array<string,string>}>>
      */
     private array $slugsCache = [];
 
     /**
-     * @var array<string, array<string, array{forward: array<string,string>, reverse: array<string,string>}>>
+     * @var array<string, array<string, array{forward: array<string,string>, reverse: array<string,string>, redirects?: array<string,string>}>>
      */
     private array $slugsFromApi = [];
 
     /**
      * @param array<int,string> $destinationLanguages
      *
-     * @return array<string, array{forward: array<string,string>, reverse: array<string,string>}>
+     * @return array<string, array{forward: array<string,string>, reverse: array<string,string>, redirects?: array<string,string>}>
      */
     public function getSlugMapsFromCacheWithApiKey(string $apiKey, array $destinationLanguages): array
     {
+        if (!Plugin::getInstance()->getTypedSettings()->enableTranslatedSlugs) {
+            return [];
+        }
+
+        // Weglot 2 only: a project migrated from Weglot 1 can still hold Weglot 1 slugs in its cache,
+        // which must never be mixed with the Weglot 2 ones.
+        if (HelperApi::isV2ApiKey($apiKey)) {
+            return Plugin::getInstance()->getSlugV2()->getSlugMaps($apiKey, $destinationLanguages);
+        }
+
         $destinationLanguages = array_values(array_unique(array_filter(array_map(strtolower(...), $destinationLanguages))));
         sort($destinationLanguages);
 
@@ -62,7 +73,7 @@ class SlugService extends Component
     /**
      * @param array<int,string> $destinationLanguages
      *
-     * @return array<string, array{forward: array<string,string>, reverse: array<string,string>}>
+     * @return array<string, array{forward: array<string,string>, reverse: array<string,string>, redirects?: array<string,string>}>
      */
     public function getSlugMapsFromApiWithApiKey(string $apiKey, array $destinationLanguages): array
     {
@@ -189,6 +200,37 @@ class SlugService extends Component
         }
 
         return $this->translatePathSegments($pathWithoutLangPrefix, $forward);
+    }
+
+    /**
+     * Path to send a former translated slug to (Weglot 2 slug history).
+     *
+     * Works on the path as the visitor requested it, never on the path mapped back to original
+     * slugs: there, a former slug equal to another page's original slug cannot be told apart from
+     * it, and the live page would get a permanent redirect. The redirects only hold former slugs
+     * that are not current and point to a current one (SlugV2Service).
+     *
+     * Known limitation: a slug identical in both languages (or untranslated) is not in the maps; if
+     * it is also another page's former slug, the request is redirected.
+     *
+     * @param array<int,string> $destinationLanguages
+     *
+     * @return string|null the path with every former slug replaced, or null when there is none
+     */
+    public function getRedirectPathIfFormerSlug(string $apiKey, array $destinationLanguages, string $languageTo, string $requestedPath): ?string
+    {
+        $languageTo = strtolower(trim($languageTo));
+        if ('' === $languageTo) {
+            return null;
+        }
+
+        $maps = $this->getSlugMapsFromCacheWithApiKey($apiKey, $destinationLanguages);
+        $redirects = $maps[$languageTo]['redirects'] ?? [];
+        if ([] === $redirects) {
+            return null;
+        }
+
+        return $this->translatePathSegments($requestedPath, $redirects);
     }
 
     /**
