@@ -77,7 +77,17 @@ class ParserService extends Component
         $customSwitchers = Plugin::getInstance()->getOption()->getOption('switchers');
 
         $config = new ServerConfigProvider();
-        $config->loadFromServer();
+        try {
+            $config->loadFromServer(
+                Plugin::getInstance()->getRequestUrlService()->getTranslationRequestUrl(
+                    \Craft::$app->getResponse()->getStatusCode()
+                )
+            );
+        } catch (\Throwable $e) {
+            // The translated URL is sent instead, and Weglot records it as a new source page.
+            \Craft::warning('Source URL for the translation request could not be resolved: '.$e::class, __METHOD__);
+            $config->loadFromServer();
+        }
 
         $client = $this->getClient();
         $editorSession = \Craft::$app->getRequest()->getHeaders()->get('wg-editor-session');

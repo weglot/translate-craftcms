@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace weglot\craftweglot\tests\unit\services;
 
+use craft\base\Component;
 use PHPUnit\Framework\TestCase;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\LanguageService;
 use weglot\craftweglot\services\OptionService;
 use weglot\craftweglot\services\RequestUrlService;
+use weglot\craftweglot\services\SlugService;
 use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use Weglot\Vendor\Weglot\Util\Regex;
 use Weglot\Vendor\Weglot\Util\Regex\RegexEnum;
@@ -16,14 +18,49 @@ use Weglot\Vendor\Weglot\Util\Url;
 
 final class RequestUrlServiceTest extends TestCase
 {
+    private const REPLACED_COMPONENTS = ['language', 'option', 'slug'];
+
     private LanguageEntry $en;
     private LanguageEntry $fr;
+    private LanguageEntry $it;
+
+    /** @var array<string, Component> */
+    private array $originalComponents = [];
+
+    private string $savedApiKey = '';
+
+    private bool $savedEnableTranslatedSlugs = true;
 
     protected function setUp(): void
     {
         parent::setUp();
+        foreach (self::REPLACED_COMPONENTS as $id) {
+            $component = Plugin::getInstance()->get($id);
+            if ($component instanceof Component) {
+                $this->originalComponents[$id] = $component;
+            }
+        }
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $this->savedApiKey = $settings->apiKey;
+        $this->savedEnableTranslatedSlugs = $settings->enableTranslatedSlugs;
+        \Craft::$app->getCache()->flush();
+
         $this->en = new LanguageEntry('en', 'en', 'English', 'English', false);
         $this->fr = new LanguageEntry('fr', 'fr', 'French', 'Français', false);
+        $this->it = new LanguageEntry('it', 'it', 'Italian', 'Italiano', false);
+    }
+
+    protected function tearDown(): void
+    {
+        // Guarded: setUp() may have thrown before every component was captured.
+        foreach ($this->originalComponents as $id => $component) {
+            Plugin::getInstance()->set($id, $component);
+        }
+        $settings = Plugin::getInstance()->getTypedSettings();
+        $settings->apiKey = $this->savedApiKey;
+        $settings->enableTranslatedSlugs = $this->savedEnableTranslatedSlugs;
+        \Craft::$app->getCache()->flush();
+        parent::tearDown();
     }
 
     // -------------------------------------------------------------------------
@@ -228,5 +265,87 @@ final class RequestUrlServiceTest extends TestCase
         $svc = $this->makeHandlePathSvc($this->fr, $this->en, '/about');
 
         self::assertSame('/about', $svc->handlePathDetectionAndRewrite('/fr/about'));
+    }
+
+    // -------------------------------------------------------------------------
+    // getSourceUrl / getTranslationRequestUrl
+    // -------------------------------------------------------------------------
+
+    public function testTranslatedPageSendsTheSourceSlugsWithTheQuery(): void
+    {
+        $svc = $this->makeSourceUrlSvc('https://example.com/it/blog-it/libro-degli-ospiti/?page=2', [
+            'blog' => 'blog-it',
+            'guestbook' => 'libro-degli-ospiti',
+        ]);
+
+        self::assertSame('https://example.com/blog/guestbook/?page=2', $svc->getTranslationRequestUrl(200));
+    }
+
+    public function testNonAsciiSourceSlugIsPercentEncodedLikeASourceRequest(): void
+    {
+        $svc = $this->makeSourceUrlSvc('https://example.com/it/caffe/', ['café' => 'caffe']);
+
+        self::assertSame('https://example.com/caf%C3%A9/', $svc->getSourceUrl());
+    }
+
+    public function testTranslatedPageWithoutSlugMappingSendsItsPathWithoutLanguagePrefix(): void
+    {
+        $svc = $this->makeSourceUrlSvc('https://example.com/it/about', []);
+
+        self::assertSame('https://example.com/about', $svc->getTranslationRequestUrl(200));
+    }
+
+    public function testDisabledTranslatedSlugsKeepTheRequestedSlug(): void
+    {
+        $svc = $this->makeSourceUrlSvc('https://example.com/it/libro-degli-ospiti/', ['guestbook' => 'libro-degli-ospiti']);
+        Plugin::getInstance()->getTypedSettings()->enableTranslatedSlugs = false;
+
+        self::assertSame('https://example.com/libro-degli-ospiti/', $svc->getSourceUrl());
+    }
+
+    public function testSourceLanguagePageKeepsTheParserDefault(): void
+    {
+        $svc = $this->makeSourceUrlSvc('https://example.com/guestbook/?page=2', ['guestbook' => 'libro-degli-ospiti']);
+
+        self::assertSame('', $svc->getTranslationRequestUrl(200));
+        self::assertSame('https://example.com/guestbook/?page=2', $svc->getSourceUrl());
+    }
+
+    public function testErrorPageSendsTheShared404Url(): void
+    {
+        $svc = $this->makeSourceUrlSvc('https://example.com/it/libro-degli-ospiti-typo/', ['guestbook' => 'libro-degli-ospiti']);
+
+        self::assertSame('https://example.com/404', $svc->getTranslationRequestUrl(404));
+    }
+
+    /**
+     * A RequestUrlService on a fixed URL, with a real SlugService reading Weglot 1 slug maps
+     * seeded in the cache, so the enableTranslatedSlugs gate stays in the path.
+     *
+     * @param array<string, string> $forward source slug => Italian slug
+     */
+    private function makeSourceUrlSvc(string $requestUrl, array $forward): RequestUrlService
+    {
+        $this->injectLangStub($this->en, [$this->it]);
+        Plugin::getInstance()->getTypedSettings()->apiKey = 'wg_test';
+
+        $slug = new SlugService();
+        $cacheKey = (new \ReflectionMethod(SlugService::class, 'buildSlugsCacheKey'))->invoke($slug, 'wg_test', ['it']);
+        \Craft::$app->getCache()->set($cacheKey, ['it' => ['forward' => $forward, 'reverse' => array_flip($forward)]]);
+        Plugin::getInstance()->set('slug', $slug);
+
+        $url = new Url($requestUrl, $this->en, [$this->it], '', [], []);
+
+        return new class($url) extends RequestUrlService {
+            public function __construct(private readonly Url $url)
+            {
+                parent::__construct();
+            }
+
+            public function getWeglotUrl(): Url
+            {
+                return $this->url;
+            }
+        };
     }
 }
