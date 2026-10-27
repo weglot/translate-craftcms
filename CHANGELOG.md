@@ -1,5 +1,17 @@
 # Release Notes for Weglot
 
+## 1.2.9 - 2026-10-27
+
+- Improvement: Adds Weglot 2 support: a Weglot 2 API key connects the site to the Weglot 2 API and CDN, the languages are pulled from the project when the settings are saved, and the control-panel links open the Weglot 2 dashboard. Weglot 1 (`wg_`) keys keep working as before.
+- Fix: Slug redirects keep the subdirectory the site is installed in and percent-encode non-ASCII slugs.
+- Fix: Tracking parameters (`utm_*`, `gclid`, `fbclid`, `msclkid`…) are no longer copied into the language switcher links and the canonical URL, where a full-page cache such as Blitz could serve them to every visitor.
+- Fix: Elements marked `wg-excluded-link` are no longer rewritten when their URL is in a `data-link`, `data-url`, `data-cart-url` or `hx-*` attribute, or when an identical non-excluded link, form or meta tag on the page is rewritten.
+- Fix: The AI disclaimer no longer truncates inline scripts on translated pages, and is now inserted for compound selectors and selectors containing quotes.
+- Fix: Saving the settings with a Weglot 2 key no longer shows "Weglot sync failed (missing_private_key)", and the settings are synced to Weglot.
+- Fix: The settings screen and the API-key check no longer error when the Weglot API is unreachable.
+- Fix: The "Go on my front page" button of the onboarding popup now opens the site in its first translated language.
+- Fix: Removes the extra spacing between elements in the control-panel modals.
+
 ## 1.2.8 - 2026-07-29
 
 - Fix: Same-document links (fragment-only `#anchor` / `#/spa/route` and query-only `?foo=bar` hrefs) are no longer rewritten with a language prefix on translated pages; they now stay relative to the current page instead of being rebased onto the language root (e.g. `#/booking/step-1?` no longer becomes `/fr/#/booking/step-1?`), fixing in-page and SPA navigation.
