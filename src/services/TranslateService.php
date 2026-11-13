@@ -89,6 +89,12 @@ class TranslateService extends Component
             return $html;
         }
 
+        // Sitemaps are rewritten once, on the response (ReplaceUrlService::rewriteSitemapResponse()),
+        // whether a template or a controller produced them; they are not sent to the Weglot API.
+        if ($this->replaceUrlService->isSitemap($html)) {
+            return $html;
+        }
+
         $originalLanguage = $this->languageService->getOriginalLanguage();
         $currentLanguage = $this->requestUrlService->getCurrentLanguage();
         $type = $this->getContentType($html);
@@ -108,7 +114,7 @@ class TranslateService extends Component
             switch ($type) {
                 case 'json':
                 case 'xml':
-                    // TODO: Integrate URL replacement logic for XML.
+                    // Sitemaps, the only XML carrying <loc> links, never reach this point (see above).
                     return $parser->translate($html, $originalLanguage->getInternalCode(), $currentLanguage->getInternalCode());
                 case 'html':
                     // TODO: Manage filters for attribute escaping (HTML, Vue.js).

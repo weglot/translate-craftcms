@@ -23,6 +23,11 @@ Review on this repo is almost entirely automated: Cursor Bugbot and codenudge co
 - [Guzzle `ConnectException` is no `RequestException`](guzzle-connect-exception.md) — a `catch (RequestException)` lets DNS / timeout / TLS failures through (`c810340`).
 - [Redact V1 Guzzle messages](redact-v1-guzzle-messages.md) — the URI in the message carries `?api_key=`; never log or return it raw.
 - [CP assets through their bundle](cp-assets-through-bundle.md) — Craft Cloud only pre-publishes bundle sourcePaths; a file published alone with `getPublishedUrl()` 404s there.
+- [`replaceUrl()` forces a trailing slash](replace-url-trailing-slash.md) — WP-only habit; SEO-facing URLs 301 on slash-less Craft sites (BUL-448).
+- [Decoded paths written unescaped](url-decode-not-reescaped.md) — the scoped `Url` urldecodes; escape/encode what `replaceUrl()` returns before emitting it (BUL-448).
+- [Per-match document-wide `preg_replace` is O(n²)](per-match-preg-replace-quadratic.md) — 10.9 s at 20k URLs vs 3.6 ms with one callback (BUL-448).
+- [Timing guards sized to fail](timing-guards-sized-to-fail.md) — the guarded regression must blow the budget ≥ 5×; 5k entries let a quadratic rewrite pass (BUL-448).
+- [`createUrlObject()` per item](create-url-object-per-item.md) — rebuilds `getExcludeUrls()` each call, ~43 % of the per-URL sitemap cost (BUL-448).
 
 ## Reusable verdicts (don't re-raise at the same severity)
 

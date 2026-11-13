@@ -223,6 +223,29 @@ final class TranslateServiceTest extends TestCase
         self::assertSame($json, $this->makeService($this->en, $this->en)->processResponse($json));
     }
 
+    /**
+     * A throwing parser appends a "Weglot error" comment when it is called: identical output
+     * proves the sitemap was neither sent to the API nor passed through weglotRenderDom().
+     */
+    #[DataProvider('sitemapProvider')]
+    public function testProcessResponseLeavesSitemapsToTheResponseHook(string $sitemap): void
+    {
+        $service = $this->makeService($this->en, $this->fr, parserThrowsException: true);
+
+        self::assertSame($sitemap, $service->processResponse($sitemap));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function sitemapProvider(): array
+    {
+        return [
+            'urlset with prolog' => ['<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://example.com/about</loc></url></urlset>'],
+            // No prolog: typed html by getContentType(), so it would get a canonical tag before its root.
+            'urlset without prolog' => ["\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"><url><loc>https://example.com/about</loc></url></urlset>"],
+            'sitemap index' => ['<?xml version="1.0"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><sitemap><loc>https://example.com/sitemap-1.xml</loc></sitemap></sitemapindex>'],
+        ];
+    }
+
     public function testProcessResponseReturnsXmlUnchangedWhenCurrentEqualsOriginal(): void
     {
         $xml = '<?xml version="1.0"?><root><item>Hello</item></root>';

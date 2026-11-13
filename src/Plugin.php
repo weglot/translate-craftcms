@@ -37,6 +37,7 @@ use Weglot\Vendor\Weglot\Client\Api\LanguageEntry;
 use yii\base\Event;
 use yii\web\Cookie;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class Plugin extends BasePlugin
 {
@@ -312,6 +313,19 @@ class Plugin extends BasePlugin
             View::class,
             View::EVENT_AFTER_RENDER_PAGE_TEMPLATE,
             $this->weglotInit(...)
+        );
+
+        // Prepended so a full-page cache listening on the same event stores the rewritten sitemap.
+        Event::on(
+            Response::class,
+            Response::EVENT_AFTER_PREPARE,
+            function (Event $event): void {
+                if ($event->sender instanceof Response) {
+                    $this->getReplaceUrlService()->rewriteSitemapResponse($event->sender);
+                }
+            },
+            null,
+            false
         );
     }
 
