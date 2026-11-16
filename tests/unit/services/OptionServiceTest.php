@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace weglot\craftweglot\tests\unit\services;
 
+use craft\base\Component;
 use PHPUnit\Framework\TestCase;
 use weglot\craftweglot\Plugin;
 use weglot\craftweglot\services\LanguageService;
@@ -16,15 +17,23 @@ final class OptionServiceTest extends TestCase
 {
     private string $savedApiKey = '';
 
+    private ?Component $savedLanguage = null;
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->savedApiKey = Plugin::getInstance()->getTypedSettings()->apiKey;
+        $language = Plugin::getInstance()->get('language');
+        $this->savedLanguage = $language instanceof Component ? $language : null;
         \Craft::$app->getCache()->flush();
     }
 
     protected function tearDown(): void
     {
+        // Guarded: setUp() may have thrown before the component was captured.
+        if ($this->savedLanguage instanceof Component) {
+            Plugin::getInstance()->set('language', $this->savedLanguage);
+        }
         Plugin::getInstance()->getTypedSettings()->apiKey = $this->savedApiKey;
         \Craft::$app->getCache()->flush();
         parent::tearDown();
@@ -169,20 +178,29 @@ final class OptionServiceTest extends TestCase
         self::assertTrue($found);
     }
 
-    public function testGetExcludeUrlsMatchesSitemapXml(): void
+    public function testGetExcludeUrlsLetsSitemapXmlThrough(): void
     {
         $this->injectLangStub();
-        $entries = $this->makeSvc()->getExcludeUrls();
 
-        $found = false;
-        foreach ($entries as $entry) {
-            if (\is_array($entry) && $entry[0] instanceof Regex && $entry[0]->match('/sitemap.xml')) {
-                $found = true;
-                break;
+        self::assertFalse($this->isExcludedByDefault('/sitemap.xml'));
+    }
+
+    public function testGetExcludeUrlsMatchesSitemapXsl(): void
+    {
+        $this->injectLangStub();
+
+        self::assertTrue($this->isExcludedByDefault('/sitemap.xsl'));
+    }
+
+    private function isExcludedByDefault(string $path): bool
+    {
+        foreach ($this->makeSvc()->getExcludeUrls() as $entry) {
+            if (\is_array($entry) && $entry[0] instanceof Regex && $entry[0]->match($path)) {
+                return true;
             }
         }
 
-        self::assertTrue($found);
+        return false;
     }
 
     public function testGetExcludeUrlsEachEntryHasRegexAtIndexZero(): void

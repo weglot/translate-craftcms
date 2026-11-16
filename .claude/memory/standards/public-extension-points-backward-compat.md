@@ -17,7 +17,7 @@ Rules:
 
 - **Never rename an event constant or its string value, never change the payload shape.** Add a new event and keep the old one firing.
 - **Never rename or re-type a `Settings` property** without a migration of the stored value.
-- **A behaviour change that could break an installed site ships opt-in** (a setting, default = old behaviour) — the Algolia integration shipped behind `enableAlgolia` (CHANGELOG 1.2.4). Product-approved exception: Weglot 2 translated slugs ship on by default (WP parity, BUL-341 / BUL-371, 2026-10-26), with the opt-out `enableTranslatedSlugs = false` in `config/weglot.php` — don't re-raise it.
+- **A behaviour change that could break an installed site ships opt-in** (a setting, default = old behaviour) — the Algolia integration shipped behind `enableAlgolia` (CHANGELOG 1.2.4). Product-approved exception: Weglot 2 translated slugs ship on by default (WP parity, BUL-341 / BUL-371, 2026-10-26), with the opt-out `enableTranslatedSlugs = false` in `config/weglot.php` — don't re-raise it. Dev-approved exception: `/sitemap.xml` is no longer a default exclusion and translated sitemaps are rewritten by default (BUL-448, 2026-11-13) — the exclusion was a mis-port of WP's `/sitemaps.xml`, WP translates sitemaps; `/sitemap.xsl` stays excluded.
 - The scoped vendor classes are **not** public: third parties must not depend on `Weglot\Vendor\…`.
 
 **Why:** the plugin is distributed on the Craft Plugin Store; a customer's module listening to `registerDynamicsSelectors` breaking on update is a support ticket, not a failing test.

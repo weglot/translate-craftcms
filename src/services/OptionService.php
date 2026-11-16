@@ -426,7 +426,6 @@ class OptionService extends Component
         $excludeUrls[] = [new Regex(RegexEnum::START_WITH, '/actions/'), null];
         $excludeUrls[] = [new Regex(RegexEnum::START_WITH, '/index.php/actions/'), null];
 
-        $excludeUrls[] = [new Regex(RegexEnum::IS_EXACTLY, '/sitemap.xml'), null];
         $excludeUrls[] = [new Regex(RegexEnum::IS_EXACTLY, '/sitemap.xsl'), null];
 
         // TODO: Replace with a Craft event to allow third-party extensibility.
