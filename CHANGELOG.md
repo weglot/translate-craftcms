@@ -1,5 +1,13 @@
 # Release Notes for Weglot
 
+## 1.3.0 - 2026-11-16
+
+- Improvement: Sitemaps served under a language prefix (e.g. `/fr/sitemap.xml`, SEOmatic and SEO by Ether sitemaps and sitemap indexes) now list the translated URLs of that language, with translated slugs and custom URLs applied; excluded URLs and URLs on another host are left out. `/sitemap.xml` is no longer excluded from translation by default.
+- Fix: Translated pages send their source-language URL to Weglot, so translated slugs are no longer recorded as new source pages and translated again.
+- Fix: Hreflang alternate links use each language's translated slug instead of the slug of the requested page, which pointed to 404 pages.
+- Fix: The settings screen images no longer return 404 on Craft Cloud; they are now served through the control-panel asset bundle.
+- Improvement: Updates locked dependencies to clear all reported security advisories — phpoffice/phpspreadsheet 5.10.0, symfony/mime 7.4.22, symfony/filesystem 7.4.23, symfony/http-client 7.4.23, symfony/serializer 7.4.23 and symfony/yaml 7.4.23 — all within Craft's version constraints.
+
 ## 1.2.9 - 2026-10-27
 
 - Improvement: Adds Weglot 2 support: a Weglot 2 API key connects the site to the Weglot 2 API and CDN, the languages are pulled from the project when the settings are saved, and the control-panel links open the Weglot 2 dashboard. Weglot 1 (`wg_`) keys keep working as before.
